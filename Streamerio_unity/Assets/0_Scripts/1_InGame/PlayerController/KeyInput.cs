@@ -1,9 +1,12 @@
 using UnityEngine;
+using Common.Audio;
+using Cysharp.Threading.Tasks;
 
 public class KeyInput : MonoBehaviour, IController
 {
     [SerializeField] private PlayerPresenter _player;
     [SerializeField] private BulletShooter _bulletShooter;
+
 
     void Update()
     {
@@ -14,6 +17,11 @@ public class KeyInput : MonoBehaviour, IController
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Jump();
+        }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            Attack();
         }
     }
 
@@ -29,5 +37,7 @@ public class KeyInput : MonoBehaviour, IController
 
     public void Attack()
     {
+        AudioManager.Instance.PlayAsync(SEType.PlayerAttack, destroyCancellationToken).Forget();
+        _bulletShooter.Shoot();
     }
 }
