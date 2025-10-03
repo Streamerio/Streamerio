@@ -72,26 +72,6 @@ public class PlayerView : MonoBehaviour
         _animation.PlayAttack(num);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        Debug.Log("触れた");
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            Debug.Log("敵");
-            // EnemyAttackManager 取得（存在しない敵でもエラーにならないよう防御的に）
-            var attackManager = collision.gameObject.GetComponent<EnemyAttackManager>();
-            if (attackManager != null)
-            {
-                // EnemyAttackManager に CurrentDamage プロパティ（または public int）がある想定
-                TakeDamage(attackManager.CurrentDamage);
-            }
-            else
-            {
-                Debug.LogWarning($"[PlayerView] EnemyAttackManager が {collision.gameObject.name} にありません。");
-            }
-        }
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
@@ -110,7 +90,7 @@ public class PlayerView : MonoBehaviour
         }
     }
 
-    private void TakeDamage(int damage)
+    private void TakeDamage(float damage)
     {
         if (hpPresenter == null) return;
         //if (Time.time - _lastHitTime < hitCooldown) return;

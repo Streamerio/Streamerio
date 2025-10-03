@@ -3,36 +3,37 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 
-public class GatoWalkMovement : MonoBehaviour
+public class GatoWalkMovement : MonoBehaviour, IAttackable
 {
-    [Header("移動設定")]
-    [SerializeField] private float speed = 4f; // 高速移動
-    [SerializeField] private float jumpForce = 8f;
-    [SerializeField] private float jumpInterval = 2f;
-    [SerializeField] private float attackCooldown = 0.6f;
-    
-    private Rigidbody2D _rigidbody;
+    [SerializeField] private GatoWalkScriptableObject _gatoWalkMovementScriptableObject;
+
+    private float _speed;
+    private float _jumpForce;
+    private float _jumpInterval;
+    private float _attackCoolTime;
+
     private bool _isGrounded = true;
     private float _jumpTimer = 0f;
-    private EnemyAttackManager _attackManager;
     private float _lastAttackTime = -999f;
-    private Transform _player;
-    
-    private IAudioFacade _audioFacade;
 
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private Transform _player;
+    private Rigidbody2D _rigidbody;
+
+    public float Power => _gatoWalkMovementScriptableObject.Power;
+
+    void Awake()
     {
-        _audioFacade = audioFacade;
+        _speed = _gatoWalkMovementScriptableObject.Speed;
+        _jumpForce = _gatoWalkMovementScriptableObject.JumpForce;
+        _jumpInterval = _gatoWalkMovementScriptableObject.JumpInterval;
+        _attackCoolTime = _gatoWalkMovementScriptableObject.AttackCoolTime;
+
+        _jumpTimer = _jumpInterval;
     }
 
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
-        if (_rigidbody == null)
-        {
-            _rigidbody = gameObject.AddComponent<Rigidbody2D>();
-        }
 
         // プレイヤーを探す
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -44,9 +45,6 @@ public class GatoWalkMovement : MonoBehaviour
         // 物理設定
             _rigidbody.gravityScale = 2f;
         _rigidbody.freezeRotation = true;
-
-        _attackManager = GetComponent<EnemyAttackManager>();
-        _jumpTimer = jumpInterval;
         
         transform.position += new Vector3(_player.position.x + 10, _player.position.y + 1, 0); // 少し上にずらして生成
         AudioManager.Instance.AudioFacade.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
@@ -62,7 +60,7 @@ public class GatoWalkMovement : MonoBehaviour
     {
         // 常に左方向に高速移動
         Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.x = -speed;
+        velocity.x = _speed;
         _rigidbody.linearVelocity = velocity;
     }
     
@@ -74,18 +72,18 @@ public class GatoWalkMovement : MonoBehaviour
         if (_isGrounded && _jumpTimer <= 0f)
         {
             Jump();
-            _jumpTimer = jumpInterval;
+            _jumpTimer = _jumpInterval;
         }
     }
     
     private void Jump()
     {
         Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.y = jumpForce;
+        velocity.y = _jumpForce;
         _rigidbody.linearVelocity = velocity;
         _isGrounded = false;
         
-        Debug.Log("GatoWalk jumped!");
+        //Debug.Log("GatoWalk jumped!");
     }
     
     private void OnCollisionEnter2D(Collision2D collision)
