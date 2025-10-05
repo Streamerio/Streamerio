@@ -1,11 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SkeletonScriptableObject", menuName = "SO/InGame/Enemy/Character/Skeleton")]
-public class SkeletonScriptableObject : ScriptableObject
+[CreateAssetMenu(fileName = "SkeltonScriptableObject", menuName = "SO/InGame/Enemy/Character/Skelton")]
+public class SkeltonScriptableObject : ScriptableObject
 {
     [Header("Base Parameter")]
     public float Speed = 1.5f;
     public float Power = 10;
+    public int Health = 30;
     public float StartMoveDelay = 0.6f;
 
     [Header("Relative Spawn Position With Player")]

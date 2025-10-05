@@ -45,9 +45,12 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
         // 物理設定
             _rigidbody.gravityScale = 2f;
         _rigidbody.freezeRotation = true;
-        
-        transform.position += new Vector3(_player.position.x + 10, _player.position.y + 1, 0); // 少し上にずらして生成
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
+
+        float randPosX = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosX, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosY, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosY);
+        transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
+
+        AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
     }
     
     void Update()

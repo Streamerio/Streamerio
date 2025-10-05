@@ -5,25 +5,22 @@ using VContainer;
 
 public class EnemyHpManager : MonoBehaviour
 {
-    [SerializeField] private int health = 50;
-    public int CurrentHealth => health;
-    public bool IsDead => health <= 0;
-    
-    private IAudioFacade _audioFacade;
-    
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private int _health;
+    public int CurrentHealth => _health;
+    public bool IsDead => _health <= 0;
+
+    public void Initialize(int health)
     {
-        _audioFacade = audioFacade;
+        _health = health;
     }
 
     public void TakeDamage(int amount)
     {
         if (IsDead) return;
-        health -= amount;
-        if (health <= 0)
+        _health -= amount;
+        if (_health <= 0)
         {
-            health = 0;
+            _health = 0;
             Die();
         }
         else

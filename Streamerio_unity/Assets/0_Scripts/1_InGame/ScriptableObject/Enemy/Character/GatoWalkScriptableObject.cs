@@ -6,6 +6,7 @@ public class GatoWalkScriptableObject : ScriptableObject
     [Header("Base Parameter")]
     public float Speed = 1.5f;
     public float Power = 10;
+    public int Health = 30;
     public float JumpForce = 8;
     public float JumpInterval = 2f;
 

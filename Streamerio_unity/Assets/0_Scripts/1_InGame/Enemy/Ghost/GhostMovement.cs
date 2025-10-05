@@ -30,6 +30,10 @@ public class GhostMovement : MonoBehaviour, IAttackable
         // 重力を無効化
         var rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
+
+        float randPosX = Random.Range(_ghostScriptableObject.MinRelativeSpawnPosX, _ghostScriptableObject.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_ghostScriptableObject.MinRelativeSpawnPosY, _ghostScriptableObject.MaxRelativeSpawnPosY);
+        transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
     }
     
     void Update()

@@ -6,6 +6,7 @@ public class BurningGhoulScriptableObject : ScriptableObject
     [Header("Base Parameter")]
     public float Speed = 1.5f;
     public float Power = 10;
+    public int Health = 30;
 
     [Header("Relative Spawn Position With Player")]
     public float MinRelativeSpawnPosX = 10;

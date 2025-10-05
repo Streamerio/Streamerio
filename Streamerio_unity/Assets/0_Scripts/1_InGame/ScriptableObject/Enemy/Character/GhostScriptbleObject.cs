@@ -6,6 +6,7 @@ public class GhostScriptableObject : ScriptableObject
     [Header("Base Parameter")]
     public float Speed = 1.5f;
     public float Power = 10;
+    public int Health = 30;
 
     [Header("CoolTime")]
     public float AttackCoolTime = 0.8f;
