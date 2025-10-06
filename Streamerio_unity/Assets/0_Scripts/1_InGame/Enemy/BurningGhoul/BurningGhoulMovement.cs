@@ -4,7 +4,7 @@ using UnityEngine;
 using VContainer;
 
 
-public class BurningGhoulMovement : MonoBehaviour, IAttackable
+public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
 {
     [SerializeField] private BurningGhoulScriptableObject _burningGhoulScriptableObject;
 
@@ -15,6 +15,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable
     private Transform _player;
 
     public float Power => _burningGhoulScriptableObject.Power;
+    public int Health => _burningGhoulScriptableObject.Health;
 
     void Awake()
     {
@@ -53,7 +54,8 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable
             
             // プレイヤーに向かって移動
             transform.Translate(direction * _speed * Time.deltaTime);
-            
+            Debug.Log("BurningGhoul is moving towards the player.");
+
             // スプライトの向きを調整（オプション）
             if (direction.x < 0)
             {
@@ -65,6 +67,4 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable
             }
         }
     }
-
-
 }

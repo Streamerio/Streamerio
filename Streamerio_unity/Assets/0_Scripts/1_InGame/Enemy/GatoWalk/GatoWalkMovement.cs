@@ -16,6 +16,9 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
     private float _jumpTimer = 0f;
     private float _lastAttackTime = -999f;
 
+    private float _detectionRange;
+    private float _stopDistance;
+
     private Transform _player;
     private Rigidbody2D _rigidbody;
 
@@ -27,6 +30,9 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
         _jumpForce = _gatoWalkMovementScriptableObject.JumpForce;
         _jumpInterval = _gatoWalkMovementScriptableObject.JumpInterval;
         _attackCoolTime = _gatoWalkMovementScriptableObject.AttackCoolTime;
+
+        _detectionRange = _gatoWalkMovementScriptableObject.DetectionRange;
+        _stopDistance = _gatoWalkMovementScriptableObject.StopRange;
 
         _jumpTimer = _jumpInterval;
     }
@@ -55,18 +61,36 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
     
     void Update()
     {
-        HandleMovement();
+        FollowPlayer();
         HandleJump();
     }
-    
-    private void HandleMovement()
+
+    private void FollowPlayer()
     {
-        // 常に左方向に高速移動
-        Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.x = _speed;
-        _rigidbody.linearVelocity = velocity;
+        float distanceToPlayer = Vector2.Distance(transform.position, _player.position);
+
+        // 検出範囲内かつ停止距離より遠い場合のみ移動
+        if (distanceToPlayer <= _detectionRange && distanceToPlayer > _stopDistance)
+        {
+            // プレイヤーの方向を計算
+            Vector2 direction = (_player.position - transform.position).normalized;
+
+            // プレイヤーに向かって移動
+            transform.Translate(direction * _speed * Time.deltaTime);
+            Debug.Log("BurningGhoul is moving towards the player.");
+
+            // スプライトの向きを調整（オプション）
+            if (direction.x < 0)
+            {
+                transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            }
+            else
+            {
+                transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            }
+        }
     }
-    
+
     private void HandleJump()
     {
         _jumpTimer -= Time.deltaTime;

@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31655e3746b53014fb2d35788efcda81, type: 3}
   m_Name: GatoWalkScriptableObject
   m_EditorClassIdentifier: 
-  Speed: 1.5
+  Speed: 3
   Power: 10
+  Health: 30
   JumpForce: 8
   JumpInterval: 2
   AttackCoolTime: 0.8
-  MinRelativeSpawnPosX: 10
+  MinRelativeSpawnPosX: 20
   MaxRelativeSpawnPosX: 15
   MinRelativeSpawnPosY: 0
   MaxRelativeSpawnPosY: 0
-  DetectionRange: 8
+  DetectionRange: 20
   StopRange: 0.5

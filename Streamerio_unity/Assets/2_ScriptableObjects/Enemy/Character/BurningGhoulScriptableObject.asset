@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 1.5
   Power: 10
+  Health: 30
   MinRelativeSpawnPosX: 10
   MaxRelativeSpawnPosX: 15
   MinRelativeSpawnPosY: 0
   MaxRelativeSpawnPosY: 0
-  DetectionRange: 8
+  DetectionRange: 15
   StopRange: 0.5
