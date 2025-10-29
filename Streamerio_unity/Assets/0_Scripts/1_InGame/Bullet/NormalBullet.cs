@@ -46,6 +46,7 @@ public class NormalBullet : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
+            Debug.Log("Hit Enemy");
             var enemy = collision.gameObject.GetComponent<EnemyHpManager>();
             if (enemy != null)
             {

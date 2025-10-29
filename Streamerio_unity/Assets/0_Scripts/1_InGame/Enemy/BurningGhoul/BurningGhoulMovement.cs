@@ -14,6 +14,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
 
     private Transform _player;
 
+    private EnemyHpManager _enemyHpManager;
     public float Power => _burningGhoulScriptableObject.Power;
     public int Health => _burningGhoulScriptableObject.Health;
 
@@ -22,6 +23,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
         _speed = _burningGhoulScriptableObject.Speed;
         _detectionRange = _burningGhoulScriptableObject.DetectionRange;
         _stopDistance = _burningGhoulScriptableObject.StopRange;
+        _enemyHpManager = GetComponent<EnemyHpManager>();
     }
 
     void Start()
@@ -29,6 +31,8 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
         // プレイヤーを探す
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         _player = playerObj.transform;
+
+        _enemyHpManager.Initialize(Health);
         
         float randPosX = Random.Range(_burningGhoulScriptableObject.MinRelativeSpawnPosX, _burningGhoulScriptableObject.MaxRelativeSpawnPosX);
         float randPosY = Random.Range(_burningGhoulScriptableObject.MinRelativeSpawnPosY, _burningGhoulScriptableObject.MaxRelativeSpawnPosY);
@@ -54,7 +58,6 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
             
             // プレイヤーに向かって移動
             transform.Translate(direction * _speed * Time.deltaTime);
-            Debug.Log("BurningGhoul is moving towards the player.");
 
             // スプライトの向きを調整（オプション）
             if (direction.x < 0)

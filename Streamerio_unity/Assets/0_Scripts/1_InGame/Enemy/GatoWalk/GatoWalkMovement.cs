@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 
-public class GatoWalkMovement : MonoBehaviour, IAttackable
+public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
 {
     [SerializeField] private GatoWalkScriptableObject _gatoWalkMovementScriptableObject;
 
@@ -22,7 +22,10 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
     private Transform _player;
     private Rigidbody2D _rigidbody;
 
+    private EnemyHpManager _enemyHpManager;
     public float Power => _gatoWalkMovementScriptableObject.Power;
+    public int Health => _gatoWalkMovementScriptableObject.Health;
+
 
     void Awake()
     {
@@ -35,6 +38,8 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
         _stopDistance = _gatoWalkMovementScriptableObject.StopRange;
 
         _jumpTimer = _jumpInterval;
+
+        _enemyHpManager = GetComponent<EnemyHpManager>();
     }
 
     void Start()
@@ -49,8 +54,10 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
         }
 
         // 物理設定
-            _rigidbody.gravityScale = 2f;
+        _rigidbody.gravityScale = 2f;
         _rigidbody.freezeRotation = true;
+
+        _enemyHpManager.Initialize(Health);
 
         float randPosX = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosX, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosX);
         float randPosY = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosY, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosY);
@@ -77,7 +84,6 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
 
             // プレイヤーに向かって移動
             transform.Translate(direction * _speed * Time.deltaTime);
-            Debug.Log("BurningGhoul is moving towards the player.");
 
             // スプライトの向きを調整（オプション）
             if (direction.x < 0)

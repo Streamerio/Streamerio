@@ -16,6 +16,7 @@ public class EnemyHpManager : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
+        Debug.Log($"Enemy took {amount} damage.");
         if (IsDead) return;
         _health -= amount;
         if (_health <= 0)
