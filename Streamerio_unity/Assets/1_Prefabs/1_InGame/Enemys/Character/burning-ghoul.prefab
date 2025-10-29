@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5813405247601079915}
   - component: {fileID: 398202972740722870}
   - component: {fileID: 7651444912312915467}
+  - component: {fileID: 8159115702965081793}
   - component: {fileID: 951967592393679611}
   - component: {fileID: 6895875478511990101}
   m_Layer: 7
@@ -153,7 +154,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ab3d1335756d3748a6128fbccf6b6bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _burningGhoulScriptableObject: {fileID: 11400000, guid: 4445e3dd613e44d45b47ea643bc8e77a, type: 2}
+--- !u!114 &8159115702965081793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384593174560067801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457141c04a46b8042ab9c896fd0f323e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  config: {fileID: 11400000, guid: 4445e3dd613e44d45b47ea643bc8e77a, type: 2}
 --- !u!114 &951967592393679611
 MonoBehaviour:
   m_ObjectHideFlags: 0

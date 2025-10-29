@@ -78,7 +78,6 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
         _player = GameObject.FindGameObjectWithTag("Player")?.transform;
         EnsureConfigFromScopeFallback();
 
-        // 追加確認・保険：初期化が確実に行われるようにここでも Initialize
         if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
         _enemyHpManager.Initialize(Health);
         if (_player == null) throw new System.InvalidOperationException("Player not found in scene.");
