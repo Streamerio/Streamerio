@@ -5,8 +5,7 @@ using VContainer;
 
 public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
 {
-    [SerializeField] private GatoWalkScriptableObject _gatoWalkMovementScriptableObject;
-
+    private GatoWalkScriptableObject _config;
     private float _speed;
     private float _jumpForce;
     private float _jumpInterval;
@@ -23,49 +22,76 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
     private Rigidbody2D _rigidbody;
 
     private EnemyHpManager _enemyHpManager;
-    public float Power => _gatoWalkMovementScriptableObject.Power;
-    public int Health => _gatoWalkMovementScriptableObject.Health;
 
+    public float Power => _config.Power;
+    public int Health => _config.Health;
 
     void Awake()
     {
-        _speed = _gatoWalkMovementScriptableObject.Speed;
-        _jumpForce = _gatoWalkMovementScriptableObject.JumpForce;
-        _jumpInterval = _gatoWalkMovementScriptableObject.JumpInterval;
-        _attackCoolTime = _gatoWalkMovementScriptableObject.AttackCoolTime;
+        _jumpTimer = 0f;
+    }
 
-        _detectionRange = _gatoWalkMovementScriptableObject.DetectionRange;
-        _stopDistance = _gatoWalkMovementScriptableObject.StopRange;
+    [Inject]
+    private void Construct(GatoWalkScriptableObject config, EnemyHpManager enemyHpManager)
+    {
+        if (config == null) throw new System.ArgumentNullException(nameof(config));
+        if (enemyHpManager == null) throw new System.ArgumentNullException(nameof(enemyHpManager));
+
+        _config = config;
+        _enemyHpManager = enemyHpManager;
+
+        _speed = _config.Speed;
+        _jumpForce = _config.JumpForce;
+        _jumpInterval = _config.JumpInterval;
+        _attackCoolTime = _config.AttackCoolTime;
+
+        _detectionRange = _config.DetectionRange;
+        _stopDistance = _config.StopRange;
 
         _jumpTimer = _jumpInterval;
 
-        _enemyHpManager = GetComponent<EnemyHpManager>();
+        _enemyHpManager.Initialize(Health);
+    }
+
+    private void EnsureConfigFromScopeFallback()
+    {
+        if (_config != null) return;
+
+        var scope = GetComponentInParent<GatoWalkLifeTimeScope>(true);
+        if (scope == null) throw new System.InvalidOperationException("GatoWalkLifeTimeScope not found in parent hierarchy.");
+
+        var cfg = scope.Config;
+        if (cfg == null) throw new System.InvalidOperationException("GatoWalkLifeTimeScope.Config is null.");
+
+        _config = cfg;
+        _speed = _config.Speed;
+        _jumpForce = _config.JumpForce;
+        _jumpInterval = _config.JumpInterval;
+        _attackCoolTime = _config.AttackCoolTime;
+        _detectionRange = _config.DetectionRange;
+        _stopDistance = _config.StopRange;
+        _jumpTimer = _jumpInterval;
     }
 
     void Start()
     {
-        _rigidbody = GetComponent<Rigidbody2D>();
+        _player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        EnsureConfigFromScopeFallback();
 
-        // プレイヤーを探す
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            _player = playerObj.transform;
-        }
-
-        // 物理設定
-        _rigidbody.gravityScale = 2f;
-        _rigidbody.freezeRotation = true;
-
+        // 追加確認・保険：初期化が確実に行われるようにここでも Initialize
+        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
         _enemyHpManager.Initialize(Health);
+        if (_player == null) throw new System.InvalidOperationException("Player not found in scene.");
 
-        float randPosX = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosX, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosX);
-        float randPosY = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosY, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosY);
+        float randPosX = Random.Range(_config.MinRelativeSpawnPosX, _config.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_config.MinRelativeSpawnPosY, _config.MaxRelativeSpawnPosY);
         transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
 
-        // AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
+        _rigidbody = GetComponent<Rigidbody2D>();
+        _rigidbody.gravityScale = 2f;
+        _rigidbody.freezeRotation = true;
     }
-    
+
     void Update()
     {
         FollowPlayer();
@@ -76,16 +102,11 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
     {
         float distanceToPlayer = Vector2.Distance(transform.position, _player.position);
 
-        // 検出範囲内かつ停止距離より遠い場合のみ移動
         if (distanceToPlayer <= _detectionRange && distanceToPlayer > _stopDistance)
         {
-            // プレイヤーの方向を計算
             Vector2 direction = (_player.position - transform.position).normalized;
-
-            // プレイヤーに向かって移動
             transform.Translate(direction * _speed * Time.deltaTime);
 
-            // スプライトの向きを調整（オプション）
             if (direction.x < 0)
             {
                 transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -100,35 +121,18 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
     private void HandleJump()
     {
         _jumpTimer -= Time.deltaTime;
-        
-        // 接地時かつジャンプタイマーが0以下の場合ジャンプ
         if (_isGrounded && _jumpTimer <= 0f)
         {
             Jump();
             _jumpTimer = _jumpInterval;
         }
     }
-    
+
     private void Jump()
     {
-        Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.y = _jumpForce;
-        _rigidbody.linearVelocity = velocity;
+        var vel = _rigidbody.linearVelocity;
+        vel.y = _jumpForce;
+        _rigidbody.linearVelocity = vel;
         _isGrounded = false;
-        
-        //Debug.Log("GatoWalk jumped!");
-    }
-    
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // 地面判定（下方向の接触）
-        if (collision.contacts.Length > 0)
-        {
-            Vector2 normal = collision.contacts[0].normal;
-            if (normal.y > 0.7f) // 上向きの法線 = 地面
-            {
-                _isGrounded = true;
-            }
-        }
     }
 }

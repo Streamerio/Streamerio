@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8449293448883861110}
   - component: {fileID: 1468994174554843752}
   - component: {fileID: 8910763696074469947}
+  - component: {fileID: -1516463916998867121}
   - component: {fileID: 5197483903276070194}
   - component: {fileID: 3106905771826119889}
   - component: {fileID: 1222040185213489629}
@@ -22,7 +23,7 @@ GameObject:
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4473947801299940977
 Transform:
@@ -128,7 +129,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa82a4350bef847cf9d3abe211ddf3a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gatoWalkMovementScriptableObject: {fileID: 11400000, guid: afee86ae09e84dd4c946b15b980972cc, type: 2}
+--- !u!114 &-1516463916998867121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4980451966244278551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 020e980bb6c04b54ba87fbb250d987e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  config: {fileID: 11400000, guid: afee86ae09e84dd4c946b15b980972cc, type: 2}
 --- !u!114 &5197483903276070194
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,7 +158,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 50
 --- !u!70 &3106905771826119889
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
