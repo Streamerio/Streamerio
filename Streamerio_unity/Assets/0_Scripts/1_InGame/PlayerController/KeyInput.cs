@@ -37,7 +37,7 @@ public class KeyInput : MonoBehaviour, IController
 
     public void Attack()
     {
-        AudioManager.Instance.PlayAsync(SEType.PlayerAttack, destroyCancellationToken).Forget();
+        // AudioManager.Instance.PlayAsync(SEType.PlayerAttack, destroyCancellationToken).Forget();
         _bulletShooter.Shoot();
     }
 }

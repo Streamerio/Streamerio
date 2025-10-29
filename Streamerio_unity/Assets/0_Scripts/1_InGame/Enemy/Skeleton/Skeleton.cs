@@ -17,12 +17,6 @@ public class Skeleton : MonoBehaviour
     
     private IAudioFacade _audioFacade;
     
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
-    {
-        _audioFacade = audioFacade;
-    }
-
     void Awake()
     {
         _spawnTime = Time.time;              // 追加: 出現時間記録
