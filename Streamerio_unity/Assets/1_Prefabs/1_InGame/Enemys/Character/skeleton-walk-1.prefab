@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 67005030030007672}
   - component: {fileID: 4721090273839344688}
   - component: {fileID: 6820328119204721303}
+  - component: {fileID: 8468001335914110181}
   - component: {fileID: 2189544634329675210}
   - component: {fileID: 8894179854398154658}
   m_Layer: 7
@@ -139,7 +140,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5244e09c65b81734181d32365bc761f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skeltonScriptableObject: {fileID: 11400000, guid: 493856dc88169bb4dac4ecdf61a46627, type: 2}
+--- !u!114 &8468001335914110181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5063151165452527970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfacb015713ea8a4292fb73739be5050, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  config: {fileID: 11400000, guid: 493856dc88169bb4dac4ecdf61a46627, type: 2}
 --- !u!114 &2189544634329675210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,7 +169,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 50
 --- !u!50 &7895058361806084222
 Rigidbody2D:
   serializedVersion: 5
