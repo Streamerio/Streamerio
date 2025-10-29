@@ -50,7 +50,7 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable
         float randPosY = Random.Range(_gatoWalkMovementScriptableObject.MinRelativeSpawnPosY, _gatoWalkMovementScriptableObject.MaxRelativeSpawnPosY);
         transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
 
-        AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
+        // AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
     }
     
     void Update()

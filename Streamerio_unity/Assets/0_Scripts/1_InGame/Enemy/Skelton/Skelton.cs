@@ -47,7 +47,7 @@ public class Skelton : MonoBehaviour, IAttackable, IHealth
         float randPosY = Random.Range(_skeltonScriptableObject.MinRelativeSpawnPosY, _skeltonScriptableObject.MaxRelativeSpawnPosY);
         transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
 
-        AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
+        // AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
     }
 
     void Update()
