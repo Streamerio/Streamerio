@@ -28,4 +28,18 @@ const (
 	//     "ended_at": "2025-10-05T12:00:00Z"
 	//   }
 	ChannelGameEnd = "game_end_notifications"
+
+	// ChannelCountUpdates: ゲージ更新配信チャネル（SSE用）
+	// REST API → SSE Handler → 視聴者フロントエンド へのカウント更新配信に使用
+	//
+	// Payload 例:
+	//   {
+	//     "type": "count_update",
+	//     "room_id": "01HXXX...",
+	//     "event_type": "skill1",
+	//     "current_count": 3,
+	//     "required_count": 5,
+	//     "viewer_count": 8
+	//   }
+	ChannelCountUpdates = "count_updates"
 )
