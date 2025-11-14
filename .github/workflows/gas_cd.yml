@@ -1,0 +1,69 @@
+name: Deploy to Google Apps Script
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'gas/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: gas/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: gas
+
+      - name: Create .clasp.json
+        run: |
+          cat <<EOF > ./.clasp.json
+          {
+            "scriptId": "${{ secrets.SCRIPT_ID }}",
+            "rootDir": "."
+          }
+          EOF
+        working-directory: gas
+
+      - name: Set up clasp credentials
+        run: |
+          cat <<EOF > ~/.clasprc.json
+          {
+            "token": {
+              "access_token": "${{ secrets.ACCESS_TOKEN }}",
+              "scope": "https://www.googleapis.com/auth/script.projects https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/script.deployments",
+              "token_type": "Bearer",
+              "id_token": "${{ secrets.ID_TOKEN }}",
+              "expiry_date": 1620870307822,
+              "refresh_token": "${{ secrets.REFRESH_TOKEN }}"
+            },
+            "oauth2ClientSettings": {
+              "clientId": "${{ secrets.CLIENT_ID }}",
+              "clientSecret": "${{ secrets.CLIENT_SECRET }}",
+              "redirectUri": "http://localhost"
+            },
+            "isLocalCreds": false
+          }
+          EOF
+
+      - name: Prefetch clasp (optional)
+        run: npx --yes @google/clasp@latest --version
+        working-directory: gas
+
+      - name: Push to Google Apps Script
+        run: npx --yes @google/clasp@latest push
+        working-directory: gas
+
+      - name: Deploy (optional)
+        run: npx --yes @google/clasp@latest deploy --deploymentId ${{ secrets.DEPLOYMENT_ID }}
+        working-directory: gas

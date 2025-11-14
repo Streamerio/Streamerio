@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: ApiConfigSO
   m_EditorClassIdentifier: 
   frontendUrlFormat: https://streamerio.vercel.app/?streamer_id={0}
-  backendUrl: wss://streamario-web-backend-282618030957.asia-northeast1.run.app
+  backendWsUrl: wss://streamario-web-backend-282618030957.asia-northeast1.run.app/ws-unity
   backendHttpUrl: https://streamario-web-backend-282618030957.asia-northeast1.run.app

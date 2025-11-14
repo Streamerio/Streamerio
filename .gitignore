@@ -87,6 +87,10 @@ crashlytics-build.properties
 /Streamerio_unity/[Aa]ssets/[Ss]treamingAssets/aa.meta
 /Streamerio_unity/[Aa]ssets/[Ss]treamingAssets/aa/*
 
+# Unity env
+/Streamerio_unity/[Aa]ssets/[Ee]nv.meta
+/Streamerio_unity/[Aa]ssets/[Ee]nv/
+
 # End of https://www.toptal.com/developers/gitignore/api/unity
 .DS_Store
 
@@ -168,3 +172,11 @@ crashlytics-build.properties
 .serena
 
 .gocache
+
+# GAS
+*/.clasp.json
+*/.clasprc.json
+
+*/AGENTS.md
+
+node_modules/

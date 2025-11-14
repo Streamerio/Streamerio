@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"streamerrio-backend/internal/model"
@@ -14,6 +16,7 @@ import (
 // 主要イベントクエリのトレースログを出力し、運用時の観測性を高める。
 type EventRepository interface {
 	CreateEvent(event *model.Event) error // 単一イベント挿入
+	CreateEventsBatch(events []*model.Event) error // バッチ挿入（効率的）
 	ListEventViewerCounts(roomID string) ([]model.EventAggregate, error)
 	ListEventTotals(roomID string) ([]model.EventTotal, error)
 	ListViewerTotals(roomID string) ([]model.ViewerTotal, error)
@@ -58,6 +61,57 @@ func (r *eventRepository) CreateEvent(event *model.Event) error {
 	}
 	rows, _ := res.RowsAffected()
 	logger.Debug("db.exec", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
+	return nil
+}
+
+// CreateEventsBatch: 複数イベントを効率的にバッチ挿入
+// PostgreSQLのVALUES句を使用して1回のクエリで複数レコードを挿入
+func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	// 現在時刻を設定（未設定の場合）
+	now := time.Now()
+	for _, event := range events {
+		if event.TriggeredAt.IsZero() {
+			event.TriggeredAt = now
+		}
+	}
+
+	// VALUES句を構築
+	values := make([]string, len(events))
+	args := make([]interface{}, 0, len(events)*5)
+
+	for i, event := range events {
+		values[i] = fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)",
+			i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
+		args = append(args, event.RoomID, event.ViewerID, event.EventType, event.TriggeredAt, event.Metadata)
+	}
+
+	q := fmt.Sprintf(`INSERT INTO events (room_id, viewer_id, event_type, triggered_at, metadata) VALUES %s`,
+		strings.Join(values, ","))
+
+	attrs := []any{
+		slog.String("repo", "event"),
+		slog.String("op", "create_events_batch"),
+		slog.Int("count", len(events)),
+	}
+	if len(events) > 0 {
+		attrs = append(attrs,
+			slog.String("room_id", events[0].RoomID),
+			slog.String("event_type", string(events[0].EventType)))
+	}
+	logger := r.logger.With(attrs...)
+
+	start := time.Now()
+	res, err := r.db.Exec(q, args...)
+	if err != nil {
+		logger.Error("db.exec batch failed", slog.Any("error", err))
+		return err
+	}
+	rows, _ := res.RowsAffected()
+	logger.Debug("db.exec batch", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
 	return nil
 }
 

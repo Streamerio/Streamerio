@@ -22,14 +22,14 @@ func NewMemoryCounter() Counter {
 	}
 }
 
-// Increment: カウントを+1して現在値返却
-func (m *memoryCounter) Increment(roomID, eventType string) (int64, error) {
+// Increment: カウントをvalueだけ加算して現在値返却
+func (m *memoryCounter) Increment(roomID, eventType string, value int64) (int64, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.counts[roomID]; !ok {
 		m.counts[roomID] = make(map[string]int64)
 	}
-	m.counts[roomID][eventType]++
+	m.counts[roomID][eventType] += value
 	return m.counts[roomID][eventType], nil
 }
 
@@ -50,6 +50,17 @@ func (m *memoryCounter) Reset(roomID, eventType string) error {
 	if evMap, ok := m.counts[roomID]; ok {
 		evMap[eventType] = 0
 	}
+	return nil
+}
+
+// SetExcess: 閾値超過分をカウントに設定（超過分を捨てない）
+func (m *memoryCounter) SetExcess(roomID, eventType string, excess int64) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.counts[roomID]; !ok {
+		m.counts[roomID] = make(map[string]int64)
+	}
+	m.counts[roomID][eventType] = excess
 	return nil
 }
 
