@@ -74,6 +74,24 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 	cfg := s.configs[eventType]
 	threshold := s.calculateDynamicThreshold(cfg, viewers)
 
+	// 6. Publish count update (SSE)
+	ctx := context.Background()
+	countUpdatePayload := map[string]interface{}{
+		"type":           "count_update",
+		"room_id":        roomID,
+		"event_type":     string(eventType),
+		"current_count":  int(current),
+		"required_count": threshold,
+		"viewer_count":   viewers,
+	}
+	if countMsg, err := json.Marshal(countUpdatePayload); err == nil {
+		if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, countMsg); err != nil {
+			s.logger.Warn("count update publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
+		} else {
+			s.logger.Debug("count update published", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("current", int(current)))
+		}
+	}
+
 	res := &model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
 
 	if int(current) >= threshold {
@@ -108,6 +126,21 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 		res.EffectTriggered = true
 		res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
 		res.CurrentCount = int(excess)
+
+		// 閾値到達後のカウント更新も配信（リセット後の状態を通知）
+		resetUpdatePayload := map[string]interface{}{
+			"type":           "count_update",
+			"room_id":        roomID,
+			"event_type":     string(eventType),
+			"current_count":  int(excess),
+			"required_count": res.NextThreshold,
+			"viewer_count":   viewers,
+		}
+		if resetMsg, err := json.Marshal(resetUpdatePayload); err == nil {
+			if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, resetMsg); err != nil {
+				s.logger.Warn("reset count update publish failed", slog.String("room_id", roomID), slog.Any("error", err))
+			}
+		}
 	}
 	return res, nil
 }
