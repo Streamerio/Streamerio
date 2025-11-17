@@ -50,7 +50,7 @@ public class HpPresenter : MonoBehaviour, IAbility
             if (hp <= 0)
             {
                 Debug.Log("ゲームオーバー");
-                //_stateManager.ChangeState(_gameOverState);
+                _stateManager.ChangeState(_gameOverState);
             }
         }).AddTo(this);
     }
@@ -62,7 +62,7 @@ public class HpPresenter : MonoBehaviour, IAbility
 
     public void Decrease(float amount)
     {
-        _audioFacade.PlayAsync(SEType.PlayerDamage, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerDamage, destroyCancellationToken).Forget();
         _hpModel.Decrease(amount);
     }
 }

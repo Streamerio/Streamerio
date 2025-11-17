@@ -27,6 +27,10 @@ namespace OutGame.Title
                 .Keyed(StateType.Menu);
             builder.Register<IState, TitleEndState>(Lifetime.Singleton)
                 .Keyed(StateType.TitleEnd);
+            builder.Register<IState, InGameLoadingState>(Lifetime.Singleton)
+                .Keyed(StateType.InGameLoading);
+            builder.Register<IState, ToInGameState>(Lifetime.Singleton)
+                .Keyed(StateType.ToInGame);
 
             builder.Register<ITitleScreen, TitleScreenPresenter>(Lifetime.Singleton)
                 .As<IStartable>();

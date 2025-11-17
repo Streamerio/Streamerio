@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: HowToPlayPageResisterSO
   m_EditorClassIdentifier: 
   _pagePanelLifetimeScopes:
-  - {fileID: 7969427659595915259, guid: 8168f9287541f427e95b850723534037, type: 3}
+  - {fileID: 4032092621937875267, guid: 5362b61e8140e4f62bd2d0b7d6e1d79e, type: 3}
+  - {fileID: 1845007036345310754, guid: 2da09b3bd1eab42d48e709edadda5d04, type: 3}

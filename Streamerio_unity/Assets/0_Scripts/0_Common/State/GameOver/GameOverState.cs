@@ -27,8 +27,7 @@ namespace Common.State
         
         public async UniTask ExitAsync(CancellationToken ct)
         {
-            _overlayService.CloseTop();
-            await UniTask.WaitForEndOfFrame(cancellationToken: ct);
+            await _loadingScreen.ShowAsync(ct);
         }
     }
 }

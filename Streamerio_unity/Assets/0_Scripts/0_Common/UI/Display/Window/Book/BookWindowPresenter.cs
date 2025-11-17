@@ -23,8 +23,6 @@ namespace Common.UI.Display.Window.Book
         private IBookWindowModel _bookWindowModel;
         private ChapterType _initialChapterType;
         
-        private IBookAnimation _bookAnimation;
-
         private IStateManager _stateManager;
         private IState _nextState;
 
@@ -45,7 +43,6 @@ namespace Common.UI.Display.Window.Book
             base.AttachContext(context);
             _bookWindowModel = context.BookWindowModel;
             _initialChapterType = context.InitialChapterType;
-            _bookAnimation = context.BookAnimation;
             _stateManager = context.StateManager;
             _nextState = context.NextState;
         }
@@ -93,7 +90,7 @@ namespace Common.UI.Display.Window.Book
         {
             View.SetInteractable(false);
             await _bookWindowModel.CurrentPagePanelIterator.GetCurrentPage().HideAsync(ct);
-            await _bookAnimation.PlayTurnRightAsync(ct);
+            await View.PlayTurnRightAsync(ct);
             await _bookWindowModel.CurrentPagePanelIterator.MoveNext().ShowAsync(ct);
             View.SetInteractable(true);
         }
@@ -110,7 +107,7 @@ namespace Common.UI.Display.Window.Book
         {
             View.SetInteractable(false);
             await _bookWindowModel.CurrentPagePanelIterator.GetCurrentPage().HideAsync(ct);
-            await _bookAnimation.PlayTurnLeftAsync(ct);
+            await View.PlayTurnLeftAsync(ct);
             await _bookWindowModel.CurrentPagePanelIterator.MoveBack().ShowAsync(ct);
             View.SetInteractable(true);
         }
@@ -213,7 +210,6 @@ namespace Common.UI.Display.Window.Book
     {
         public IBookWindowModel BookWindowModel;
         public ChapterType InitialChapterType;
-        public IBookAnimation BookAnimation;
         public IStateManager StateManager;
         public IState NextState;
     }

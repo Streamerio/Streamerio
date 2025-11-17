@@ -11,23 +11,27 @@ namespace Common.State
     {
         private ILoadingScreen _loadingScreen;
         private IWindowService _windowService;
+        private IWebSocketManager _webSocketManager;
         
         [Inject]
-        public void Construct(ILoadingScreen loadingScreen, IWindowService overlayService)
+        public void Construct(ILoadingScreen loadingScreen, IWindowService overlayService, IWebSocketManager webSocketManager)
         {
             _loadingScreen = loadingScreen;
             _windowService = overlayService;
+            _webSocketManager = webSocketManager;
         }
         
         public async UniTask EnterAsync(CancellationToken ct)
         {
+            await UniTask.WhenAny(UniTask.WaitWhile(() => _webSocketManager.GameEndSummary == null, cancellationToken: ct),
+                UniTask.WaitForSeconds(5f, cancellationToken: ct));
             await _loadingScreen.HideAsync(ct);
             await _windowService.OpenDisplayAsync<IResultWindow>(ct);
         }
         
         public async UniTask ExitAsync(CancellationToken ct)
         {
-            await _windowService.CloseTopAsync(ct);
+            await _loadingScreen.ShowAsync(ct);
         }
     }
 }

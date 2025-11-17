@@ -315,6 +315,9 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  _moveRectTransform: {fileID: 6918244042516798048}
+  _showAnimationParam: {fileID: 11400000, guid: 14c89ab63f5dd40679aa78a7b11bce44, type: 2}
+  _hideAnimationParam: {fileID: 11400000, guid: 83a2768d368ac492aa49812217c03fc9, type: 2}
 --- !u!114 &1657973801663770628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,9 +333,6 @@ MonoBehaviour:
   _gameObject: {fileID: 8965396356575428596}
   _rectTransform: {fileID: 3869598167672052642}
   _canvasGroup: {fileID: 5174833849319570754}
-  _moveRectTransform: {fileID: 6918244042516798048}
-  _showAnimationParam: {fileID: 11400000, guid: 14c89ab63f5dd40679aa78a7b11bce44, type: 2}
-  _hideAnimationParam: {fileID: 11400000, guid: 83a2768d368ac492aa49812217c03fc9, type: 2}
 --- !u!1001 &3612991353606422584
 PrefabInstance:
   m_ObjectHideFlags: 0

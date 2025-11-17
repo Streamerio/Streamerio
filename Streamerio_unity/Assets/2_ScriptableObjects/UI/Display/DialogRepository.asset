@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _displayLifetimeScopes:
   - {fileID: 7121334482047994004, guid: de25ff0dee8cb49bf8610fe416d89016, type: 3}
+  - {fileID: 4222225847981763599, guid: fc8e1dc8aadbe488ea250989cc15c896, type: 3}

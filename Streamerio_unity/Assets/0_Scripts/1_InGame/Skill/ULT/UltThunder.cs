@@ -75,7 +75,7 @@ public class UltThunder : MonoBehaviour
         // 縦方向（上から下）への攻撃開始
         StartThunderStrike();
 
-        //_audioFacade.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
     }
 
     void Update()

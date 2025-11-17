@@ -89,6 +89,15 @@ public class GatoWalkMovement : MonoBehaviour, IAttackable, IHealth
         _rigidbody = GetComponent<Rigidbody2D>();
         _rigidbody.gravityScale = 2f;
         _rigidbody.freezeRotation = true;
+<<<<<<< HEAD
+=======
+
+        _attackManager = GetComponent<EnemyAttackManager>();
+        _jumpTimer = jumpInterval;
+        
+        transform.position += new Vector3(_player.position.x + 10, _player.position.y + 1, 0); // 少し上にずらして生成
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
+>>>>>>> game-di
     }
 
     void Update()

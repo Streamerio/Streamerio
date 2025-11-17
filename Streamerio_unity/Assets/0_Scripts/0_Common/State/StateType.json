@@ -12,10 +12,6 @@
     "Num": 3
   },
   {
-    "Name": "FirstPlay",
-    "Num": 20
-  },
-  {
     "Name": "InGame",
     "Num": 6
   },
@@ -60,7 +56,19 @@
     "Num": 19
   },
   {
+    "Name": "FirstPlay",
+    "Num": 20
+  },
+  {
     "Name": "PlayFromTitle",
     "Num": 21
+  },
+  {
+    "Name": "ToInGame",
+    "Num": 22
+  },
+  {
+    "Name": "InGameLoading",
+    "Num": 23
   }
 ]

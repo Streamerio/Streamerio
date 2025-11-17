@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2779366d964794c14a30d14767174ba0, type: 3}
+  m_Name: MasterDataSO
+  m_EditorClassIdentifier: 
+  _timeOutTime: 10
+  _gameSetting:
+    TimeLimit: 100
+  _playerStatus:
+    HP: 100
+    AttackPower: 10
+    Speed: 10
+    JumpPower: 50
+  _ultStatusDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value:
+        AttackPower: 10
+    - _key: 1
+      _value:
+        AttackPower: 20
+    - _key: 2
+      _value:
+        AttackPower: 30
+    - _key: 3
+      _value:
+        AttackPower: 50
+  _enemyStatusDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value:
+        HP: 20
+        AttackPower: 5
+        Speed: 10
+    - _key: 1
+      _value:
+        HP: 10
+        AttackPower: 5
+        Speed: 20
+    - _key: 2
+      _value:
+        HP: 10
+        AttackPower: 10
+        Speed: 10

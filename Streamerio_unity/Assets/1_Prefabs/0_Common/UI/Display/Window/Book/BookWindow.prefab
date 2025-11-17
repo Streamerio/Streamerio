@@ -197,7 +197,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4340314849751866102}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: d2fe9e2a15f9a4c35a62c4fa6657d07e, type: 2}
   m_CullingMode: 0
@@ -262,8 +262,10 @@ MonoBehaviour:
     - {fileID: 7606696854660710323}
     _showPartsAnimationParam: {fileID: 11400000, guid: 6d3828e2e43144ff6bf3c5f9d16d7986, type: 2}
     _hidePartsAnimationParam: {fileID: 11400000, guid: 926dc35022d8648598b96f89f6b73327, type: 2}
+  _bookImage: {fileID: 8402231531823274064}
+  _bookTurnLeftAnimationParamSO: {fileID: 11400000, guid: 72d1e3d1e4145483ab8b2461c8223908, type: 2}
+  _bookTurnRightAnimationParamSO: {fileID: 11400000, guid: c2201641bb51e469ebbf87d8aeb2e9f9, type: 2}
   _initialChapterType: 2
-  _bookAnimation: {fileID: 2784480414958435557}
   _chapterPanelDict:
     _keyValuePairs:
     - _key: 2
@@ -290,7 +292,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4340314849751866102}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 31d1e50777fe14b8d826bed0d0301a16, type: 3}
   m_Name: 

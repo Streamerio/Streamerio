@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!224 &1362441618 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3090649751943104872, guid: cf014cc15cdfb42ac9a018ce642f9419, type: 3}
+  m_PrefabInstance: {fileID: 4576140279803416498}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1479045038
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,7 +186,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 1
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -256,11 +261,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!224 &1491719445 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 3090649751943104872, guid: cf014cc15cdfb42ac9a018ce642f9419, type: 3}
-  m_PrefabInstance: {fileID: 4576140279803416498}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1558745029
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,7 +373,7 @@ MonoBehaviour:
     TypeName: GlobalLifetimeScope
   autoRun: 1
   autoInjectGameObjects: []
-  _background: {fileID: 1491719445}
+  _background: {fileID: 1362441618}
   _closeAnimationParam: {fileID: 11400000, guid: 8d3d09a55ab554a3c9eb43943f19e867, type: 2}
 --- !u!4 &1710400704
 Transform:

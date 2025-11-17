@@ -51,10 +51,10 @@ namespace Common.UI.Loading
 
         public async UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct)
         {
+            View.SetInteractable(true);
             _isShow = true;
             _playerAnimator.enabled = true;
             await View.ShowAsync(centerCirclePosition, ct);
-            View.SetInteractable(true);
         }
         
         public override void Show()

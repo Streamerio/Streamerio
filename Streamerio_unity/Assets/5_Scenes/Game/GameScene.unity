@@ -267,6 +267,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 161908404}
   m_CullTransparentMesh: 1
+--- !u!1 &212989616 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6142625539451368189, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+  m_PrefabInstance: {fileID: 1272844387}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &212989619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212989616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e82ca380de4b4ed28bac4c993edcb250, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &249727131
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,7 +392,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &563864948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -759,6 +776,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _mainCamera
+      value: 
+      objectReference: {fileID: 6583393167888128269}
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _hpPresenter
+      value: 
+      objectReference: {fileID: 873724054}
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _zoomAnimationParam
+      value: 
+      objectReference: {fileID: 11400000, guid: 73826e1b76019479a863c55dc9cd604c, type: 2}
     - target: {fileID: 5539085536265280541, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -806,7 +835,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6142625539451368189, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 212989619}
   m_SourcePrefab: {fileID: 100100000, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
 --- !u!1001 &1274182984
 PrefabInstance:
@@ -1842,6 +1874,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DebugMonitor
       objectReference: {fileID: 0}
+    - target: {fileID: 321959220967003277, guid: e4ee1d08e8ff4dc49ab0a28fb67ae9bd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1647560628865472998, guid: e4ee1d08e8ff4dc49ab0a28fb67ae9bd, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -2214,7 +2250,16 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+<<<<<<< HEAD
     m_RemovedComponents: []
+=======
+    - target: {fileID: 9026553274122012077, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
+      propertyPath: near clip plane
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2430952927219464432, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
+>>>>>>> game-di
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1491685920584185645, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
@@ -2231,6 +2276,11 @@ PrefabInstance:
 --- !u!4 &6583393167888128268 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1491685920584185645, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
+  m_PrefabInstance: {fileID: 6583393167888128267}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &6583393167888128269 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 9026553274122012077, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
   m_PrefabInstance: {fileID: 6583393167888128267}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &6583393167888128271 stripped
@@ -2404,6 +2454,10 @@ PrefabInstance:
     - target: {fileID: 8035281133650255358, guid: d075c21bf6b42466bb602705be117d46, type: 3}
       propertyPath: m_Name
       value: InGameCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 8035281133650255358, guid: d075c21bf6b42466bb602705be117d46, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

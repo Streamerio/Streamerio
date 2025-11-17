@@ -41,30 +41,6 @@ namespace Common.UI.Dialog
     public abstract class DialogViewBase : DisplayViewBase, IDialogView
     {
         /// <summary>
-        /// 【目的】移動アニメーションの対象 RectTransform を保持する。
-        /// 【理由】アニメーション再生のたびに GetComponent を呼ぶコストを避け、演出の初期位置制御を即座に行うため。
-        /// </summary>
-        [SerializeField, LabelText("動かすオブジェクト")]
-        [Tooltip("ダイアログ本体となる RectTransform。表示/非表示時に移動させる。")]
-        private RectTransform _moveRectTransform;
-
-        [Header("アニメーション")]
-        /// <summary>
-        /// 【目的】ダイアログ表示時の移動経路と補間設定を ScriptableObject から受け取る。
-        /// 【理由】演出パラメータを Play しやすい形で保持し、デザイナーがパラメータ差し替えできるようにするため。
-        /// </summary>
-        [SerializeField, LabelText("表示アニメーション")]
-        [Tooltip("表示時に辿る PathAnimation 設定。")]
-        private PathAnimationParamSO _showAnimationParam;
-        /// <summary>
-        /// 【目的】ダイアログ非表示時の移動経路と補間設定を保持する。
-        /// 【理由】表示と対になる演出を同一ファイルで管理し、挙動差異が発生しないようにするため。
-        /// </summary>
-        [SerializeField, LabelText("非表示アニメーション")]
-        [Tooltip("非表示時に辿る PathAnimation 設定。")]
-        private PathAnimationParamSO _hideAnimationParam;
-
-        /// <summary>
         /// 【目的】背景 Presenter の参照を保持し、表示/非表示時に即座に呼び出せるようにする。
         /// 【理由】依存注入を通じて受け取った後もメソッド内で繰り返し解決せずに済ませるため。
         /// </summary>
@@ -74,16 +50,6 @@ namespace Common.UI.Dialog
         /// 【理由】Construct 以降でイベント購読を行う際に、解決済みインスタンスへ直接アクセスするため。
         /// </summary>
         private ICommonButton _closeButton;
-        /// <summary>
-        /// 【目的】表示アニメーションの実行コンポーネントをキャッシュする。
-        /// 【理由】毎回インスタンス生成せずに済ませ、GC 発生や初回遅延を防ぐため。
-        /// </summary>
-        private PathAnimation _showAnimation;
-        /// <summary>
-        /// 【目的】非表示アニメーションの実行コンポーネントをキャッシュする。
-        /// 【理由】Hide のたびに新規生成すると GC が発生し、演出がカクつくため。
-        /// </summary>
-        private PathAnimation _hideAnimation;
 
         /// <summary>
         /// 【目的】背景 Presenter を公開し、Presenter 層がフェード制御やクリック検知を扱えるようにする。
@@ -98,24 +64,32 @@ namespace Common.UI.Dialog
         public ICommonButton CloseButton => _closeButton;
 
         /// <summary>
+        /// 【目的】表示アニメーションの実行コンポーネントをキャッシュする。
+        /// 【理由】毎回インスタンス生成せずに済ませ、GC 発生や初回遅延を防ぐため。
+        /// </summary>
+        private IUIAnimation _showAnimation;
+        /// <summary>
+        /// 【目的】非表示アニメーションの実行コンポーネントをキャッシュする。
+        /// 【理由】Hide のたびに新規生成すると GC が発生し、演出がカクつくため。
+        /// </summary>
+        private IUIAnimation _hideAnimation;
+        /// <summary>
         /// 【目的】背景 Presenter と閉じるボタンを注入し、表示/非表示アニメーションのコンポーネントを初期化する。
         /// 【理由】PathAnimationComponent を事前構築しておくことで、表示タイミングで追加割り当てを発生させずに再生したいため。
         /// </summary>
         /// <param name="background">フェードおよび入力ブロックを担当する背景 Presenter。</param>
         /// <param name="closeButton">ユーザーへ閉じる操作を提供する共通ボタン Presenter。</param>
         [Inject]
-        public void Construct(IDisplayBackground background, [Key(ButtonType.Close)]ICommonButton closeButton)
+        public void Construct(IDisplayBackground background,
+            [Key(ButtonType.Close)]ICommonButton closeButton,
+            [Key(AnimationType.Show)] IUIAnimation showAnimation,
+            [Key(AnimationType.Hide)] IUIAnimation hideAnimation)
         {
             _background = background;
             _closeButton = closeButton;
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
             
-            _showAnimation = new PathAnimation(_moveRectTransform, _showAnimationParam);
-            _hideAnimation = new PathAnimation(_moveRectTransform, _hideAnimationParam);
+            _showAnimation = showAnimation;
+            _hideAnimation = hideAnimation;
         }
         
         /// <summary>
@@ -127,7 +101,7 @@ namespace Common.UI.Dialog
         /// <returns>【戻り値】アニメーション完了まで待機する UniTask。</returns>
         public override async UniTask ShowAsync(CancellationToken ct)
         {
-            _moveRectTransform.anchoredPosition = _showAnimationParam.Path[0];
+            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             await _background.ShowAsync(ct);
             await _showAnimation.PlayAsync(ct);
         }
@@ -139,7 +113,8 @@ namespace Common.UI.Dialog
         /// </summary>
         public override void Show()
         {
-            _moveRectTransform.anchoredPosition = _showAnimationParam.Path[^1];
+            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
+            _showAnimation.PlayImmediate();
             _background.Show();
         }
 
@@ -152,7 +127,6 @@ namespace Common.UI.Dialog
         /// <returns>【戻り値】アニメーション完了を表す UniTask。</returns>
         public override async UniTask HideAsync(CancellationToken ct)
         {
-            _moveRectTransform.anchoredPosition = _hideAnimationParam.Path[0];
             await _background.HideAsync(ct);
             await _hideAnimation.PlayAsync(ct);
         }
@@ -165,7 +139,7 @@ namespace Common.UI.Dialog
         public override void Hide()
         {
             _background.Hide();
-            _moveRectTransform.anchoredPosition = _hideAnimationParam.Path[^1];
+            _hideAnimation.PlayImmediate();
         }
     }
 }

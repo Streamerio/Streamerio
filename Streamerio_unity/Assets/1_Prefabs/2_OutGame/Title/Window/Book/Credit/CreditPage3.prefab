@@ -40,6 +40,36 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1660984117225984180, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_text
+      value: 'ZLinq (MIT License)
+
+        Copyright (c) Yoshifumi Kawai
+
+        Copyright
+        (c) Cysharp, Inc.
+
+
+        Alchemy (MIT License)
+
+        Copyright (c)
+        2025 Yusuke Nakada'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2718453585392661851, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_text
+      value: 'VContainer (MIT License)
+
+        Copyright (c) 2020 hadashiA
+
+
+        MiniJSON
+        (MIT License)
+
+        Copyright (c) 2013 Calvin Rien
+
+        Based on code
+        by Patrick van Bergen'
+      objectReference: {fileID: 0}
     - target: {fileID: 3399503313857232573, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -62,25 +92,60 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3460564588488095135, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_text
-      value: "ZString \u30FC MIT License\nCopyright (c) 2020 Cysharp, Inc.\n\nPermission
-        is hereby granted, free of charge, to any person obtaining a copy\nof this
-        software and associated documentation files (the \"Software\"), to deal\nin
-        the Software without restriction, including without limitation the rights\nto
-        use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies
-        of the Software, and to permit persons to whom the Software is\nfurnished
-        to do so, subject to the following conditions:\n\nThe above copyright notice
-        and this permission notice shall be included in all\ncopies or substantial
-        portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT
-        WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE
-        WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-        IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-        DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-        ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-        DEALINGS IN THE\nSOFTWARE."
+      value: 'ZString - MIT License
+
+        Copyright (c) 2020 Cysharp, Inc.
+
+
+        Permission
+        is hereby granted, free of charge, to any person obtaining a copy
+
+        of
+        this software and associated documentation files (the "Software"), to deal
+
+        in
+        the Software without restriction, including without limitation the rights
+
+        to
+        use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+        copies
+        of the Software, and to permit persons to whom the Software is
+
+        furnished
+        to do so, subject to the following conditions:
+
+
+        The above copyright
+        notice and this permission notice shall be included in all
+
+        copies
+        or substantial portions of the Software.
+
+
+        THE SOFTWARE IS PROVIDED
+        "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+        IMPLIED, INCLUDING
+        BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+        FITNESS FOR
+        A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+        AUTHORS
+        OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+        LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+        OUT
+        OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+        SOFTWARE.'
       objectReference: {fileID: 0}
     - target: {fileID: 4415558389989568402, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Size
-      value: 0.6415034
+      value: 0.65093726
       objectReference: {fileID: 0}
     - target: {fileID: 4415558389989568402, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Value
@@ -110,9 +175,13 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6237804492859496813, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7261129173200203361, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Size
-      value: 0.7358421
+      value: 0.65093726
       objectReference: {fileID: 0}
     - target: {fileID: 7261129173200203361, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Value
@@ -120,21 +189,58 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7603735735889359980, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_text
-      value: "R3 \u2014 MIT License\nCopyright (c) 2024 Cysharp, Inc.\n\nPermission
-        is hereby granted, free of charge, to any person obtaining a copy\nof this
-        software and associated documentation files (the \"Software\"), to deal\nin
-        the Software without restriction, including without limitation the rights\nto
-        use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies
-        of the Software, and to permit persons to whom the Software is\nfurnished
-        to do so, subject to the following conditions:\n\nThe above copyright notice
-        and this permission notice shall be included in all\ncopies or substantial
-        portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT
-        WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE
-        WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-        IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-        DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-        ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-        DEALINGS IN THE\nSOFTWARE.\n"
+      value: 'R3 - MIT License
+
+        Copyright (c) 2024 Cysharp, Inc.
+
+
+        Permission
+        is hereby granted, free of charge, to any person obtaining a copy
+
+        of
+        this software and associated documentation files (the "Software"), to deal
+
+        in
+        the Software without restriction, including without limitation the rights
+
+        to
+        use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+        copies
+        of the Software, and to permit persons to whom the Software is
+
+        furnished
+        to do so, subject to the following conditions:
+
+
+        The above copyright
+        notice and this permission notice shall be included in all
+
+        copies
+        or substantial portions of the Software.
+
+
+        THE SOFTWARE IS PROVIDED
+        "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+        IMPLIED, INCLUDING
+        BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+        FITNESS FOR
+        A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+        AUTHORS
+        OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+        LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+        OUT
+        OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+        SOFTWARE.
+
+'
       objectReference: {fileID: 0}
     - target: {fileID: 8552043452865003342, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.y

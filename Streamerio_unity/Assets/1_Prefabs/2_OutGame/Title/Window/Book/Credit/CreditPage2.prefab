@@ -100,6 +100,19 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1660984117225984180, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_text
+      value: 'UniTask (MIT License)
+
+        Copyright (c) 2019 Yoshifumi Kawai /
+        Cysharp, Inc.
+
+
+        ObservableCollections (MIT License)
+
+        Copyright
+        (c) 2021 Cysharp, Inc.'
+      objectReference: {fileID: 0}
     - target: {fileID: 1814597135289800119, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -135,6 +148,18 @@ PrefabInstance:
     - target: {fileID: 2598364011452288883, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2718453585392661851, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_text
+      value: 'R3 (MIT License)
+
+        Copyright (c) 2024 Cysharp, Inc.
+
+
+        ZString
+        (MIT License)
+
+        Copyright (c) 2020 Cysharp, Inc.'
       objectReference: {fileID: 0}
     - target: {fileID: 2777420458476081786, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.y
@@ -178,21 +203,57 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3460564588488095135, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_text
-      value: "ObservableCollections \u2014 MIT License\nCopyright (c) 2021 Cysharp,
-        Inc.\n\nPermission is hereby granted, free of charge, to any person obtaining
-        a copy\nof this software and associated documentation files (the \"Software\"),
-        to deal\nin the Software without restriction, including without limitation
-        the rights\nto use, copy, modify, merge, publish, distribute, sublicense,
-        and/or sell\ncopies of the Software, and to permit persons to whom the Software
-        is\nfurnished to do so, subject to the following conditions:\n\nThe above
-        copyright notice and this permission notice shall be included in all\ncopies
-        or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS
-        IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT
-        LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE
-        AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS
-        BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION
-        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH
-        THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+      value: 'ObservableCollections - MIT License
+
+        Copyright (c) 2021 Cysharp,
+        Inc.
+
+
+        Permission is hereby granted, free of charge, to any person
+        obtaining a copy
+
+        of this software and associated documentation files
+        (the "Software"), to deal
+
+        in the Software without restriction, including
+        without limitation the rights
+
+        to use, copy, modify, merge, publish,
+        distribute, sublicense, and/or sell
+
+        copies of the Software, and
+        to permit persons to whom the Software is
+
+        furnished to do so, subject
+        to the following conditions:
+
+
+        The above copyright notice and this
+        permission notice shall be included in all
+
+        copies or substantial
+        portions of the Software.
+
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+        WARRANTY OF ANY KIND, EXPRESS OR
+
+        IMPLIED, INCLUDING BUT NOT LIMITED
+        TO THE WARRANTIES OF MERCHANTABILITY,
+
+        FITNESS FOR A PARTICULAR PURPOSE
+        AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+        AUTHORS OR COPYRIGHT
+        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+        LIABILITY, WHETHER
+        IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+        OUT OF
+        OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+        SOFTWARE.'
       objectReference: {fileID: 0}
     - target: {fileID: 3810363626258514773, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Size
@@ -224,19 +285,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4415558389989568402, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Size
-      value: 0.71068287
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4415558389989568402, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Value
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4869205534756900004, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: -215
-      objectReference: {fileID: 0}
-    - target: {fileID: 4869205534756900004, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -12.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4989662327684167378, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.x
@@ -296,6 +349,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6237804492859496813, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6237804492859496813, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6375081327519721783, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
@@ -396,7 +453,7 @@ PrefabInstance:
       objectReference: {fileID: 968898699081592503, guid: 3d62bf0d7d992b841bbaae3de5b16e62, type: 2}
     - target: {fileID: 7261129173200203361, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Size
-      value: 0.7358421
+      value: 0.65093726
       objectReference: {fileID: 0}
     - target: {fileID: 7261129173200203361, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_Value
@@ -408,16 +465,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7603735735889359980, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_text
-      value: "UniTask \u2014 MIT License\nCopyright (c) 2019 Yoshifumi Kawai / Cysharp,
-        Inc.\n\nPermission is hereby granted, free of charge, to \nany person obtaining
-        a copy\nof this software and associated documentation files (the \u201CSoftware\u201D),
-        to deal\nin the Software without restriction, including without limitation
-        the rights to\nuse, copy, modify, merge, publish, distribute, sublicense,
-        and/or sell copies\nof the Software, and to permit persons to whom the Software
-        is furnished to do so,\nsubject to the following conditions:\n\nThe above
-        copyright notice and this permission notice shall be included in all\ncopies
-        or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \u201CAS
-        IS\u201D, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED..."
+      value: 'UniTask (MIT License)
+
+        Copyright (c) 2019 Yoshifumi Kawai /
+        Cysharp, Inc.
+
+'
       objectReference: {fileID: 0}
     - target: {fileID: 8128414477729649805, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
       propertyPath: m_text
@@ -569,7 +622,42 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 450135763498436319, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4950754965296286922, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6253937757348468838}
   m_SourcePrefab: {fileID: 100100000, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+--- !u!1 &9026262529915232240 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4950754965296286922, guid: 5c27d88a2eac5431d9237489d5a5976a, type: 3}
+  m_PrefabInstance: {fileID: 4176847429787226938}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6253937757348468838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9026262529915232240}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0

@@ -10,15 +10,10 @@ namespace InGame.Setting
         private BGMType _bgm;
         public BGMType BGM => _bgm;
         
-        [SerializeField]
-        private float _timeLimit = 300f;
-        public float TimeLimit => _timeLimit;
-        
     }
     
     public interface IInGameSetting
     {
         BGMType BGM { get; }
-        float TimeLimit { get; }
     }
 }

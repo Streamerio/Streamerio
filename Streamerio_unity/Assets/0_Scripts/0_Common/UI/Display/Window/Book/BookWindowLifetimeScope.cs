@@ -1,38 +1,34 @@
 using System;
 using System.Collections.Generic;
-using Alchemy.Inspector;
 using Common.State;
+using Common.UI.Animation;
 using Common.UI.Display.Window.Book.Chapter;
 using Common.UI.Display.Window.Book.Page;
 using Common.UI.Part.Button;
 using UnityEngine;
+using UnityEngine.UI;
 using VContainer;
-using VContainer.Unity;
 using ZLinq;
 
 namespace Common.UI.Display.Window.Book
 {
-    [RequireComponent(typeof(BookAnimationComponent))]
     public class BookWindowLifetimeScope: WindowLifetimeScopeBase<IBookWindow, BookWindowPresenter, IBookWindowView, BookWindowContext>
     {
         [SerializeField]
-        private ChapterType _initialChapterType;
+        private Image _bookImage;
+        [SerializeField]
+        private BookTurnAnimationParamSO _bookTurnLeftAnimationParamSO;
+        [SerializeField]
+        private BookTurnAnimationParamSO _bookTurnRightAnimationParamSO;
         
-        [SerializeField, ReadOnly]
-        private BookAnimationComponent _bookAnimation;
+        [SerializeField]
+        private ChapterType _initialChapterType;
         
         [SerializeField]
         private SerializeDictionary<ChapterType, ChapterData> _chapterPanelDict;
 
         [SerializeField]
         private StateType _nextStateOnClose;
-        
-#if UNITY_EDITOR
-        protected void OnValidate()
-        {
-            _bookAnimation ??= GetComponent<BookAnimationComponent>();
-        }
-#endif
         
         protected override void Configure(IContainerBuilder builder)
         {
@@ -46,7 +42,12 @@ namespace Common.UI.Display.Window.Book
                 .Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
                 .Keyed(ButtonType.BackPage);
             
-            builder.RegisterComponent<IBookAnimation>(_bookAnimation); ;
+            builder
+                .RegisterInstance<IUIAnimation>(new BookTurnAnimation(_bookImage, _bookTurnLeftAnimationParamSO))
+                .Keyed(AnimationType.TurnLeft);
+            builder
+                .RegisterInstance<IUIAnimation>(new BookTurnAnimation(_bookImage, _bookTurnRightAnimationParamSO))
+                .Keyed(AnimationType.TurnRight);
             
             Dictionary<ChapterType, IPagePanelIterator> pagePanelIteratorDict = _chapterPanelDict.ToDictionary()
                 .AsValueEnumerable()
@@ -74,7 +75,6 @@ namespace Common.UI.Display.Window.Book
                 View = resolver.Resolve<IBookWindowView>(),
                 BookWindowModel = resolver.Resolve<IBookWindowModel>(),
                 InitialChapterType = _initialChapterType,
-                BookAnimation = resolver.Resolve<IBookAnimation>(),
                 StateManager = resolver.Resolve<IStateManager>(),
                 NextState = resolver.Resolve<IState>(_nextStateOnClose),
             };

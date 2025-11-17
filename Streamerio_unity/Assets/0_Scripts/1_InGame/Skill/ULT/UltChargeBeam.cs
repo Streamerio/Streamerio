@@ -56,7 +56,7 @@ public class UltChargeBeam : MonoBehaviour
         // チャージエフェクト（色変化など）
         StartChargingEffect();
         
-        //_audioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
     }
 
     void Update()

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Common.UI.Display;
 using InGame.QRCode.UI;
+using OutGame.Network;
 using UnityEngine;
 
 namespace Common.UI.Dialog
@@ -28,6 +29,7 @@ namespace Common.UI.Dialog
             return new Dictionary<Type, Type>
             {
                 {typeof(IQRCodeDialog), typeof(QRCodeDialogLifetimeScope)},
+                {typeof(IReconnectionDialog), typeof(ReconnectionDialogLifetimeScope)},
             };
         }
     }
