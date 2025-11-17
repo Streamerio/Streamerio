@@ -224,12 +224,6 @@ namespace Common.UI.Display
     /// </summary>
     public abstract class DisplayViewBase : UIBehaviourBase, IDisplayView, IInitializable
     {
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            CanvasGroup.alpha = UIUtil.DEFAULT_HIDE_ALPHA;
-        }
-        
         public virtual void Initialize()
         {
             

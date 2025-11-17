@@ -1,6 +1,5 @@
 using UnityEngine;
 using R3;
-using VContainer;
 
 public class SkillRandomActivator : MonoBehaviour
 {
@@ -9,14 +8,6 @@ public class SkillRandomActivator : MonoBehaviour
     [SerializeField] private WeakSkillScriptableObject _weakSkillScriptableObject;
     [SerializeField] private GameObject _parentObject;
 
-    private IWebSocketManager _webSocketManager;
-
-    [Inject]
-    public void Construct(IWebSocketManager webSocketManager)
-    {
-        _webSocketManager = webSocketManager;
-    }
-
     void Start()
     {
         Bind();
@@ -24,9 +15,9 @@ public class SkillRandomActivator : MonoBehaviour
 
     private void Bind()
     {
-        _webSocketManager.FrontEventDict[FrontKey.skill3].Subscribe(_ => ActivateStrongSkill());
-        _webSocketManager.FrontEventDict[FrontKey.skill2].Subscribe(_ => ActivateMiddleSkill());
-        _webSocketManager.FrontEventDict[FrontKey.skill1].Subscribe(_ => ActivateWeakSkill());
+        WebsocketManager.Instance.FrontEventDict[FrontKey.skill3].Subscribe(_ => ActivateStrongSkill());
+        WebsocketManager.Instance.FrontEventDict[FrontKey.skill2].Subscribe(_ => ActivateMiddleSkill());
+        WebsocketManager.Instance.FrontEventDict[FrontKey.skill1].Subscribe(_ => ActivateWeakSkill());
     }
     public void ActivateStrongSkill()
     {

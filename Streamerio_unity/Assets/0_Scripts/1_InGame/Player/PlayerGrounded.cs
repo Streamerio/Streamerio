@@ -32,7 +32,7 @@ public class PlayerGrounded : MonoBehaviour
     
     public void OnTriggerExit2D(Collider2D collision)
     {
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
+        //_audioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _isGrounded.Value = false;
     }
 }

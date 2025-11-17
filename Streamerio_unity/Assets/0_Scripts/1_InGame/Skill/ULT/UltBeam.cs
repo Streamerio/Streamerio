@@ -44,7 +44,7 @@ public class UltBeam : MonoBehaviour
         // フレームベースでインターバルを計算
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+        //_audioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     void Update()

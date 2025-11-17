@@ -54,7 +54,7 @@ public class PlayerPresenter : MonoBehaviour
 
     public void Jump()
     {
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
+        //_audioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _view.Jump(_jumpPower.Amount);
     }
 

@@ -20,7 +20,6 @@ public class Goal : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             Debug.Log("ゴール");
-            InGame.Goal.Result.Instance.OnGoal();
             //_stateManager.ChangeState(_gameClearState);
         }
     }

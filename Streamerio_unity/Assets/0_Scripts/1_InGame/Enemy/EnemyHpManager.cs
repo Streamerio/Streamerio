@@ -25,17 +25,13 @@ public class EnemyHpManager : MonoBehaviour
         }
         else
         {
-<<<<<<< HEAD
             // _audioFacade.PlayAsync(SEType.どん_効果音,destroyCancellationToken).Forget();
-=======
-            AudioManager.Instance.AudioFacade.PlayAsync(SEType.どん_効果音,destroyCancellationToken).Forget();
->>>>>>> game-di
         }
     }
 
     protected virtual void Die()
     {
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.敵のダウン,destroyCancellationToken).Forget();
+        //_audioFacade.PlayAsync(SEType.敵のダウン,destroyCancellationToken).Forget();
         Destroy(gameObject);
     }
 }

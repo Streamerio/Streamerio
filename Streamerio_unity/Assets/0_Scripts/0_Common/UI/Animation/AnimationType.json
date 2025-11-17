@@ -38,17 +38,5 @@
   {
     "Name": "TitleBackground",
     "Num": 10
-  },
-  {
-    "Name": "InGameBackground",
-    "Num": 11
-  },
-  {
-    "Name": "TurnLeft",
-    "Num": 12
-  },
-  {
-    "Name": "TurnRight",
-    "Num": 13
   }
 ]

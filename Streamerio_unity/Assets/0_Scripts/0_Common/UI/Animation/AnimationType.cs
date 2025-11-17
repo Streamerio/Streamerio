@@ -13,9 +13,6 @@ namespace Common.UI.Animation
 		Exit = 8,
 		FlashText = 9,
 		TitleBackground = 10,
-		InGameBackground = 11,
-		TurnLeft = 12,
-		TurnRight = 13,
 
     }
 }
