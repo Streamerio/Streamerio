@@ -105,8 +105,6 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 			payload := map[string]interface{}{
 				"type":    initType.String(),
 				"room_id": id,
-				"qr_code": "data:image/png;base64,...",
-				"web_url": "https://example.com",
 			}
 			if err := h.SendEventToUnity(id, payload); err != nil {
 				c.Logger().Errorf("initial send failed: %v", err)
