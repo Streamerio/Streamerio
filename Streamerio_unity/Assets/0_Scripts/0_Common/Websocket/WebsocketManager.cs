@@ -413,6 +413,7 @@ public interface IWebSocketManager
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
   void DisconnectWebSocket();
   string GetFrontUrl();
+  UniTask GameStartAsync();
   UniTask GameEndAsync();
   void HealthCheck();
 }
