@@ -14,9 +14,9 @@ namespace Common
     public class SerializeDictionary<TKey, TValue>: ISerializationCallbackReceiver
     {
         [SerializeField]
-        private List<KeyValuePair> _keyValuePairs;
+        private List<KeyValuePair> _keyValuePairs = new ();
         
-        private Dictionary<TKey, TValue> _dictionary;
+        private Dictionary<TKey, TValue> _dictionary = new();
         
         public TValue this[TKey key]
         {
@@ -31,24 +31,6 @@ namespace Common
                     _keyValuePairs.RemoveAt(index);
                 }
                 _keyValuePairs.Add(new KeyValuePair(key, value));
-            }
-        }
-        
-        public SerializeDictionary()
-        {
-            _keyValuePairs = new List<KeyValuePair>();
-            _dictionary = new Dictionary<TKey, TValue>();
-        }
-
-        public SerializeDictionary(Dictionary<TKey, TValue> dictionary)
-        {
-            _keyValuePairs = new List<KeyValuePair>();
-            _dictionary = new Dictionary<TKey, TValue>();
-            
-            foreach (var kv in dictionary)
-            {
-                _keyValuePairs.Add(new KeyValuePair(kv.Key, kv.Value));
-                _dictionary[kv.Key] = kv.Value;
             }
         }
         

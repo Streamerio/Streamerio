@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 20
-  _damage: 10
+  _damage: 35
   _lifetime: 4
   _bulletCount: 3
   _spreadAngle: 30

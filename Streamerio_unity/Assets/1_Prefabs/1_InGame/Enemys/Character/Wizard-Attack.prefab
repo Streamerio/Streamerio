@@ -12,9 +12,6 @@ GameObject:
   - component: {fileID: 2787539032691796418}
   - component: {fileID: 6079945327061018724}
   - component: {fileID: 2674395610602917591}
-  - component: {fileID: -9218034852458270668}
-  - component: {fileID: 3105155920272161401}
-  - component: {fileID: 5944158250717396413}
   m_Layer: 0
   m_Name: Wizard-Attack
   m_TagString: Enemy
@@ -32,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -127,44 +124,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _attackDuration: 1000
---- !u!114 &-9218034852458270668
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8152044908033867595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 10
---- !u!114 &3105155920272161401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8152044908033867595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  health: 50
---- !u!114 &5944158250717396413
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8152044908033867595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 004481af721cd43bca55f59c0522f475, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  magicProjectilePrefab: {fileID: 7150976050446681929, guid: 116ad79a4d0644bd29ff9bb810575ce6, type: 3}
-  attackInterval: 3
-  projectileSpeed: 5

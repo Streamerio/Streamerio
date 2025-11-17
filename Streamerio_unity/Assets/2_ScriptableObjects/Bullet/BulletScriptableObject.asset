@@ -15,7 +15,7 @@ MonoBehaviour:
   BulletPrefab: {fileID: 0}
   PoolSize: 10
   Speed: 15
-  Damage: 5
+  Damage: 10
   SizeRate: 0.5
   Lifetime: 5
   Span: 3

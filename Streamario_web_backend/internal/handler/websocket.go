@@ -1,23 +1,19 @@
 package handler
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
 	"golang.org/x/net/websocket"
 
-	"streamerrio-backend/internal/service"
-	"streamerrio-backend/pkg/pubsub"
-
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
+	"streamerrio-backend/internal/service"
 )
 
 type WebSocketHandler struct {
@@ -25,19 +21,12 @@ type WebSocketHandler struct {
 	mu             sync.RWMutex
 	roomService    *service.RoomService
 	sessionService *service.GameSessionService
-	pubsub         pubsub.PubSub
-	logger         *slog.Logger
 	ulidEntropy    io.Reader
 }
 
-func NewWebSocketHandler(ps pubsub.PubSub, logger *slog.Logger) *WebSocketHandler {
-	if logger == nil {
-		logger = slog.Default()
-	}
+func NewWebSocketHandler() *WebSocketHandler {
 	return &WebSocketHandler{
 		connections: make(map[string]*websocket.Conn),
-		pubsub:      ps,
-		logger:      logger,
 		ulidEntropy: ulid.Monotonic(rand.Reader, 0),
 	}
 }
@@ -53,26 +42,15 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 		Handler: func(ws *websocket.Conn) {
 			defer ws.Close()
 
-			// 接続登録（再接続の場合は同一 room_id を維持）
-			requestedID := c.QueryParam("room_id")
-			var id string
-			if requestedID != "" {
-				id = h.registerWithID(requestedID, ws, c)
-			} else {
-				id = h.registerNew(ws, c)
-			}
-			defer h.unregister(id, ws, c)
+			// 接続登録
+			id := h.register(ws, c)
+			defer h.unregister(id, c)
 
 			// 接続直後に必ずログを出す
 			c.Logger().Infof("Client connected: %s id=%s", c.Request().RemoteAddr, id)
 
-			// 初期メッセージ（再接続時はタイプのみ変える）
-			initType := "room_created"
-			if requestedID != "" {
-				initType = "room_ready"
-			}
 			payload := map[string]interface{}{
-				"type":    initType,
+				"type":    "room_created",
 				"room_id": id,
 				"qr_code": "data:image/png;base64,...",
 				"web_url": "https://example.com",
@@ -162,8 +140,7 @@ func (h *WebSocketHandler) SetGameSessionService(gs *service.GameSessionService)
 	h.sessionService = gs
 }
 
-// registerNew: 新規接続用に新しい roomID を払い出して登録
-func (h *WebSocketHandler) registerNew(ws *websocket.Conn, c echo.Context) string {
+func (h *WebSocketHandler) register(ws *websocket.Conn, c echo.Context) string {
 	id := ulid.MustNew(ulid.Timestamp(time.Now()), h.ulidEntropy).String()
 
 	if h.roomService != nil {
@@ -180,36 +157,12 @@ func (h *WebSocketHandler) registerNew(ws *websocket.Conn, c echo.Context) strin
 	return id
 }
 
-// registerWithID: 指定 roomID で接続を登録（再接続時）
-// 既存接続がある場合は置き換える
-func (h *WebSocketHandler) registerWithID(id string, ws *websocket.Conn, c echo.Context) string {
-	// 既存の DB レコードは触らない（既に存在している前提）。無い場合のみ作成。
-	if h.roomService != nil {
-		if err := h.roomService.CreateIfNotExists(id, "unity"); err != nil {
-			c.Logger().Errorf("room db ensure failed id=%s err=%v", id, err)
-		}
-	}
-
-	h.mu.Lock()
-	h.connections[id] = ws
-	h.mu.Unlock()
-	c.Logger().Infof("room re-registered id=%s", id)
-	return id
-}
-
-// unregister: 接続が同一の場合のみ削除（置換時の誤削除防止）
-func (h *WebSocketHandler) unregister(id string, ws *websocket.Conn, c echo.Context) {
+func (h *WebSocketHandler) unregister(id string, c echo.Context) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	cur := h.connections[id]
-	if cur == ws {
-		delete(h.connections, id)
-		c.Logger().Infof("Client unregistered id=%s", id)
-	} else {
-		// すでに別の接続に置き換わっている
-		c.Logger().Infof("Skip unregister (replaced) id=%s", id)
-	}
+	delete(h.connections, id)
+	c.Logger().Infof("Client unregistered id=%s", id)
 }
 
 func (h *WebSocketHandler) SendEventToUnity(roomID string, payload interface{}) error {
@@ -237,45 +190,4 @@ func (h *WebSocketHandler) ListClients(c echo.Context) error {
 		ids = append(ids, id)
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{"clients": ids})
-}
-
-// StartPubSubSubscription: Pub/Sub購読を開始（別goroutineで実行）
-// REST APIからのイベントをUnityに配信する
-func (h *WebSocketHandler) StartPubSubSubscription(ctx context.Context) error {
-	handler := func(channel string, message []byte) error {
-		var payload map[string]interface{}
-		if err := json.Unmarshal(message, &payload); err != nil {
-			h.logger.Error("pubsub message unmarshal failed", slog.Any("error", err))
-			return err
-		}
-
-		// room_idを取得
-		roomID, ok := payload["room_id"].(string)
-		if !ok || roomID == "" {
-			h.logger.Warn("pubsub message missing room_id", slog.Any("payload", payload))
-			return fmt.Errorf("room_id not found in payload")
-		}
-
-		// 自分が接続を持っている場合のみ配信
-		if err := h.SendEventToUnity(roomID, payload); err != nil {
-			// 接続がないのは正常（他のインスタンスが持っている）
-			h.logger.Debug("no local connection for room, skip delivery",
-				slog.String("room_id", roomID),
-				slog.String("event_type", fmt.Sprintf("%v", payload["event_type"])))
-			return nil
-		}
-
-		h.logger.Info("event delivered to unity via pubsub",
-			slog.String("room_id", roomID),
-			slog.String("event_type", fmt.Sprintf("%v", payload["event_type"])))
-		return nil
-	}
-
-	// 購読開始（ブロッキング）
-	h.logger.Info("starting pubsub subscription", slog.String("channel", pubsub.ChannelGameEvents))
-	if err := h.pubsub.Subscribe(ctx, pubsub.ChannelGameEvents, handler); err != nil {
-		h.logger.Error("pubsub subscription failed", slog.Any("error", err))
-		return err
-	}
-	return nil
 }

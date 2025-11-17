@@ -100,22 +100,22 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
 	}
-
-	type PushEvent struct {
-		ButtonName string `json:"button_name"`
-		PushCount  int64  `json:"push_count"`
-	}
-
 	var req struct {
-		EventType  string      `json:"event_type"`
-		ViewerID   string      `json:"viewer_id"`
-		PushEvents []PushEvent `json:"push_events"`
+		EventType  string `json:"event_type"`
+		ButtonName string `json:"button_name"`
+		ViewerID   string `json:"viewer_id"`
 	}
-
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
 	}
-
+	evTypeStr := req.EventType
+	if evTypeStr == "" {
+		evTypeStr = req.ButtonName
+	}
+	if evTypeStr == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
+	}
+	evType := model.EventType(evTypeStr)
 	var viewerID *string
 	if req.ViewerID != "" {
 		viewerID = &req.ViewerID
@@ -134,49 +134,11 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"viewer_summary": summary,
 		})
 	}
-
-	// PushCount合計のバリデーション（連打攻撃防止）
-	totalPushCount := int64(0)
-	for _, event := range req.PushEvents {
-		totalPushCount += event.PushCount
+	res, err := h.eventService.ProcessEvent(roomID, evType, viewerID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
-	if totalPushCount > 20 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
-	}
-
-	// リクエスト全体で共通のイベント種別が指定されていれば先に正規化
-	var defaultEventType model.EventType
-	if req.EventType != "" {
-		defaultEventType = model.EventType(req.EventType)
-	}
-
-	// ProcessEventの戻り値を格納する配列
-	var eventResults []*model.EventResult
-
-	for _, event := range req.PushEvents {
-		eventType := defaultEventType
-		if eventType == "" {
-			if event.ButtonName == "" {
-				return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
-			}
-			eventType = model.EventType(event.ButtonName)
-		}
-
-		pushCount := event.PushCount
-
-		res, err := h.eventService.ProcessEvent(roomID, eventType, pushCount, viewerID)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		}
-
-		// 結果を配列に追加
-		eventResults = append(eventResults, res)
-	}
-
-	// 配列として結果を返す
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"event_results": eventResults,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
 // GetRoomStats: 現在のイベント種別ごとのカウントと閾値を返す

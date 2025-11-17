@@ -55,7 +55,7 @@ public class UltBullet : MonoBehaviour
             _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         }
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
+        //_audioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     void Update()

@@ -2,8 +2,6 @@ using System.Threading;
 using Common.UI.Animation;
 using Common.UI.Display.Window;
 using Cysharp.Threading.Tasks;
-using TMPro;
-using UnityEngine;
 using VContainer;
 
 namespace OutGame.Result.UI
@@ -15,20 +13,12 @@ namespace OutGame.Result.UI
     /// </summary>
     public class ResultWindowView : WindowViewBase, IResultWindowView
     {
-        [SerializeField]
-        private TMP_Text _allText;
-        [SerializeField]
-        private TMP_Text _enemyText;
-        [SerializeField]
-        private TMP_Text _skillText;
-        
         private IUIAnimation _clickTextAnimation;
-        private IWebSocketManager _webSocketManager;
+        
         [Inject]
-        public void Construct([Key(AnimationType.FlashText)] IUIAnimation clickTextAnimation, IWebSocketManager webSocketManager)
+        public void Construct([Key(AnimationType.FlashText)] IUIAnimation clickTextAnimation)
         {
             _clickTextAnimation = clickTextAnimation;
-            _webSocketManager = webSocketManager;
         }
 
         /// <summary>
@@ -37,17 +27,7 @@ namespace OutGame.Result.UI
         /// </summary>
         public override async UniTask ShowAsync(CancellationToken ct)
         { 
-            if(_webSocketManager.GameEndSummary != null)
-            {
-                WebSocketManager.GameEndSummaryNotification summary = _webSocketManager.GameEndSummary;
-                _allText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey].viewer_name;
-                _enemyText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey].viewer_name;
-                _skillText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey].viewer_name;
-            }
-            
             await base.ShowAsync(ct);
-            
-            
             _clickTextAnimation.PlayAsync(destroyCancellationToken).Forget();
         }
         

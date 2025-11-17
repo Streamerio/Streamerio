@@ -49,7 +49,6 @@ namespace Common.UI.Display.Window
         /// </summary>
         public override async UniTask ShowAsync(CancellationToken ct)
         {
-            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             await _background.ShowAsync(ct);
             await ShowAnim.PlayAsync(ct);
             await ShowPartsAnim.PlayAsync(ct);
@@ -62,7 +61,6 @@ namespace Common.UI.Display.Window
         /// </summary>
         public override void Show()
         {
-            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             _background.Show();
             ShowAnim.PlayImmediate();
             ShowPartsAnim.PlayImmediate();

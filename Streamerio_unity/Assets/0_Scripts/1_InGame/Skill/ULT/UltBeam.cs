@@ -39,12 +39,12 @@ public class UltBeam : MonoBehaviour
         if (_player != null)
         {
             //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 1f);
+            transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 3f);
         }
         // フレームベースでインターバルを計算
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+        //_audioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     void Update()

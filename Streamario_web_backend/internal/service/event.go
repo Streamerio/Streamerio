@@ -1,8 +1,6 @@
 package service
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
@@ -10,11 +8,9 @@ import (
 	"streamerrio-backend/internal/model"
 	"streamerrio-backend/internal/repository"
 	"streamerrio-backend/pkg/counter"
-	"streamerrio-backend/pkg/pubsub"
 )
 
 // WebSocket 送信用インタフェース (Unity へゲームイベント通知するための最小限)
-// NOTE: Pub/Sub導入後は下位互換のため残しているが、実際は使用しない
 type WebSocketSender interface {
 	SendEventToUnity(roomID string, payload map[string]interface{}) error
 }
@@ -22,38 +18,30 @@ type WebSocketSender interface {
 type EventService struct {
 	counter   counter.Counter
 	eventRepo repository.EventRepository
-	pubsub    pubsub.PubSub // Pub/Sub経由でWebSocketサーバーに配信
+	wsHandler WebSocketSender
 	configs   map[model.EventType]*model.EventConfig
 	logger    *slog.Logger
 }
 
-// NewEventService: 依存（カウンタ / リポジトリ / PubSub）を束ねてサービス生成
-func NewEventService(counter counter.Counter, eventRepo repository.EventRepository, ps pubsub.PubSub, logger *slog.Logger) *EventService {
+// NewEventService: 依存（カウンタ / リポジトリ / WebSocket）を束ねてサービス生成
+func NewEventService(counter counter.Counter, eventRepo repository.EventRepository, wsHandler WebSocketSender, logger *slog.Logger) *EventService {
 	if logger == nil {
 		logger = slog.Default()
 	}
-	return &EventService{counter: counter, eventRepo: eventRepo, pubsub: ps, configs: getDefaultEventConfigs(), logger: logger}
+	return &EventService{counter: counter, eventRepo: eventRepo, wsHandler: wsHandler, configs: getDefaultEventConfigs(), logger: logger}
 }
 
 // ProcessEvent: 1イベント処理の本流 (DB保存→視聴者アクティビティ更新→カウント加算→閾値判定→発動通知/リセット)
-func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, EventButtonPushCount int64, viewerID *string) (*model.EventResult, error) {
+func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, viewerID *string) (*model.EventResult, error) {
 	// eventType が有効かチェック
 	if _, ok := s.configs[eventType]; !ok {
 		return nil, fmt.Errorf("invalid event type: %s", eventType)
 	}
 
-	// 1. Record events (バッチ挿入で効率化)
-	events := make([]*model.Event, EventButtonPushCount)
-	for i := int64(0); i < EventButtonPushCount; i++ {
-		events[i] = &model.Event{
-			RoomID:    roomID,
-			EventType: eventType,
-			ViewerID:  viewerID,
-			Metadata:  "{}",
-		}
-	}
-	if err := s.eventRepo.CreateEventsBatch(events); err != nil {
-		return nil, fmt.Errorf("record events failed: %w", err)
+	// 1. Record event
+	ev := &model.Event{RoomID: roomID, EventType: eventType, ViewerID: viewerID, Metadata: "{}"}
+	if err := s.eventRepo.CreateEvent(ev); err != nil {
+		return nil, fmt.Errorf("record event failed: %w", err)
 	}
 
 	// 2. Update viewer activity (backend-agnostic)
@@ -62,7 +50,7 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 	}
 
 	// 3. Increment counter
-	current, err := s.counter.Increment(roomID, string(eventType), EventButtonPushCount)
+	current, err := s.counter.Increment(roomID, string(eventType))
 	if err != nil {
 		return nil, fmt.Errorf("increment failed: %w", err)
 	}
@@ -78,36 +66,21 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 
 	if int(current) >= threshold {
 		s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
-
-		// Pub/Sub経由で全WebSocketサーバーにブロードキャスト
 		payload := map[string]interface{}{
 			"type":          "game_event",
-			"room_id":       roomID, // WebSocketサーバー側で配信先を特定するため必須
 			"event_type":    string(eventType),
 			"trigger_count": int(current),
 			"viewer_count":  viewers,
 		}
-
-		message, err := json.Marshal(payload)
-		if err != nil {
-			s.logger.Error("json marshal failed", slog.String("room_id", roomID), slog.Any("error", err))
+		if err := s.wsHandler.SendEventToUnity(roomID, payload); err != nil {
+			s.logger.Error("unity notification failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
 		} else {
-			ctx := context.Background()
-			if err := s.pubsub.Publish(ctx, pubsub.ChannelGameEvents, message); err != nil {
-				s.logger.Error("pubsub publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
-			} else {
-				s.logger.Info("event published to pubsub", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
-			}
+			s.logger.Info("unity notified", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
 		}
-
-		// 閾値超過分をカウントに設定（超過分を捨てない）
-		excess := current - int64(threshold)
-		if err := s.counter.SetExcess(roomID, string(eventType), excess); err != nil {
-			s.logger.Error("set excess failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int64("excess", excess), slog.Any("error", err))
-		}
+		_ = s.counter.Reset(roomID, string(eventType))
 		res.EffectTriggered = true
 		res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
-		res.CurrentCount = int(excess)
+		res.CurrentCount = 0
 	}
 	return res, nil
 }

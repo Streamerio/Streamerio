@@ -75,7 +75,6 @@ namespace Common.UI.Loading
         /// </summary>
         public override async UniTask ShowAsync(CancellationToken ct)
         {
-            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             await _showAnimation.PlayAsync(ct);
             await _panelShowAnimation.PlayAsync(ct);
         }
@@ -86,7 +85,6 @@ namespace Common.UI.Loading
         /// </summary>
         public async UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct)
         {
-            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             await _showAnimation.PlayAsync(WorldToViewportPoint(centerCirclePosition), ct);
             await _panelShowAnimation.PlayAsync(ct);
         }
@@ -97,7 +95,6 @@ namespace Common.UI.Loading
         /// </summary>
         public override void Show()
         {
-            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
             _showAnimation.PlayImmediate();
             _panelShowAnimation.PlayImmediate();
         }

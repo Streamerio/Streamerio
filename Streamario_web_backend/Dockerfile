@@ -4,8 +4,8 @@ FROM golang:1.25
 # 作業ディレクトリを設定
 WORKDIR /app
 
-# Goアプリケーションのソースコードをコピー
-COPY . .
+# Goアプリケーションのソースコードをコピー（リポジトリ直下をコンテキストにしたビルドに対応）
+COPY Streamario_web_backend/ .
 
 # 依存関係を解決
 RUN go mod tidy

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -15,7 +14,6 @@ import (
 	"streamerrio-backend/internal/service"
 	"streamerrio-backend/pkg/counter"
 	"streamerrio-backend/pkg/logger"
-	"streamerrio-backend/pkg/pubsub"
 
 	// PostgreSQLドライバー
 	"github.com/jmoiron/sqlx"
@@ -73,45 +71,32 @@ func main() {
 	}
 	redisCounter := counter.NewRedisCounter(rdb, appLogger.With(slog.String("component", "redis_counter")))
 
-	// 6. Pub/Sub 初期化 (REST API → WebSocket サーバーへのイベント配信)
-	ps := pubsub.NewRedisPubSub(rdb, appLogger.With(slog.String("component", "pubsub")))
-
-	// 7. リポジトリ (永続層) 準備
+	// 6. リポジトリ (永続層) 準備
 	repoLogger := appLogger.With(slog.String("component", "repository"))
 	eventRepo := repository.NewEventRepository(db, repoLogger.With(slog.String("repository", "event")))
 	roomRepo := repository.NewRoomRepository(db, repoLogger.With(slog.String("repository", "room")))
 	viewerRepo := repository.NewViewerRepository(db, repoLogger.With(slog.String("repository", "viewer")))
 
-	// 8. サービス層生成
+	// 7. サービス層生成
 	roomService := service.NewRoomService(roomRepo, cfg)
-	wsHandlerLogger := appLogger.With(slog.String("component", "websocket_handler"))
-	wsHandler := handler.NewWebSocketHandler(ps, wsHandlerLogger)
+	wsHandler := handler.NewWebSocketHandler()
 	wsHandler.SetRoomService(roomService)
 	sender := webSocketAdapter{ws: wsHandler}
 	eventLogger := appLogger.With(slog.String("component", "event_service"))
 	sessionLogger := appLogger.With(slog.String("component", "session_service"))
-	eventService := service.NewEventService(redisCounter, eventRepo, ps, eventLogger)
+	eventService := service.NewEventService(redisCounter, eventRepo, sender, eventLogger)
 	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, sender, sessionLogger)
 	viewerService := service.NewViewerService(viewerRepo)
 	wsHandler.SetGameSessionService(sessionService)
 	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService)
 
-	// 9. Pub/Sub 購読開始 (別goroutine)
-	// REST APIからのイベントをWebSocketで受信してUnityに配信
-	go func() {
-		ctx := context.Background()
-		if err := wsHandler.StartPubSubSubscription(ctx); err != nil {
-			log.Error("pubsub subscription terminated", slog.Any("error", err))
-		}
-	}()
-
-	// 10. Echo フレームワーク初期化 & ミドルウェア
+	// 8. Echo フレームワーク初期化 & ミドルウェア
 	e := echo.New()
 	e.Logger.SetLevel(elog.DEBUG)
 	e.Use(middleware.Logger())  // アクセスログ
 	e.Use(middleware.Recover()) // パニック回復
 
-	// 11. CORS 設定
+	// 9. CORS 設定
 	// 認証付き（Cookie 同送）要求に対応するため AllowCredentials=true とし、
 	// オリジンは allowlist（環境変数 FRONTEND_URL）に限定する。
 	// 注意: AllowCredentials=true の場合、"*" は使用できない。
@@ -128,7 +113,7 @@ func main() {
 		AllowCredentials: allowCredentials,
 	}))
 
-	// 12. ルーティング定義
+	// 10. ルーティング定義
 	e.GET("/", healthCheck)
 	e.GET("/get_viewer_id", apiHandler.GetOrCreateViewerID)
 	// WebSocket
@@ -142,7 +127,7 @@ func main() {
 	api.GET("/rooms/:id/results", apiHandler.GetRoomResult)
 	api.POST("/viewers/set_name", apiHandler.SetViewerName)
 
-	// 13. サーバ起動
+	// 11. サーバ起動
 	log.Info("starting http server", slog.String("port", cfg.Port))
 	if err := e.Start(":" + cfg.Port); err != nil {
 		log.Error("server stopped", slog.Any("error", err))

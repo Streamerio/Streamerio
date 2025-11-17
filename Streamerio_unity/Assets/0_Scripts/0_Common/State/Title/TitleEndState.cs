@@ -12,25 +12,20 @@ namespace Common.State
     {
         private readonly IUIAnimation _titleBackgroundAnimation;
         private readonly ILoadingScreen _loadingScreen;
+        private readonly ISceneManager _sceneManager;
         private readonly IAudioFacade _audioFacade;
-        
-        private readonly IStateManager _stateManager;
-        private readonly IState _nextState;
         
         [Inject]
         public TitleEndState(
             [Key(AnimationType.TitleBackground)] IUIAnimation titleBackgroundAnimation,
             ILoadingScreen loadingScreen,
-            IAudioFacade audioFacade,
-            IStateManager stateManager,
-            [Key(StateType.InGameLoading)] IState nextState)
+            ISceneManager sceneManager,
+            IAudioFacade audioFacade)
         {
             _titleBackgroundAnimation = titleBackgroundAnimation;
             _loadingScreen = loadingScreen;
+            _sceneManager = sceneManager;
             _audioFacade = audioFacade;
-            
-            _stateManager = stateManager;
-            _nextState = nextState;
         }
         
         public async UniTask EnterAsync(CancellationToken ct)
@@ -40,7 +35,8 @@ namespace Common.State
             
             await _audioFacade.StopBGMAsync(ct);
             
-            _stateManager.ChangeState(_nextState);
+            _sceneManager.UpdateRestartFlag(false);
+            await _sceneManager.LoadSceneAsync(SceneType.GameScene);
         }
         
         public async UniTask ExitAsync(CancellationToken ct)
