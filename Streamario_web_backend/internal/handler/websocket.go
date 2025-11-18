@@ -46,11 +46,6 @@ const (
 	MessageTypeRoomReady WebSocketMessageType = "room_ready"
 )
 
-// String: WebSocketMessageTypeを文字列に変換
-func (t WebSocketMessageType) String() string {
-	return string(t)
-}
-
 type WebSocketHandler struct {
 	connections    map[string]*websocket.Conn
 	mu             sync.RWMutex
@@ -103,7 +98,7 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 				initType = MessageTypeRoomReady
 			}
 			payload := map[string]interface{}{
-				"type":    initType.String(),
+				"type":    string(initType),
 				"room_id": id,
 			}
 			if err := h.SendEventToUnity(id, payload); err != nil {
