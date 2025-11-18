@@ -1,4 +1,5 @@
 using System.Threading;
+using Common.Camera;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -7,10 +8,10 @@ namespace Common.UI.Animation
 {
     public class ZoomAnimation: SequenceAnimationBase
     {
-        private readonly Camera _camera;
+        private readonly ICameraManager _camera;
         private readonly ZoomAnimationParamSO _param;
     
-        public ZoomAnimation(Camera camera, ZoomAnimationParamSO param)
+        public ZoomAnimation(ICameraManager camera, ZoomAnimationParamSO param)
         {
             _camera = camera;
             _param = param;
@@ -22,8 +23,8 @@ namespace Common.UI.Animation
         {
             if (useInitial)
             {
-                _camera.orthographicSize = _param.InitialCameraSize;
-                _camera.transform.position = _param.InitialPosition;
+                _camera.Move(_param.InitialPosition);
+                _camera.SetSize(_param.InitialSize);
             }
         
             await base.PlayAsync(ct, useInitial);
@@ -31,19 +32,23 @@ namespace Common.UI.Animation
 
         public override void PlayImmediate()
         {
-            _camera.orthographicSize = _param.CameraSize;
-            _camera.transform.position = _param.Position;
+            _camera.Move(_param.Position);
+            _camera.SetSize(_param.CameraSize);
         }
 
         private void SetSequence()
         {
-            Sequence.Append(_camera
-                .DOOrthoSize(_param.CameraSize, _param.DurationSec)
-                .SetEase(_param.Ease));
-        
-            Sequence.Join(_camera.transform
-                .DOMove(_param.Position, _param.DurationSec)
-                .SetEase(_param.Ease));
+            Sequence.Append(DOTween.To(() => _param.InitialSize,
+                    size => _camera.SetSize(size),
+                    _param.CameraSize,
+                    _param.DurationSec))
+                .SetEase(_param.Ease);
+
+            Sequence.Join(DOTween.To(() => _param.InitialPosition,
+                    position => _camera.Move(position),
+                    _param.Position,
+                    _param.DurationSec))
+                .SetEase(_param.Ease);
         }
     }
 }

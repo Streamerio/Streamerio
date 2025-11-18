@@ -1,4 +1,5 @@
 using Common.Booster;
+using Common.Camera;
 using Common.Scene;
 using Common.State;
 using Common.UI.Animation;
@@ -22,11 +23,29 @@ namespace InGame
         [SerializeField]
         private Camera _mainCamera;
         [SerializeField]
+        private Camera[] _overlayCameras;
+        [SerializeField]
         private ZoomAnimationParamSO _zoomAnimationParam;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            _mainCamera ??= Camera.main;
+            
+            if((_overlayCameras == null || _overlayCameras.Length == 0) && _mainCamera != null)
+            {
+                _overlayCameras = _mainCamera.transform.GetComponentsInChildren<Camera>();
+            }
+        }
+        
+#endif
         
         protected override void Configure(IContainerBuilder builder)
         {
             base.Configure(builder);
+            
+            var ingameCamera = new CameraManager(_mainCamera, _overlayCameras);
+            builder.RegisterInstance<ICameraManager>(ingameCamera);
 
             builder.RegisterInstance<IInGameSetting>(_inGameSetting);
             
@@ -58,7 +77,7 @@ namespace InGame
             builder.RegisterComponentInHierarchy<EnemyRandomActivator>();
             builder.RegisterInstance<HpPresenter>(_hpPresenter);
 
-            builder.RegisterInstance<IUIAnimation>(new ZoomAnimation(_mainCamera, _zoomAnimationParam))
+            builder.RegisterInstance<IUIAnimation>(new ZoomAnimation(ingameCamera, _zoomAnimationParam))
                 .Keyed(AnimationType.InGameBackground);
             
             SceneBoosterBinder.Bind(builder, StateType.InGameStart);
