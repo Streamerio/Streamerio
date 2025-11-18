@@ -74,8 +74,21 @@ jobs:
         run: |
           set -e
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-          # 認証確認（トークンが取れているか）
+          # ここでトークンが取れない場合は権限/信頼設定が未整備
           gcloud auth print-access-token >/dev/null
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy streamario-web-backend \
+            --image "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --platform managed \
+            --region "${GCP_REGION}" \
+            --project "${GCP_PROJECT_ID}" \
+            --allow-unauthenticated \
+            --set-env-vars "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" \
+            --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}"
+
 
       - name: Set Image Tag Name
         run: |
