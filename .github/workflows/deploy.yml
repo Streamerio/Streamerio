@@ -30,12 +30,9 @@ jobs:
         with:
           workload_identity_provider: 'projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool'
           service_account: github-actions@streamerio-472706.iam.gserviceaccount.com
-          project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
