@@ -1,8 +1,5 @@
-using Common.Audio;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using R3;
-using VContainer;
 
 public class PlayerPresenter : MonoBehaviour
 {
@@ -13,14 +10,6 @@ public class PlayerPresenter : MonoBehaviour
     [SerializeField] private PowerPresenter _power;
     [SerializeField] private SpeedPresenter _speed;
     [SerializeField] private JumpPowerPresenter _jumpPower;
-    
-    private IAudioFacade _audioFacade;
-
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
-    {
-        _audioFacade = audioFacade;
-    }
 
     void Awake()
     {
@@ -54,7 +43,6 @@ public class PlayerPresenter : MonoBehaviour
 
     public void Jump()
     {
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _view.Jump(_jumpPower.Amount);
     }
 

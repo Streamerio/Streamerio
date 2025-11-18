@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 6501045865214589059}
   - component: {fileID: 5609050668864353135}
   - component: {fileID: 2064125557957950325}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: PassingFloor
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

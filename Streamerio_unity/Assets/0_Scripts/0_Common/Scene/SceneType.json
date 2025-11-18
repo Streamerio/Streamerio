@@ -12,10 +12,6 @@
     "Num": 9
   },
   {
-    "Name": "DITestScene",
-    "Num": 18
-  },
-  {
     "Name": "EnemyStatus",
     "Num": 11
   },
@@ -62,6 +58,10 @@
   {
     "Name": "SceneCreate",
     "Num": 17
+  },
+  {
+    "Name": "TestGameScene",
+    "Num": 21
   },
   {
     "Name": "Title",

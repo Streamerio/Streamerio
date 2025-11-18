@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 6706397423188669720}
   - component: {fileID: 2189544634329675210}
   - component: {fileID: 8894179854398154658}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: skeleton-walk-1
   m_TagString: Enemy
   m_Icon: {fileID: 0}

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -9218034852458270668}
   - component: {fileID: 3105155920272161401}
   - component: {fileID: 5944158250717396413}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wizard-Attack
   m_TagString: Enemy
   m_Icon: {fileID: 0}

@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4704878260643387621}
   - component: {fileID: 951967592393679611}
   - component: {fileID: 6895875478511990101}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: burning-ghoul1
   m_TagString: Enemy
   m_Icon: {fileID: 0}

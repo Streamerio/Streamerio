@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1222040185213489629}
   - component: {fileID: 2318439381449355405}
   - component: {fileID: 5197483903276070194}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: gato-walk-1
   m_TagString: Enemy
   m_Icon: {fileID: 0}
