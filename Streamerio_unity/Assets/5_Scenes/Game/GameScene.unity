@@ -473,6 +473,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 545541908}
     m_Modifications:
+    - target: {fileID: 203328460559069796, guid: 5dd0b506028d04a2b8418fefce302c80, type: 3}
+      propertyPath: m_TagString
+      value: Ground
+      objectReference: {fileID: 0}
     - target: {fileID: 4473003693697665092, guid: 5dd0b506028d04a2b8418fefce302c80, type: 3}
       propertyPath: m_Name
       value: StartStage
@@ -2185,6 +2189,10 @@ PrefabInstance:
       propertyPath: _jumpPower
       value: 
       objectReference: {fileID: 1678440102}
+    - target: {fileID: 6796800601798981408, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8996671410111435039, guid: d8ffd792d2041444c8a6b54c04dbfa87, type: 3}
       propertyPath: m_Name
       value: Player
