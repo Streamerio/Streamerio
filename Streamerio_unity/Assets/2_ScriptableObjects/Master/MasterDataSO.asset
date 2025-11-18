@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _timeOutTime: 10
   _gameSetting:
-    TimeLimit: 100
+    TimeLimit: 300
   _playerStatus:
     HP: 100
     AttackPower: 10
@@ -51,3 +51,9 @@ MonoBehaviour:
         HP: 10
         AttackPower: 10
         Speed: 10
+  _masterURL:
+    FrontendURLFormat: https://streamerio.vercel.app/?streamer_id={0}
+    FrontendQueryParamFormat: '{0}?room_id={1}'
+    BackendWebSocketURL: wss://streamario-web-backend-282618030957.asia-northeast1.run.app/ws-unity
+    BackHttpURL: https://streamario-web-backend-282618030957.asia-northeast1.run.app/
+    GameEndResponse: '{\"type\": \"game_end\" }'
