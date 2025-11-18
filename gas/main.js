@@ -15,6 +15,9 @@ function doGet(e) {
         case sheetName.ULT_STATUS:
             jsonData = createJson(dataType, ultStatusInitRowIndex, ultStatusProp);
             break;
+        case sheetName.URL:
+            jsonData = createJson(dataType, urlInitRowIndex, urlProp);
+            break;
     }
 
     console.log(jsonData);

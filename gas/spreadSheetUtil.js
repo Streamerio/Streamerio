@@ -5,6 +5,7 @@ const sheetName = {
     PLAYER_STATUS: 'PlayerStatus',
     ULT_STATUS: 'UltStatus',
     ENEMY_STATUS: 'EnemyStatus',
+    URL: 'URL',
 }
 
 function getSheet(sheetName) {
