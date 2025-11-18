@@ -23,14 +23,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
           workload_identity_provider: 'projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool'
           service_account: github-actions@streamerio-472706.iam.gserviceaccount.com
           create_credentials_file: true
+          export_environment_variables: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
