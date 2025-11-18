@@ -30,6 +30,7 @@ jobs:
         with:
           workload_identity_provider: 'projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool'
           service_account: github-actions@streamerio-472706.iam.gserviceaccount.com
+          project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -58,6 +59,7 @@ jobs:
             --image ${IMAGE_NAME}:${IMAGE_TAG} \
             --platform managed \
             --region ${GCP_REGION} \
+            --project ${GCP_PROJECT_ID} \
             --allow-unauthenticated \
             --set-env-vars "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
