@@ -16,8 +16,6 @@ GameObject:
   - component: {fileID: 8468001335914110181}
   - component: {fileID: 2189544634329675210}
   - component: {fileID: 8894179854398154658}
-  - component: {fileID: 7895058361806084222}
-  - component: {fileID: 8428835190765617457}
   m_Layer: 7
   m_Name: skeleton-walk-1
   m_TagString: Enemy
@@ -159,31 +157,6 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   config: {fileID: 11400000, guid: 493856dc88169bb4dac4ecdf61a46627, type: 2}
---- !u!114 &2189544634329675210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5063151165452527970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8894179854398154658
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5063151165452527970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 8
 --- !u!50 &7895058361806084222
 Rigidbody2D:
   serializedVersion: 5
@@ -248,3 +221,43 @@ CapsuleCollider2D:
   m_Offset: {x: -0.02, y: -0.05}
   m_Size: {x: 0.28, y: 0.45}
   m_Direction: 0
+--- !u!114 &6706397423188669720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5063151165452527970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e8564a93fe3e42dd8efa32ebf4d3019, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 8
+  speed: 0.5
+--- !u!114 &2189544634329675210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5063151165452527970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 10
+--- !u!114 &8894179854398154658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5063151165452527970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 8
