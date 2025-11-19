@@ -112,11 +112,8 @@ func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
 		slog.String("repo", "event"),
 		slog.String("op", "create_events_batch"),
 		slog.Int("count", len(events)),
-	}
-	if len(events) > 0 {
-		attrs = append(attrs,
-			slog.String("room_id", events[0].RoomID),
-			slog.String("event_type", string(events[0].EventType)))
+		slog.String("room_id", events[0].RoomID),
+		slog.String("event_type", string(events[0].EventType)),
 	}
 	logger := r.logger.With(attrs...)
 
