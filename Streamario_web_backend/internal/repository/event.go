@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"streamerrio-backend/internal/model"
@@ -79,7 +81,7 @@ func (r *eventRepository) CreateEvent(event *model.Event) error {
 }
 
 // CreateEventsBatch: 複数イベントを効率的にバッチ挿入
-// トランザクション内で準備済みステートメントを繰り返し実行して挿入
+// PostgreSQLのVALUES句を使用して1回のクエリで複数レコードを挿入
 func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
 	if len(events) == 0 {
 		return nil
@@ -93,46 +95,39 @@ func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
 		}
 	}
 
-	logger := r.logger.With(
+	// VALUES句を構築
+	values := make([]string, len(events))
+	args := make([]interface{}, 0, len(events)*5)
+
+	for i, event := range events {
+		values[i] = fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)",
+			i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
+		args = append(args, event.RoomID, event.ViewerID, event.EventType, event.TriggeredAt, event.Metadata)
+	}
+
+	q := fmt.Sprintf(`INSERT INTO events (room_id, viewer_id, event_type, triggered_at, metadata) VALUES %s`,
+		strings.Join(values, ","))
+
+	attrs := []any{
 		slog.String("repo", "event"),
 		slog.String("op", "create_events_batch"),
 		slog.Int("count", len(events)),
-		slog.String("room_id", events[0].RoomID),
-		slog.String("event_type", string(events[0].EventType)),
-	)
+	}
+	if len(events) > 0 {
+		attrs = append(attrs,
+			slog.String("room_id", events[0].RoomID),
+			slog.String("event_type", string(events[0].EventType)))
+	}
+	logger := r.logger.With(attrs...)
 
 	start := time.Now()
-	// トランザクションを開始
-	tx, err := r.db.Beginx()
+	res, err := r.db.Exec(q, args...)
 	if err != nil {
-		logger.Error("db.beginx failed", slog.Any("error", err))
+		logger.Error("db.exec batch failed", slog.Any("error", err))
 		return err
 	}
-	defer tx.Rollback()
-
-	// トランザクション内で準備済みステートメントを取得
-	stmt := tx.Stmtx(r.createEventStmt)
-	defer stmt.Close()
-
-	// 各イベントを準備済みステートメントで挿入
-	var totalRows int64
-	for _, event := range events {
-		res, err := stmt.Exec(event.RoomID, event.ViewerID, event.EventType, event.TriggeredAt, event.Metadata)
-		if err != nil {
-			logger.Error("db.exec (prepared) batch failed", slog.Any("error", err))
-			return err
-		}
-		rows, _ := res.RowsAffected()
-		totalRows += rows
-	}
-
-	// トランザクションをコミット
-	if err := tx.Commit(); err != nil {
-		logger.Error("db.commit failed", slog.Any("error", err))
-		return err
-	}
-
-	logger.Debug("db.exec batch", slog.Int64("rows_affected", totalRows), slog.Duration("elapsed", time.Since(start)))
+	rows, _ := res.RowsAffected()
+	logger.Debug("db.exec batch", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
 	return nil
 }
 
