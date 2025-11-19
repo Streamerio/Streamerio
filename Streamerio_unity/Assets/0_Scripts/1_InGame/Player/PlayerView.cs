@@ -2,6 +2,8 @@ using Alchemy.Inspector;
 using Cysharp.Text;
 using R3;
 using UnityEngine;
+using Common.Audio;
+using Cysharp.Threading.Tasks;
 
 [RequireComponent(typeof(PlayerAnimation))]
 public class PlayerView : MonoBehaviour
@@ -60,20 +62,11 @@ public class PlayerView : MonoBehaviour
         if (!_groundedCollider.IsGrounded.CurrentValue) return;
         // Debug.Log($"PlayerView Jump with force {force}");
         // ジャンプの実装例（Rigidbody2Dがアタッチされている場合）
-        
+        AudioManager.Instance.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _animation.PlayJump(true);
         _rb2D.AddForce(new Vector2(0, force), ForceMode2D.Impulse);
     }
 
-    /// <summary>
-    /// 地面に接地しているかどうかをチェックするロジックをここに実装
-    /// y軸方向の速度が0に近い場合など
-    /// </summary>
-    // private bool CheckIsGrounded()
-    // {
-    //     return Mathf.Abs(_rb2D.linearVelocity.y) < 0.01f;
-    // }
-    
     public void Attack(int num)
     {
         _animation.PlayAttack(num);
