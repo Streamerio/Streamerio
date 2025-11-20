@@ -56,4 +56,5 @@ MonoBehaviour:
     FrontendQueryParamFormat: '{0}?room_id={1}'
     BackendWebSocketURL: wss://streamario-web-backend-282618030957.asia-northeast1.run.app/ws-unity
     BackHttpURL: https://streamario-web-backend-282618030957.asia-northeast1.run.app/
+    GameStartResponse: '{\"type\": \"game_start\" }'
     GameEndResponse: '{\"type\": \"game_end\" }'
