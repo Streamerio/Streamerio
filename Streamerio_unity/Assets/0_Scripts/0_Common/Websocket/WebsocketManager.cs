@@ -290,6 +290,14 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   }
 
   ///<summary>
+  /// ゲーム開始通知
+  ///</summary>
+  public async UniTask GameStartAsync()
+  {
+    await SendWebSocketMessageAsync( _apiConfigSO.gameStartResponse );
+  }
+
+  ///<summary>
   /// ゲーム終了通知
   ///</summary>
   public async UniTask GameEndAsync()
@@ -405,6 +413,7 @@ public interface IWebSocketManager
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
   void DisconnectWebSocket();
   string GetFrontUrl();
+  UniTask GameStartAsync();
   UniTask GameEndAsync();
   void HealthCheck();
 }

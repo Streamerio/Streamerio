@@ -15,6 +15,9 @@ public class ApiConfigSO : ScriptableObject
     [Header("バックエンドのHTTP用URL")]
     public string backendHttpUrl = "https://streamario-web-backend-282618030957.asia-northeast1.run.app/";
     
+    [Header("ゲーム開始時のレスポンス")]
+    public string gameStartResponse = "{\"type\": \"game_start\" }";
+
     [Header("ゲーム終了時のレスポンス")]
     public string gameEndResponse = "{\"type\": \"game_end\" }";
 }
