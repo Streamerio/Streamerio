@@ -17,7 +17,7 @@ using VContainer.Unity;
 public class GlobalLifetimeScope : LifetimeScope
 {
     [SerializeField]
-    private IMasterData _masterDataSO;
+    private MasterDataSO _masterDataSO;
     protected override void Configure(IContainerBuilder builder)
     {
         builder.RegisterEntryPoint<GlobalBooster>();
