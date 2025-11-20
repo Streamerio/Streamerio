@@ -58,15 +58,20 @@ namespace Common
         private SerializeDictionary<MasterEnemyType, MasterEnemyStatus> _enemyStatusDictionary;
         public IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary => _enemyStatusDictionary.ToDictionary();
         
+        [SerializeField]
+        private MasterURL _masterURL;
+        public MasterURL MasterURL => _masterURL;
+        
         public async UniTask FetchDataAsync(CancellationToken ct)
         {
             var gameTask    = SpreadSheetClient.GetRequestAsync(SheetType.GameSettings, ct, _timeOutTime);
             var playerTask  = SpreadSheetClient.GetRequestAsync(SheetType.PlayerStatus, ct, _timeOutTime);
             var ultTask     = SpreadSheetClient.GetRequestAsync(SheetType.UltStatus, ct, _timeOutTime);
             var enemyTask   = SpreadSheetClient.GetRequestAsync(SheetType.EnemyStatus, ct, _timeOutTime);
+            var urlTask     = SpreadSheetClient.GetRequestAsync(SheetType.URL, ct, _timeOutTime);
 
-            var (gameRows, playerRows, ultRows, enemyRows) =
-                await UniTask.WhenAll(gameTask, playerTask, ultTask, enemyTask);
+            var (gameRows, playerRows, ultRows, enemyRows, urlRows) = 
+                await UniTask.WhenAll(gameTask, playerTask, ultTask, enemyTask, urlTask);
 
             if (IsValidDataRow(gameRows))
             {
@@ -110,11 +115,24 @@ namespace Common
                         Speed = ToFloat(enemyRows[MasterEnemyStatus.SpeedKey][i]),
                     });   
             }
+
+            if (IsValidDataRow(urlRows))
+            {
+                _masterURL = new MasterURL()
+                {
+                    FrontendURLFormat = (string)urlRows[MasterURL.FrontendURLFormatKey][0],
+                    FrontendQueryParamFormat = (string)urlRows[MasterURL.FrontendQueryParamFormatKey][0],
+                    BackendWebSocketURL = (string)urlRows[MasterURL.BackendWebSocketURLKey][0],
+                    BackHttpURL = (string)urlRows[MasterURL.BackHttpURLKey][0],
+                    GameEndResponse = (string)urlRows[MasterURL.GameEndResponseKey][0],
+                };
+            }
             
             _isDataFetched = IsValidDataRow(gameRows)
                              && IsValidDataRow(playerRows)
                              && IsValidDataRow(ultRows)
-                             && IsValidDataRow(enemyRows);
+                             && IsValidDataRow(enemyRows)
+                             && IsValidDataRow(urlRows);
             Debug.Log($"MasterDataSO FetchDataAsync _isDataFetched:{_isDataFetched}");
         }
         
@@ -213,5 +231,21 @@ namespace Common
         Skelton,
         FireMan,
         Cat,
+    }
+
+    [Serializable]
+    public class MasterURL
+    {
+        public const string FrontendURLFormatKey = "FrontendURLFormat";
+        public const string FrontendQueryParamFormatKey = "FrontendQueryParamFormat";
+        public const string BackendWebSocketURLKey = "BackendWebSocketURL";
+        public const string BackHttpURLKey = "BackHttpURL";
+        public const string GameEndResponseKey = "GameEndResponse";
+        
+        public string FrontendURLFormat;
+        public string FrontendQueryParamFormat;
+        public string BackendWebSocketURL;
+        public string BackHttpURL;
+        public string GameEndResponse;
     }
 }

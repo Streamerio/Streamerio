@@ -7,5 +7,6 @@ namespace Common.GAS
         PlayerStatus,
         UltStatus,
         EnemyStatus,
+        URL,
     }
 }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8200984205553985625}
   - component: {fileID: 8236938843536230471}
   - component: {fileID: 3682401762185241696}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: crossed1
   m_TagString: Enemy
   m_Icon: {fileID: 0}

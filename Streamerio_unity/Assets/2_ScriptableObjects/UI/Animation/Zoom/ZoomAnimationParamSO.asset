@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DurationSec: 1.5
   Ease: 2
-  InitialCameraSize: 1.75
-  InitialPosition: {x: 0, y: 5}
+  InitialSize: 1.75
+  InitialPosition: {x: 0, y: 5, z: -10}
   CameraSize: 7
-  Position: {x: 0, y: 3}
+  Position: {x: 0, y: 3, z: -10}

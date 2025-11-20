@@ -122,7 +122,7 @@ namespace Common.UI.Loading
         
         private Vector2 WorldToViewportPoint(Vector3 worldPosition)
         {
-            return Camera.main.WorldToViewportPoint(worldPosition);
+            return UnityEngine.Camera.main.WorldToViewportPoint(worldPosition);
         }
     }
     

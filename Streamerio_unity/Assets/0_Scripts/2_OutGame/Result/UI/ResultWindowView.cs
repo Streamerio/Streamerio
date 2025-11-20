@@ -16,6 +16,8 @@ namespace OutGame.Result.UI
     public class ResultWindowView : WindowViewBase, IResultWindowView
     {
         [SerializeField]
+        private string _defaultPlayerName = "名無しの視聴者";
+        [SerializeField]
         private TMP_Text _allText;
         [SerializeField]
         private TMP_Text _enemyText;
@@ -40,15 +42,25 @@ namespace OutGame.Result.UI
             if(_webSocketManager.GameEndSummary != null)
             {
                 WebSocketManager.GameEndSummaryNotification summary = _webSocketManager.GameEndSummary;
-                _allText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.AllKey].viewer_name;
-                _enemyText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.EnemyKey].viewer_name;
-                _skillText.text = (summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey] ==null || summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey].viewer_name == null) ? "名無しの視聴者" : summary.SummaryDetails[WebSocketManager.GameEndSummaryNotification.SkillKey].viewer_name;
+                _allText.SetText(GetPlayerName(summary, WebSocketManager.GameEndSummaryNotification.AllKey));
+                _enemyText.SetText(GetPlayerName(summary, WebSocketManager.GameEndSummaryNotification.EnemyKey));
+                _skillText.SetText(GetPlayerName(summary, WebSocketManager.GameEndSummaryNotification.SkillKey));
             }
             
             await base.ShowAsync(ct);
             
             
             _clickTextAnimation.PlayAsync(destroyCancellationToken).Forget();
+        }
+        
+        private string GetPlayerName(WebSocketManager.GameEndSummaryNotification summary, string key)
+        {
+            if(summary == null || !summary.SummaryDetails.TryGetValue(key, out var detail) || detail.viewer_name == null)
+            {
+                return _defaultPlayerName;
+            }
+            
+            return detail.viewer_name;
         }
         
         /// <summary>

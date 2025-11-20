@@ -6,7 +6,6 @@ namespace Common.Scene
 		None = 1,
 		AnimaitonTest = 8,
 		AnimationSetting = 9,
-		DITestScene = 18,
 		EnemyStatus = 11,
 		GameOverScene = 12,
 		GameScene = 5,
@@ -19,6 +18,7 @@ namespace Common.Scene
 		ResultScene = 20,
 		SampleScene = 3,
 		SceneCreate = 17,
+		TestGameScene = 21,
 		Title = 7,
 
     }

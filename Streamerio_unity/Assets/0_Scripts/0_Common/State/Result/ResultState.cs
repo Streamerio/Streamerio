@@ -31,7 +31,7 @@ namespace Common.State
         
         public async UniTask ExitAsync(CancellationToken ct)
         {
-            await _loadingScreen.ShowAsync(ct);
+            await UniTask.WaitForEndOfFrame(cancellationToken: ct);
         }
     }
 }
