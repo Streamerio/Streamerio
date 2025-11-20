@@ -3,6 +3,7 @@ package service
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"time"
 
 	"streamerrio-backend/internal/config"
@@ -94,4 +95,31 @@ func (s *RoomService) UpdateRoom(id string, room *model.Room) error {
 // DeleteRoom: ルームを削除
 func (s *RoomService) DeleteRoom(id string) error {
 	return s.repo.Delete(id)
+}
+
+// RestartRoom: 終了済みルームを再開可能にする
+func (s *RoomService) RestartRoom(id string) error {
+	room, err := s.repo.Get(id)
+	if err != nil {
+		return err
+	}
+	if room == nil {
+		return errors.New("room not found")
+	}
+
+	// 既に active なら何もしない
+	if room.Status == "active" {
+		return nil
+	}
+
+	// ended 以外の状態からは再開できない
+	if room.Status != "ended" {
+		return fmt.Errorf("room status must be 'ended' to restart, got: %s", room.Status)
+	}
+
+	// ステータスを active に戻す
+	room.Status = "active"
+	room.EndedAt = nil
+
+	return s.repo.Update(id, room)
 }

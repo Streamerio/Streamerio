@@ -227,3 +227,66 @@ func (h *APIHandler) GetRoomResult(c echo.Context) error {
 		"viewer_summary": viewerSummary,
 	})
 }
+
+// RestartRoom: 終了済みルームを再開可能にする
+func (h *APIHandler) RestartRoom(c echo.Context) error {
+	roomID := c.Param("id")
+	
+	// ルーム存在確認
+	room, err := h.roomService.GetRoom(roomID)
+	if err != nil || room == nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
+	}
+	
+	// ステータスチェック
+	if room.Status != "ended" {
+		// 既に active なら成功として返す
+		if room.Status == "active" {
+			return c.JSON(http.StatusOK, map[string]string{
+				"status":  "active",
+				"message": "room is already active",
+			})
+		}
+		return c.JSON(http.StatusConflict, map[string]string{
+			"error": "room is not ended",
+		})
+	}
+	
+	// ルームを再開
+	if err := h.roomService.RestartRoom(roomID); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+	
+	// Redis カウンタもリセット
+	if err := h.sessionService.ResetCounters(roomID); err != nil {
+		// ログのみ、エラーにはしない
+		c.Logger().Warnf("failed to reset counters: %v", err)
+	}
+	
+	return c.JSON(http.StatusOK, map[string]string{
+		"status":  "restarted",
+		"room_id": roomID,
+	})
+}
+
+// EndGame: ゲーム終了API（REST経由でルームを終了状態に遷移させる）
+func (h *APIHandler) EndGame(c echo.Context) error {
+    roomID := c.Param("id")
+    room, err := h.roomService.GetRoom(roomID)
+    if err != nil || room == nil {
+        return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
+    }
+    if room.Status == "ended" {
+        return c.JSON(http.StatusConflict, map[string]string{"error": "room already ended"})
+    }
+    // ゲーム終了処理（集計・状態遷移）
+    if err := h.sessionService.EndGame(roomID); err != nil {
+        return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+    }
+    return c.JSON(http.StatusOK, map[string]string{
+        "status":  "ended",
+        "room_id": roomID,
+    })
+}

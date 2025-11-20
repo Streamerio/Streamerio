@@ -227,3 +227,17 @@ func (s *GameSessionService) eventTopToPayload(top *model.EventTop) map[string]i
 		"count":       top.Count,
 	}
 }
+
+// ResetCounters: 指定ルームの全イベントカウンタをリセット
+func (s *GameSessionService) ResetCounters(roomID string) error {
+	for _, et := range model.ListEventTypes() {
+		if err := s.counter.Reset(roomID, string(et)); err != nil {
+			s.logger.Warn("reset counter failed", 
+				slog.String("room_id", roomID), 
+				slog.String("event_type", string(et)), 
+				slog.Any("error", err))
+			// 失敗しても続行（ベストエフォート）
+		}
+	}
+	return nil
+}
