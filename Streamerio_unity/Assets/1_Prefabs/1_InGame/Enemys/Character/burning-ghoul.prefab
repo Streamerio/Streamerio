@@ -11,13 +11,14 @@ GameObject:
   - component: {fileID: 2862061852281406798}
   - component: {fileID: 1581859663908105476}
   - component: {fileID: 5813405247601079915}
-  - component: {fileID: 9163027324984297980}
   - component: {fileID: 398202972740722870}
-  - component: {fileID: 4704878260643387621}
+  - component: {fileID: 7651444912312915467}
+  - component: {fileID: 8159115702965081793}
   - component: {fileID: 951967592393679611}
   - component: {fileID: 6895875478511990101}
+  - component: {fileID: -2685457706154009142}
   m_Layer: 7
-  m_Name: burning-ghoul1
+  m_Name: burning-ghoul
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -115,22 +116,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &9163027324984297980
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1384593174560067801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0135a92700318414b941616a12038693, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  followSpeed: 1.5
-  detectionRange: 8
-  stopDistance: 0.5
-  attackCooldown: 0.8
 --- !u!50 &398202972740722870
 Rigidbody2D:
   serializedVersion: 5
@@ -158,7 +143,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &4704878260643387621
+--- !u!114 &7651444912312915467
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -167,10 +152,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 1384593174560067801}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ab3d1335756d3748a6128fbccf6b6bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 12
+--- !u!114 &8159115702965081793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384593174560067801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457141c04a46b8042ab9c896fd0f323e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  config: {fileID: 11400000, guid: 4445e3dd613e44d45b47ea643bc8e77a, type: 2}
 --- !u!114 &951967592393679611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +184,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 30
 --- !u!70 &6895875478511990101
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -221,3 +221,16 @@ CapsuleCollider2D:
   m_Offset: {x: -0.02, y: -0.1}
   m_Size: {x: 0.36, y: 0.5}
   m_Direction: 0
+--- !u!114 &-2685457706154009142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384593174560067801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
