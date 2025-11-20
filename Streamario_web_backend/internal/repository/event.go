@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 
 	"streamerrio-backend/internal/model"
@@ -15,7 +16,7 @@ import (
 // EventRepository: イベント永続化用インタフェース
 // 主要イベントクエリのトレースログを出力し、運用時の観測性を高める。
 type EventRepository interface {
-	CreateEvent(event *model.Event) error // 単一イベント挿入
+	CreateEvent(event *model.Event) error          // 単一イベント挿入
 	CreateEventsBatch(events []*model.Event) error // バッチ挿入（効率的）
 	ListEventViewerCounts(roomID string) ([]model.EventAggregate, error)
 	ListEventTotals(roomID string) ([]model.EventTotal, error)
@@ -34,6 +35,10 @@ type eventRepository struct {
 	listEventTotalsStmt       *sqlx.Stmt
 	listViewerTotalsStmt      *sqlx.Stmt
 	listViewerEventCountsStmt *sqlx.Stmt
+
+	// バッチ挿入用の prepared statement キャッシュ（バッチサイズごと）
+	batchStmts map[int]*sqlx.Stmt
+	batchMutex sync.RWMutex
 }
 
 // NewEventRepository: 実装生成
@@ -50,6 +55,7 @@ func NewEventRepository(db *sqlx.DB, logger *slog.Logger) EventRepository {
 		listEventTotalsStmt:       mustPrepare(db, logger, queryListEventTotals),
 		listViewerTotalsStmt:      mustPrepare(db, logger, queryListViewerTotals),
 		listViewerEventCountsStmt: mustPrepare(db, logger, queryListViewerEventCounts),
+		batchStmts:                make(map[int]*sqlx.Stmt),
 	}
 }
 
@@ -82,6 +88,7 @@ func (r *eventRepository) CreateEvent(event *model.Event) error {
 
 // CreateEventsBatch: 複数イベントを効率的にバッチ挿入
 // PostgreSQLのVALUES句を使用して1回のクエリで複数レコードを挿入
+// バッチサイズごとに prepared statement をキャッシュして使用
 func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
 	if len(events) == 0 {
 		return nil
@@ -95,37 +102,69 @@ func (r *eventRepository) CreateEventsBatch(events []*model.Event) error {
 		}
 	}
 
-	// VALUES句を構築
-	values := make([]string, len(events))
-	args := make([]interface{}, 0, len(events)*5)
-
-	for i, event := range events {
-		values[i] = fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)",
-			i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
-		args = append(args, event.RoomID, event.ViewerID, event.EventType, event.TriggeredAt, event.Metadata)
+	batchSize := len(events)
+	stmt := r.getOrCreateBatchStmt(batchSize)
+	if stmt == nil {
+		return fmt.Errorf("failed to get or create prepared statement for batch size %d", batchSize)
 	}
 
-	q := fmt.Sprintf(`INSERT INTO events (room_id, viewer_id, event_type, triggered_at, metadata) VALUES %s`,
-		strings.Join(values, ","))
+	// 引数を構築
+	args := make([]interface{}, 0, batchSize*5)
+	for _, event := range events {
+		args = append(args, event.RoomID, event.ViewerID, event.EventType, event.TriggeredAt, event.Metadata)
+	}
 
 	attrs := []any{
 		slog.String("repo", "event"),
 		slog.String("op", "create_events_batch"),
-		slog.Int("count", len(events)),
+		slog.Int("count", batchSize),
 		slog.String("room_id", events[0].RoomID),
 		slog.String("event_type", string(events[0].EventType)),
 	}
 	logger := r.logger.With(attrs...)
 
 	start := time.Now()
-	res, err := r.db.Exec(q, args...)
+	res, err := stmt.Exec(args...)
 	if err != nil {
-		logger.Error("db.exec batch failed", slog.Any("error", err))
+		logger.Error("db.exec batch (prepared) failed", slog.Any("error", err))
 		return err
 	}
 	rows, _ := res.RowsAffected()
-	logger.Debug("db.exec batch", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
+	logger.Debug("db.exec batch (prepared)", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
 	return nil
+}
+
+// getOrCreateBatchStmt: バッチサイズに応じた prepared statement を取得または作成
+func (r *eventRepository) getOrCreateBatchStmt(batchSize int) *sqlx.Stmt {
+	// 書き込みロックを取得して statement を作成
+	r.batchMutex.Lock()
+	defer r.batchMutex.Unlock()
+
+	if stmt, exists := r.batchStmts[batchSize]; exists {
+		return stmt
+	}
+
+	// VALUES句を構築
+	values := make([]string, batchSize)
+	for i := 0; i < batchSize; i++ {
+		values[i] = fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)",
+			i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
+	}
+
+	query := fmt.Sprintf(`INSERT INTO events (room_id, viewer_id, event_type, triggered_at, metadata) VALUES %s`,
+		strings.Join(values, ","))
+
+	stmt, err := r.db.Preparex(query)
+	if err != nil {
+		r.logger.Error("failed to prepare batch statement",
+			slog.Any("error", err),
+			slog.Int("batch_size", batchSize),
+			slog.String("query", query))
+		return nil
+	}
+
+	r.batchStmts[batchSize] = stmt
+	return stmt
 }
 
 func (r *eventRepository) ListEventViewerCounts(roomID string) ([]model.EventAggregate, error) {
@@ -247,6 +286,14 @@ func (r *eventRepository) Close() error {
 	closeStmt(r.listEventTotalsStmt)
 	closeStmt(r.listViewerTotalsStmt)
 	closeStmt(r.listViewerEventCountsStmt)
+
+	// バッチ用 prepared statement をすべてクローズ
+	r.batchMutex.Lock()
+	defer r.batchMutex.Unlock()
+	for _, stmt := range r.batchStmts {
+		closeStmt(stmt)
+	}
+	r.batchStmts = make(map[int]*sqlx.Stmt)
 
 	return firstErr
 }
