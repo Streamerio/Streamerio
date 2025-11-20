@@ -52,6 +52,14 @@ namespace Common.UI.Part.Button
         /// <param name="ct">【用途】演出途中で処理を中断するための CancellationToken。</param>
         /// <returns>【戻り値】演出完了を示す UniTask。</returns>
         UniTask PlayPointerExitAsync(CancellationToken ct);
+        
+        /// <summary>
+        /// 【目的】PointerClick 時の演出を非同期で実行する。
+        /// 【理由】クリック時のフィードバックを View ごとにカスタマイズできるようにするため。
+        /// </summary>
+        /// <param name="ct">【用途】演出途中で処理を中断するための CancellationToken。</param>
+        /// <returns>【戻り値】演出完了を示す UniTask。</returns>
+        UniTask PlayPointerClickAsync(CancellationToken ct);
 
         /// <summary>
         /// 【目的】ボタンの演出状態を既定値へリセットする。

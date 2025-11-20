@@ -50,7 +50,7 @@ namespace Common.State
         public async UniTask EnterAsync(CancellationToken ct)
         {
             await _webSocketManager.ConnectWebSocketAsync(null, ct);
-            _qrCodeService.UpdateSprite(_webSocketManager.GetFrontUrl());
+            _qrCodeService.UpdateURL(_webSocketManager.GetFrontUrl());
 
             if (!_masterData.IsDataFetched)
             {

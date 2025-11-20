@@ -14,6 +14,9 @@ namespace Common.QRCode
     /// </summary>
     public interface IQRCodeService
     {
+        ReadOnlyReactiveProperty<string> URLProp { get; }
+        
+        string URL { get; }
         /// <summary>
         /// 【目的】最新の QR コード Sprite を購読可能な形で公開する。
         /// 【理由】UI 側がリアクティブにバインドし、更新のたびに表示を差し替えられるようにするため。
@@ -25,7 +28,7 @@ namespace Common.QRCode
         /// 【理由】利用者が単一メソッドで QR コード更新を完結できるようにするため。
         /// </summary>
         /// <param name="url">【用途】QR コード化する URL やテキスト。</param>
-        void UpdateSprite(string url);
+        void UpdateURL(string url);
     }
     
     /// <summary>
@@ -39,6 +42,10 @@ namespace Common.QRCode
         /// 【理由】テキスト→Sprite 変換の詳細をサービス外へ切り出し、テストと再利用性を高めるため。
         /// </summary>
         private QRCodeSpriteFactory _factory;
+
+        private readonly ReactiveProperty<string> _urlProp;
+        public ReadOnlyReactiveProperty<string> URLProp => _urlProp;
+        public string URL => _urlProp.Value;
         
         /// <summary>
         /// 【目的】最新の QR コード画像を保持し、購読者へ通知する。
@@ -56,6 +63,7 @@ namespace Common.QRCode
         {
             _factory = factory;
             _sprite = new ReactiveProperty<Sprite>();
+            _urlProp = new ReactiveProperty<string>(string.Empty);
         }
 
         /// <summary>
@@ -63,8 +71,9 @@ namespace Common.QRCode
         /// 【理由】購読者へ即座に最新 Sprite を通知し、UI へ反映させるため。
         /// </summary>
         /// <param name="url">【用途】QR コードへ変換する文字列。</param>
-        public void UpdateSprite(string url)
+        public void UpdateURL(string url)
         {
+            _urlProp.Value = url;
             _sprite.Value = _factory.Create(url);
         }
     }

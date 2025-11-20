@@ -411,8 +411,6 @@ MonoBehaviour:
   _canvasGroup: {fileID: 7462383762858712857}
   _featherImage: {fileID: 2958572933554457795}
   _lineImage: {fileID: 33701834757509927}
-  _pushDownAnimParam: {fileID: 11400000, guid: 074f80ad137834388969a515f78218e3, type: 2}
-  _pushUpAnimParam: {fileID: 11400000, guid: 8e261b4e484834da8b31bed4e19ab4a6, type: 2}
 --- !u!114 &7013316544094048540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,7 +442,7 @@ MonoBehaviour:
   _button: {fileID: 1588439244446064372}
   _eventTrigger: {fileID: 7013316544094048540}
   _buttonType: 5
-  _clickSE: 29
+  _clickSE: 28
   _rectTransform: {fileID: 8216791150846653309}
   _pushDownAnimParam: {fileID: 11400000, guid: 074f80ad137834388969a515f78218e3, type: 2}
   _pushUpAnimParam: {fileID: 11400000, guid: 8e261b4e484834da8b31bed4e19ab4a6, type: 2}
