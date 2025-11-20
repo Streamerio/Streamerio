@@ -42,25 +42,26 @@ namespace Common
         private bool _isDataFetched = false;
         public bool IsDataFetched => _isDataFetched;
         
-        [SerializeField, Min(0f)]
+        [SerializeField, Min(0f), Tooltip("マスターデータ取得のタイムアウト時間(秒)")]
         private int _timeOutTime = 8;
         
-        [SerializeField]
+        [SerializeField, ReadOnly, Tooltip("ゲーム設定")]
         private MasterGameSetting _gameSetting;
         public MasterGameSetting GameSetting => _gameSetting;
 
-        [SerializeField] private MasterPlayerStatus _playerStatus; 
+        [SerializeField, ReadOnly, Tooltip("プレイヤーステータス")]
+        private MasterPlayerStatus _playerStatus; 
         public MasterPlayerStatus PlayerStatus => _playerStatus;
-        [SerializeField]
+        [SerializeField, ReadOnly, Tooltip("スキルステータス辞書")]
         private SerializeDictionary<MasterUltType, MasterUltStatus> _ultStatusDictionary;
         public IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary => _ultStatusDictionary.ToDictionary();
-        [SerializeField]
+        [SerializeField, ReadOnly, Tooltip("敵ステータス辞書")]
         private SerializeDictionary<MasterEnemyType, MasterEnemyStatus> _enemyStatusDictionary;
         public IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary => _enemyStatusDictionary.ToDictionary();
         
-        [SerializeField]
-        private MasterURL _masterURL;
-        public MasterURL MasterURL => _masterURL;
+        [SerializeField, ReadOnly, Tooltip("バックエンド設定")]
+        private MasterBackendSettings _backendSettings;
+        public MasterBackendSettings BackendSettings => _backendSettings;
         
         public async UniTask FetchDataAsync(CancellationToken ct)
         {
@@ -118,14 +119,14 @@ namespace Common
 
             if (IsValidDataRow(urlRows))
             {
-                _masterURL = new MasterURL()
+                _backendSettings = new MasterBackendSettings()
                 {
-                    FrontendURLFormat = (string)urlRows[MasterURL.FrontendURLFormatKey][0],
-                    FrontendQueryParamFormat = (string)urlRows[MasterURL.FrontendQueryParamFormatKey][0],
-                    BackendWebSocketURL = (string)urlRows[MasterURL.BackendWebSocketURLKey][0],
-                    BackHttpURL = (string)urlRows[MasterURL.BackHttpURLKey][0],
-                    GameStartResponse = (string)urlRows[MasterURL.GameStartResponseKey][0],
-                    GameEndResponse = (string)urlRows[MasterURL.GameEndResponseKey][0],
+                    FrontendURLFormat = (string)urlRows[MasterBackendSettings.FrontendURLFormatKey][0],
+                    FrontendQueryParamFormat = (string)urlRows[MasterBackendSettings.FrontendQueryParamFormatKey][0],
+                    BackendWebSocketURL = (string)urlRows[MasterBackendSettings.BackendWebSocketURLKey][0],
+                    BackHttpURL = (string)urlRows[MasterBackendSettings.BackHttpURLKey][0],
+                    GameStartResponse = (string)urlRows[MasterBackendSettings.GameStartResponseKey][0],
+                    GameEndResponse = (string)urlRows[MasterBackendSettings.GameEndResponseKey][0],
                 };
             }
             
@@ -171,6 +172,8 @@ namespace Common
         MasterPlayerStatus PlayerStatus { get; }
         IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary { get; }
         IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary { get; }
+        
+        MasterBackendSettings BackendSettings { get; }
         
         UniTask FetchDataAsync(CancellationToken ct);
     }
@@ -235,7 +238,7 @@ namespace Common
     }
 
     [Serializable]
-    public class MasterURL
+    public class MasterBackendSettings
     {
         public const string FrontendURLFormatKey = "FrontendURLFormat";
         public const string FrontendQueryParamFormatKey = "FrontendQueryParamFormat";
