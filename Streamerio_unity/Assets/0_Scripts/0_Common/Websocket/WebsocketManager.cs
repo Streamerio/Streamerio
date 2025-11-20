@@ -30,15 +30,15 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private GameEndSummaryNotification _gameEndSummary = null;
   public GameEndSummaryNotification GameEndSummary => _gameEndSummary;
 
-  private readonly ApiConfigSO _apiConfigSO;
+  private readonly MasterURL _masterURL;
   
   private string _qrCodeURL = string.Empty;
 
   private float _connectionTimeout = 10f;
 
-  public WebSocketManager(ApiConfigSO apiConfigSO)
+  public WebSocketManager(MasterURL masterURL)
   {
-    _apiConfigSO = apiConfigSO;
+    _masterURL = masterURL;
   }
   
   void ITickable.Tick()
@@ -64,11 +64,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     string websocketUrl;
     if (string.IsNullOrEmpty(websocketId))
     {
-      websocketUrl = _apiConfigSO.backendWsUrl;
+      websocketUrl = _masterURL.BackendWebSocketURL;  
     }
     else
     {
-      websocketUrl = ZString.Format(_apiConfigSO.frontendQueryParamFormat, _apiConfigSO.backendWsUrl, websocketId);
+      websocketUrl = ZString.Format(_masterURL.FrontendQueryParamFormat, _masterURL.BackendWebSocketURL, websocketId);
     }
     
     _websocket = new WebSocket(websocketUrl);
@@ -284,7 +284,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       Debug.LogError("Room ID is not set!");
       return string.Empty;
     }
-    _qrCodeURL = ZString.Format(_apiConfigSO.frontendUrlFormat, _roomId);
+    _qrCodeURL = ZString.Format(_masterURL.FrontendURLFormat, _roomId);
     
     return _qrCodeURL;
   }
@@ -294,7 +294,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameStartAsync()
   {
-    await SendWebSocketMessageAsync( _apiConfigSO.gameStartResponse );
+    await SendWebSocketMessageAsync( _masterURL.GameStartResponse );
   }
 
   ///<summary>
@@ -302,7 +302,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameEndAsync()
   {
-    await SendWebSocketMessageAsync( _apiConfigSO.gameEndResponse );
+    await SendWebSocketMessageAsync( _masterURL.GameEndResponse );
   }
 
 
@@ -325,7 +325,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void HealthCheck()
   {
-    UnityWebRequest.Get(_apiConfigSO.backendHttpUrl).SendWebRequest();
+    UnityWebRequest.Get(_masterURL.BackHttpURL).SendWebRequest();
     Debug.Log("HealthCheck");
   }
 
