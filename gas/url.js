@@ -5,5 +5,6 @@ const urlProp = {
   FrontendQueryParamFormat: { column: 2 },
   BackendWebSocketURL: { column: 3 },
   BackHttpURL: { column: 4 },
-  GameEndResponse: { column: 5},
+  GameStartResponse: { column: 5},
+  GameEndResponse: { column: 6},
 };

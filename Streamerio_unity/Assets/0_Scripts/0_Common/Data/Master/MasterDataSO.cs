@@ -124,6 +124,7 @@ namespace Common
                     FrontendQueryParamFormat = (string)urlRows[MasterURL.FrontendQueryParamFormatKey][0],
                     BackendWebSocketURL = (string)urlRows[MasterURL.BackendWebSocketURLKey][0],
                     BackHttpURL = (string)urlRows[MasterURL.BackHttpURLKey][0],
+                    GameStartResponse = (string)urlRows[MasterURL.GameStartResponseKey][0],
                     GameEndResponse = (string)urlRows[MasterURL.GameEndResponseKey][0],
                 };
             }
@@ -240,12 +241,14 @@ namespace Common
         public const string FrontendQueryParamFormatKey = "FrontendQueryParamFormat";
         public const string BackendWebSocketURLKey = "BackendWebSocketURL";
         public const string BackHttpURLKey = "BackHttpURL";
+        public const string GameStartResponseKey = "GameStartResponse";
         public const string GameEndResponseKey = "GameEndResponse";
         
         public string FrontendURLFormat;
         public string FrontendQueryParamFormat;
         public string BackendWebSocketURL;
         public string BackHttpURL;
+        public string GameStartResponse;
         public string GameEndResponse;
     }
 }
