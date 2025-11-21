@@ -134,14 +134,17 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"viewer_summary": summary,
 		})
 	}
-
-	// PushCount合計のバリデーション（連打攻撃防止）
+	
+	// PushCount合計
 	totalPushCount := int64(0)
-	for _, event := range req.PushEvents {
-		totalPushCount += event.PushCount
-	}
-	if totalPushCount > 20 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
+	// PushEventMap: ボタン名とPushCountのマップ
+	PushEventMap := map[string]int64{
+		"skill1": 0,
+		"skill2": 0,
+		"skill3": 0,
+		"enemy1": 0,
+		"enemy2": 0,
+		"enemy3": 0,
 	}
 
 	// リクエスト全体で共通のイベント種別が指定されていれば先に正規化
@@ -150,32 +153,33 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		defaultEventType = model.EventType(req.EventType)
 	}
 
-	// ProcessEventの戻り値を格納する配列
-	var eventResults []*model.EventResult
+	eventType := defaultEventType
 
 	for _, event := range req.PushEvents {
-		eventType := defaultEventType
+		totalPushCount += event.PushCount
+
 		if eventType == "" {
 			if event.ButtonName == "" {
 				return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
 			}
 			eventType = model.EventType(event.ButtonName)
 		}
+		PushEventMap[event.ButtonName] = event.PushCount
+	}
 
-		pushCount := event.PushCount
+	// PushCount合計のバリデーション（連打攻撃防止）
+	if totalPushCount > 20 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
+	}
 
-		res, err := h.eventService.ProcessEvent(roomID, eventType, pushCount, viewerID)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		}
-
-		// 結果を配列に追加
-		eventResults = append(eventResults, res)
+	res, err := h.eventService.ProcessEvent(roomID, eventType, PushEventMap, viewerID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
 	// 配列として結果を返す
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"event_results": eventResults,
+		"event_results": res,
 	})
 }
 
