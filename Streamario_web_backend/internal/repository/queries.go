@@ -2,7 +2,7 @@ package repository
 
 // --- Event Repository Queries ---
 const (
-	queryCreateEvent = `INSERT INTO events (room_id, viewer_id, event_type, triggered_at, metadata) VALUES ($1,$2,$3,$4,$5)`
+	queryCreateEvent = `INSERT INTO events (room_id, viewer_id, triggered_at, metadata, skill1_count, skill2_count, skill3_count, enemy1_count, enemy2_count, enemy3_count) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
 
 	queryListEventViewerCounts = `SELECT e.event_type,
 			e.viewer_id,
