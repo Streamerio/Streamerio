@@ -151,7 +151,8 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	// PushEventMapへの登録もここで行う
 	for _, event := range req.PushEvents {
 		eventType := model.EventType(event.ButtonName)
-		if eventType == "" {
+		// EventTypeが未定義の場合はエラー
+		if _, ok := PushEventMap[eventType]; !ok {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid event type"})
 		}
 		pushCount := event.PushCount
