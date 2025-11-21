@@ -1,0 +1,20 @@
+# Goの公式イメージを使用
+FROM golang:1.25
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# Goアプリケーションのソースコードをコピー
+COPY . .
+
+# 依存関係を解決
+RUN go mod tidy
+
+# WebSocket サーバーをビルド
+RUN go build -o unityws cmd/unityws/main.go
+
+# コンテナが起動時に実行するコマンド
+CMD ["./unityws"]
+
+# Unity 向け WebSocket サーバーのポートを公開
+EXPOSE 8890
