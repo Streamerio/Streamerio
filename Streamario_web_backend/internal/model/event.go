@@ -41,6 +41,8 @@ type EventResult struct {
 	EffectTriggered bool      `json:"effect_triggered"`
 	ViewerCount     int       `json:"viewer_count"`
 	NextThreshold   int       `json:"next_threshold"`
+	RemainingCount  int       `json:"remaining_count"`
+	Progress        float64   `json:"progress"`
 }
 
 type RoomEventStat struct {
@@ -50,4 +52,6 @@ type RoomEventStat struct {
 	RequiredCount int       `json:"required_count"`
 	NextThreshold int       `json:"next_threshold"`
 	ViewerCount   int       `json:"viewer_count"`
+	RemainingCount int      `json:"remaining_count"`
+	Progress       float64  `json:"progress"`
 }
