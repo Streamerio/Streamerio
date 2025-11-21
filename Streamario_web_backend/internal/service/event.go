@@ -50,6 +50,11 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 	}
 
 	for eventType, count := range PushEventMap {
+		// イベントがない場合はカウントしない
+		if count == 0 {
+			continue
+		}
+
 		// 3. Increment counter
 		current, err := s.counter.Increment(roomID, string(eventType), count)
 		if err != nil {
