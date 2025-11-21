@@ -138,33 +138,28 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	// PushCount合計
 	totalPushCount := int64(0)
 	// PushEventMap: ボタン名とPushCountのマップ
-	PushEventMap := map[string]int64{
-		"skill1": 0,
-		"skill2": 0,
-		"skill3": 0,
-		"enemy1": 0,
-		"enemy2": 0,
-		"enemy3": 0,
+	PushEventMap := map[model.EventType]int64{
+		model.SKILL1: 0,
+		model.SKILL2: 0,
+		model.SKILL3: 0,
+		model.ENEMY1: 0,
+		model.ENEMY2: 0,
+		model.ENEMY3: 0,
 	}
 
-	// リクエスト全体で共通のイベント種別が指定されていれば先に正規化
-	var defaultEventType model.EventType
-	if req.EventType != "" {
-		defaultEventType = model.EventType(req.EventType)
-	}
-
-	eventType := defaultEventType
-
+	// PushEventsのバリデーション
+	// PushEventMaphへの登録もここで行う
 	for _, event := range req.PushEvents {
-		totalPushCount += event.PushCount
-
+		eventType := model.EventType(event.ButtonName)
 		if eventType == "" {
-			if event.ButtonName == "" {
-				return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
-			}
-			eventType = model.EventType(event.ButtonName)
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid event type"})
 		}
-		PushEventMap[event.ButtonName] = event.PushCount
+		pushCount := event.PushCount
+		if pushCount <= 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "push count must be greater than 0"})
+		}
+		totalPushCount += pushCount
+		PushEventMap[eventType] = pushCount
 	}
 
 	// PushCount合計のバリデーション（連打攻撃防止）
@@ -172,14 +167,14 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
 	}
 
-	res, err := h.eventService.ProcessEvent(roomID, eventType, PushEventMap, viewerID)
+	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
 	// 配列として結果を返す
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"event_results": res,
+		"event_results": responses,
 	})
 }
 
