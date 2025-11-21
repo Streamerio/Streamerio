@@ -148,7 +148,7 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	}
 
 	// PushEventsのバリデーション
-	// PushEventMaphへの登録もここで行う
+	// PushEventMapへの登録もここで行う
 	for _, event := range req.PushEvents {
 		eventType := model.EventType(event.ButtonName)
 		if eventType == "" {
