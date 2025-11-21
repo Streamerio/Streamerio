@@ -158,13 +158,18 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		if pushCount <= 0 {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "push count must be greater than 0"})
 		}
+		// 連打攻撃防止
+		// 1つのボタンごとに20回までしか押せないようにする
+		if pushCount > 20 {
+			pushCount = 20
+		}
 		totalPushCount += pushCount
 		PushEventMap[eventType] = pushCount
 	}
 
-	// PushCount合計のバリデーション（連打攻撃防止）
-	if totalPushCount > 20 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
+	// イベントがない場合は何もしない
+	if totalPushCount == 0 {
+		return c.JSON(http.StatusOK, map[string]string{"INFO": "no push events"})
 	}
 
 	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID)
