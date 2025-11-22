@@ -13,6 +13,7 @@ env:
   GCP_REGION: asia-northeast1
   ARTIFACT_REGISTRY_REPO: streamario
   IMAGE_NAME: asia-northeast1-docker.pkg.dev/streamerio-472706/streamario/streamario-web-backend
+  UNITYWS_IMAGE_NAME: asia-northeast1-docker.pkg.dev/streamerio-472706/streamario/streamario-unityws
 
 jobs:
   deploy:
@@ -42,7 +43,7 @@ jobs:
           TAG=$(echo $GITHUB_SHA | head -c7)
           echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
 
-      - name: Build and push Docker image
+      - name: Build and push REST API image
         run: |
           docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest \
             -f Streamario_web_backend/Dockerfile \
@@ -50,7 +51,15 @@ jobs:
           docker push ${IMAGE_NAME}:${IMAGE_TAG}
           docker push ${IMAGE_NAME}:latest
 
-      - name: Deploy to Cloud Run
+      - name: Build and push Unity WebSocket image
+        run: |
+          docker build -t ${UNITYWS_IMAGE_NAME}:${IMAGE_TAG} -t ${UNITYWS_IMAGE_NAME}:latest \
+            -f Streamario_web_backend/Dockerfile.unityws \
+            ./Streamario_web_backend
+          docker push ${UNITYWS_IMAGE_NAME}:${IMAGE_TAG}
+          docker push ${UNITYWS_IMAGE_NAME}:latest
+
+      - name: Deploy REST API to Cloud Run
         run: |
           gcloud run deploy streamario-web-backend \
             --image ${IMAGE_NAME}:${IMAGE_TAG} \
@@ -59,4 +68,16 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}"
+
+      - name: Deploy Unity WebSocket to Cloud Run
+        run: |
+          gcloud run deploy streamario-unityws \
+            --image ${UNITYWS_IMAGE_NAME}:${IMAGE_TAG} \
+            --platform managed \
+            --region ${GCP_REGION} \
+            --allow-unauthenticated \
+            --port 8080 \
+            --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
             --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}" \
+            --set-env-vars "UNITY_WS_PORT=8080"

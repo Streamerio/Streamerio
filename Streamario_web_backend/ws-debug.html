@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebSocket 動作確認</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; margin: 24px; background: #f7f7f7; }
+    h1 { font-size: 1.5rem; }
+    fieldset { border: 1px solid #ccc; padding: 16px; background: #fff; margin-bottom: 16px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    input, button, textarea { font-size: 1rem; }
+    input { width: 100%; padding: 8px; margin-bottom: 12px; }
+    button { padding: 8px 16px; margin-right: 8px; }
+    #log { background: #111; color: #e3e3e3; padding: 12px; min-height: 260px; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    .controls button { flex: none; }
+  </style>
+</head>
+<body>
+  <h1>Unity WebSocket サーバー確認用</h1>
+  <fieldset>
+    <label>WebSocket URL</label>
+    <input type="text" id="ws-url" value="ws://localhost:8890/ws-unity" />
+
+    <label>Room ID（既存ルームに接続したい場合は指定）</label>
+    <input type="text" id="room-id" placeholder="例: 01J123ABCDEF..." />
+
+    <div class="controls">
+      <button id="connect">接続</button>
+      <button id="disconnect" disabled>切断</button>
+      <button id="send-end" disabled>game_end を送信</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <label>任意メッセージ送信（JSON 文字列）</label>
+    <textarea id="custom-message" rows="4" style="width: 100%;" placeholder='{"type":"ping"}'></textarea>
+    <div class="controls">
+      <button id="send-custom" disabled>送信</button>
+      <button id="clear-log">ログをクリア</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>ログ</legend>
+    <div id="log"></div>
+  </fieldset>
+
+  <script>
+    const logArea = document.getElementById('log');
+    const wsUrlInput = document.getElementById('ws-url');
+    const roomInput = document.getElementById('room-id');
+    const connectBtn = document.getElementById('connect');
+    const disconnectBtn = document.getElementById('disconnect');
+    const sendEndBtn = document.getElementById('send-end');
+    const sendCustomBtn = document.getElementById('send-custom');
+    const customMessageInput = document.getElementById('custom-message');
+    const clearLogBtn = document.getElementById('clear-log');
+
+    let socket = null;
+
+    const appendLog = (label, data) => {
+      const timestamp = new Date().toISOString();
+      const body = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      logArea.textContent += `[${timestamp}] ${label}: ${body}\n`;
+      logArea.scrollTop = logArea.scrollHeight;
+    };
+
+    const setConnected = (connected) => {
+      connectBtn.disabled = connected;
+      disconnectBtn.disabled = !connected;
+      sendEndBtn.disabled = !connected;
+      sendCustomBtn.disabled = !connected;
+    };
+
+    connectBtn.addEventListener('click', () => {
+      if (socket) {
+        socket.close();
+      }
+      const baseUrl = wsUrlInput.value.trim();
+      if (!baseUrl) {
+        alert('WebSocket URL を入力してください');
+        return;
+      }
+      const roomId = roomInput.value.trim();
+      const url = roomId ? `${baseUrl}?room_id=${encodeURIComponent(roomId)}` : baseUrl;
+      appendLog('INFO', `connecting to ${url}`);
+      socket = new WebSocket(url);
+
+      socket.addEventListener('open', () => {
+        appendLog('OPEN', 'connected');
+        setConnected(true);
+      });
+
+      socket.addEventListener('message', (event) => {
+        let payload = event.data;
+        try {
+          payload = JSON.parse(event.data);
+        } catch (_) {
+          // そのまま文字列扱い
+        }
+        appendLog('MESSAGE', payload);
+        if (payload && payload.room_id && !roomInput.value) {
+          roomInput.value = payload.room_id;
+        }
+      });
+
+      socket.addEventListener('close', (event) => {
+        appendLog('CLOSE', `code=${event.code} reason=${event.reason}`);
+        setConnected(false);
+        socket = null;
+      });
+
+      socket.addEventListener('error', (err) => {
+        appendLog('ERROR', err.message || err);
+      });
+    });
+
+    disconnectBtn.addEventListener('click', () => {
+      if (socket) {
+        socket.close();
+      }
+    });
+
+    sendEndBtn.addEventListener('click', () => {
+      if (!socket) return;
+      const msg = { type: 'game_end' };
+      socket.send(JSON.stringify(msg));
+      appendLog('SEND', msg);
+    });
+
+    sendCustomBtn.addEventListener('click', () => {
+      if (!socket) return;
+      const raw = customMessageInput.value.trim();
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        socket.send(JSON.stringify(parsed));
+        appendLog('SEND', parsed);
+      } catch (err) {
+        alert('JSON を正しく入力してください');
+      }
+    });
+
+    clearLogBtn.addEventListener('click', () => {
+      logArea.textContent = '';
+    });
+  </script>
+</body>
+</html>
