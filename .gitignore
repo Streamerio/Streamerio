@@ -180,3 +180,5 @@ crashlytics-build.properties
 */AGENTS.md
 
 node_modules/
+
+*/.idea/*
