@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"strings"
+	"os/signal"
 	"syscall"
 	"time"
 
