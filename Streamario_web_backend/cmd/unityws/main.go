@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"streamerrio-backend/internal/config"
 	"streamerrio-backend/internal/handler"
@@ -72,6 +73,7 @@ func main() {
 	} else {
 		rdb = redis.NewClient(&redis.Options{Addr: cfg.RedisURL})
 	}
+	defer rdb.Close()
 	redisCounter := counter.NewRedisCounter(rdb, appLogger.With(slog.String("component", "redis_counter")))
 
 	// 6. Pub/Sub 初期化
@@ -82,6 +84,10 @@ func main() {
 	eventRepo := repository.NewEventRepository(db, repoLogger.With(slog.String("repository", "event")))
 	roomRepo := repository.NewRoomRepository(db, repoLogger.With(slog.String("repository", "room")))
 	viewerRepo := repository.NewViewerRepository(db, repoLogger.With(slog.String("repository", "viewer")))
+
+	defer eventRepo.Close()
+	defer roomRepo.Close()
+	defer viewerRepo.Close()
 
 	// 8. サービス層
 	roomService := service.NewRoomService(roomRepo, cfg)
@@ -131,6 +137,12 @@ func main() {
 	if err := e.Start(":" + cfg.UnityWSPort); err != nil && err != http.ErrServerClosed {
 		log.Error("server stopped", slog.Any("error", err))
 		os.Exit(1)
+	}
+
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelShutdown()
+	if err := e.Shutdown(ctxShutdown); err != nil {
+		log.Error("server shutdown error", slog.Any("error", err))
 	}
 }
 
