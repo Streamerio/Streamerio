@@ -1,5 +1,3 @@
-# .github/workflows/deploy.yml
-
 name: Deploy to Google Cloud Run
 
 on:
@@ -19,109 +17,46 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    # OIDC発行に必要。id-tokenは必須、contentsはcheckout用
     permissions:
-      contents: read
-      id-token: write
+        contents: 'read'
+        id-token: 'write'
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # OIDCトークンのクレームを確認するためのデバッグ。Providerの属性条件と突き合わせに使う
-      - name: Print OIDC token claims (debug)
-        id: print-oidc
-        env:
-          AUDIENCE: "https://iam.googleapis.com/projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool"
-        run: |
-          # GitHubが署名したIDトークンを取得（audienceはGCP側で期待する値に揃える）
-          TOKEN="$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}" | jq -r '.value')"
-          echo "RAW_ID_TOKEN_LENGTH=${#TOKEN}"
-          # ヘッダ・ペイロードだけを表示（署名部分は長いので省略）
-          PAYLOAD="$(echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null || echo '{}')"
-          echo "OIDC_PAYLOAD=${PAYLOAD}"
-          # よく使うクレームを抜粋
-          echo "repo=$(echo "$PAYLOAD" | jq -r '.repository // empty')"
-          echo "owner=$(echo "$PAYLOAD" | jq -r '.repository_owner // empty')"
-          echo "ref=$(echo "$PAYLOAD" | jq -r '.ref // empty')"
-          echo "workflow=$(echo "$PAYLOAD" | jq -r '.workflow // empty')"
-          echo "actor=$(echo "$PAYLOAD" | jq -r '.actor // empty')"
-
-      # Google 認証。v3を使用（現状のYAMLと同じ）。失敗時はProvider/IAM設定不一致の可能性が高い
       - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ env.GCP_PROJECT_ID }}
-          workload_identity_provider: projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool
+          workload_identity_provider: 'projects/282618030957/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-pool'
           service_account: github-actions@streamerio-472706.iam.gserviceaccount.com
-          create_credentials_file: true
-          export_environment_variables: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: latest
 
-      - name: Configure gcloud
-        run: |
-          gcloud config set project "${{ env.GCP_PROJECT_ID }}"
-          gcloud config set disable_prompts true
-
-      # Docker認証が失敗する場合があるため、確認＆再試行ロジックを追加
       - name: Configure Docker for Artifact Registry
-        run: |
-          set -e
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-          # ここでトークンが取れない場合は権限/信頼設定が未整備
-          gcloud auth print-access-token >/dev/null
-
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy streamario-web-backend \
-            --image "${IMAGE_NAME}:${IMAGE_TAG}" \
-            --platform managed \
-            --region "${GCP_REGION}" \
-            --project "${GCP_PROJECT_ID}" \
-            --allow-unauthenticated \
-            --set-env-vars "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" \
-            --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}"
-
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
 
       - name: Set Image Tag Name
         run: |
-          TAG="$(echo "$GITHUB_SHA" | head -c7)"
-          echo "IMAGE_TAG=${TAG}" >> "$GITHUB_ENV"
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         run: |
-          docker build \
-            -t "${IMAGE_NAME}:${IMAGE_TAG}" \
-            -t "${IMAGE_NAME}:latest" \
+          docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest \
             -f Streamario_web_backend/Dockerfile \
             ./Streamario_web_backend
+          docker push ${IMAGE_NAME}:${IMAGE_TAG}
+          docker push ${IMAGE_NAME}:latest
 
-      - name: Push Docker image (tag)
-        run: |
-          set -e
-          docker push "${IMAGE_NAME}:${IMAGE_TAG}"
-
-      - name: Push Docker image (latest)
-        run: |
-          set -e
-          docker push "${IMAGE_NAME}:latest"
-
-      # Cloud Run へのデプロイ。--allow-unauthenticated は公開設定なので意図確認推奨
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy streamario-web-backend \
-            --image "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --image ${IMAGE_NAME}:${IMAGE_TAG} \
             --platform managed \
-            --region "${GCP_REGION}" \
-            --project "${GCP_PROJECT_ID}" \
+            --region ${GCP_REGION} \
             --allow-unauthenticated \
             --set-env-vars "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}"
+            --set-env-vars "REDIS_URL=${{ secrets.REDIS_URL }}" \
