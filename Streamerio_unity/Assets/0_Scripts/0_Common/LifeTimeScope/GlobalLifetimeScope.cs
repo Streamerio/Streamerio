@@ -18,8 +18,6 @@ public class GlobalLifetimeScope : LifetimeScope
 {
     [SerializeField]
     private MasterDataSO _masterDataSO;
-    [SerializeField]
-    private ApiConfigSO _apiConfigSO;
     protected override void Configure(IContainerBuilder builder)
     {
         builder.RegisterEntryPoint<GlobalBooster>();
@@ -50,7 +48,7 @@ public class GlobalLifetimeScope : LifetimeScope
 # if UNITY_EDITOR
     .As<ITickable>()
 # endif
-    .WithParameter(_ => _apiConfigSO);
+    .WithParameter(_ => _masterDataSO.BackendSettings);
 
         //builder.RegisterEntryPoint<TestWindow>();
         //builder.RegisterEntryPoint<TestOverlay>();
