@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Common.UI.Animation
 {
-    public class CloseAnimation: SequenceAnimationBase
+    public class CloseAnimation: SequenceAnimationBase, IInitializableAnimation
     {
         private readonly RectTransform _rectTransform;
         private readonly CloseAnimationParamSO _param;
@@ -18,12 +18,17 @@ namespace Common.UI.Animation
             SetSequence();
         }
 
+        public void InitializeAnimation()
+        {
+            _rectTransform.anchoredPosition = _param.InitialAnchoredPosition;
+            _rectTransform.sizeDelta = _param.InitialScale;
+        }
+        
         public override async UniTask PlayAsync(CancellationToken ct, bool useInitial = true)
         {
             if (useInitial)
             {
-                _rectTransform.anchoredPosition = _param.InitialAnchoredPosition;
-                _rectTransform.sizeDelta = _param.InitialScale;
+                InitializeAnimation();
             }
             
             await base.PlayAsync(ct, useInitial);
