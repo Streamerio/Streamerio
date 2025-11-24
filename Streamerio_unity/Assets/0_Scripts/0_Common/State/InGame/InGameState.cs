@@ -12,17 +12,20 @@ namespace Common.State
 
         private readonly ITimer _timer;
         
+        private readonly IWebSocketManager _webSocketManager;
+        
         [Inject]
-        public InGameState(IAudioFacade audioFacade, ITimer timer)
+        public InGameState(IAudioFacade audioFacade, ITimer timer, IWebSocketManager webSocketManager)
         {
             _audioFacade = audioFacade;
             _timer = timer;
+            _webSocketManager = webSocketManager;
         }
         
         public async UniTask EnterAsync(CancellationToken ct)
         {
             _timer.StartCountdownTimer();
-            await UniTask.WaitForEndOfFrame(cancellationToken: ct);
+            await _webSocketManager.GameStartAsync();
         }
         
         public async UniTask ExitAsync(CancellationToken ct)
