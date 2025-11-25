@@ -503,40 +503,40 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: m_Cameras.Array.size
-      value: 11
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[0]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 3757299206655035039}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[1]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5801456133712096869}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[2]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 3897772184151842000}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[3]'
       value: 
-      objectReference: {fileID: 3757299206655035039}
+      objectReference: {fileID: 4127056534936574204}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[4]'
       value: 
-      objectReference: {fileID: 5801456133712096869}
+      objectReference: {fileID: 7332646172870109632}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[5]'
       value: 
-      objectReference: {fileID: 3897772184151842000}
+      objectReference: {fileID: 2353175880431386173}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[6]'
       value: 
-      objectReference: {fileID: 4127056534936574204}
+      objectReference: {fileID: 5841459204413287787}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[7]'
       value: 
-      objectReference: {fileID: 7332646172870109632}
+      objectReference: {fileID: 2162577574572888953}
     - target: {fileID: 6590037939419848848, guid: 18c250bc5fe7e4cfc92985915a64e521, type: 3}
       propertyPath: 'm_Cameras.Array.data[8]'
       value: 

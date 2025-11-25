@@ -46,13 +46,8 @@ public class GlobalLifetimeScope : LifetimeScope
         builder.Register<IDialogService, DialogService>(Lifetime.Singleton);
         builder.Register<IWebSocketManager, WebSocketManager>(Lifetime.Singleton)
 # if UNITY_EDITOR
-    .As<ITickable>()
+            .As<ITickable>()
 # endif
-    .WithParameter(_ => _masterDataSO.BackendSettings);
-
-        //builder.RegisterEntryPoint<TestWindow>();
-        //builder.RegisterEntryPoint<TestOverlay>();
-        //builder.RegisterEntryPoint<DialogTest>();
-        //builder.RegisterEntryPoint<LoadingTest>();
+            .WithParameter(_ => _masterDataSO.BackendSettings);
     }
 }

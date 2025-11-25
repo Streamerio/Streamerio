@@ -60,7 +60,7 @@ namespace Common.State
             
             await UniTask.WhenAll(tasks);
             
-            _qrCodeService.UpdateSprite(_webSocketManager.GetFrontUrl());
+            _qrCodeService.UpdateURL(_webSocketManager.GetFrontUrl());
             
             // 両方成功していればゲーム画面へ遷移、どちらかが失敗していれば再接続ダイアログを表示
             if (_masterData.IsDataFetched && _webSocketManager.IsConnectedProp.CurrentValue)
