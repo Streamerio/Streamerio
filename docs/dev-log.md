@@ -210,6 +210,7 @@
 - 設定値に `UNITY_WS_PORT` を追加して WebSocket サーバーの待受ポートを独立管理
 - API サーバー側の `GameSessionService` には WebSocket 送信者を注入せず、終了集計と REST レスポンスに専念させた
 - Cloud Run 用のイメージ切り分け準備として `Dockerfile.unityws` を新設し、WebSocket サーバー専用バイナリをビルドできるようにした
+- WebSocket イベント確認を容易にする `docs/ws-debug.html` を追加し、ブラウザから `/ws-unity` に接続して Pub/Sub 経由の通知を可視化できるようにした
 
 ### 意図・設計上の判断
 - **高凝集**: API サーバーは REST, WebSocket サーバーは Unity 通信という単一責務になるよう依存を整理
@@ -307,3 +308,67 @@
 ### 今後の TODO
 - Backend のトークン発行 API と SDK 実装を接続し、エンドツーエンドで疎通確認を行う。
 - Miniflare を用いた自動テスト、Queue コンシューマ Worker の雛形追加、Metrics エクスポートを整備。
+#### 2025-11-09 GitHub Actions / Cloud Run デュアルサービス対応
+- GitHub Actions (`.github/workflows/deploy.yml`) を更新し、REST API（`cmd/server`）と Unity WebSocket（`cmd/unityws`）の 2 イメージをビルドして Artifact Registry にプッシュ。
+- Cloud Run も `streamario-web-backend` と `streamario-unityws` の 2 サービスを自動デプロイするようにし、後者には `UNITY_WS_PORT=8080` を明示設定して $PORT と整合させた。
+- 既存 Secret（`DATABASE_URL`, `REDIS_URL`, `FRONTEND_URL`）を使い回しつつ、WebSocket サービス側では DB/Redis のみ注入することで高凝集（専門の役割）と低結合（共通依存のみ共有）を維持。
+
+
+## 2025-11-18 処理フローのシーケンス図追加（docs/flow.md）
+
+### 目的
+- 仕様が口頭・メモで散在していたため、配信者サイド/視聴者側の処理を時系列で可視化し、合意形成と保守性を向上させる。
+
+### 変更点
+- `docs/flow.md` を新規整備し、Mermaid による2本のシーケンス図（配信者サイド、視聴者側）を追加。
+- 図内では REST(API)/WebSocket/Redis/PubSub/Postgres の役割を分離して表現し、`1.2秒` の集計ウィンドウと `しきい値判定→Pub/Sub→WS→Unity` の伝搬を明示。
+
+### 意図・設計上の判断
+- 高凝集: API は集計・永続化・サマリ取得、WS は Unity 通信に専念。図もこの責務分離に沿って構成。
+- 低結合: API と WS は Pub/Sub 経由で疎結合に連携し、水平スケール/独立デプロイを前提化。
+- 整合性: `docs/game_end_plan.md` の終了処理に合わせ、ゲーム終了時のサマリ取得と配信者/視聴者への返却ルートを明示。
+
+### 今後
+- ハンドラ/エンドポイント命名やイベント型が変わった場合は、本図を同ブランチで都度更新する運用にする（PR テンプレへチェック項目追加予定）。
+
+#### 追記（挙動訂正）
+- 1.2秒の周期は「視聴者Webサイト側の集計と送信タイミング」を指し、閾値判定は「HTTPサーバがイベント受信のたびに」実施するため、`docs/flow.md` のシーケンス図を受信毎判定の表現へ修正（配信者図のAPI内部タイマー表現を削除、視聴者図に判定行を追加）。
+
+
+## 2025-01-27 CreateEventsBatch()でprepared statementを使用
+
+### 目的
+- `CreateEventsBatch()` メソッドでも prepared statement を使用し、パフォーマンスとセキュリティを向上させる
+- 動的クエリ構築から prepared statement への移行により、SQLインジェクション対策とクエリ実行効率を改善
+
+### 実装概要
+- バッチサイズごとに prepared statement をキャッシュする仕組みを実装
+- `eventRepository` 構造体に `batchStmts map[int]*sqlx.Stmt` と `batchMutex sync.RWMutex` を追加
+- `getOrCreateBatchStmt()` メソッドで、バッチサイズに応じた prepared statement を取得または作成
+- スレッドセーフを考慮し、RWMutex を使用して並行アクセスを制御
+- `Close()` メソッドで、すべてのバッチ用 prepared statement を適切にクローズ
+
+### 変更ファイル
+- `Streamario_web_backend/internal/repository/event.go`
+  - `sync` パッケージをインポートに追加
+  - `eventRepository` 構造体に `batchStmts` と `batchMutex` を追加
+  - `CreateEventsBatch()` を prepared statement を使用する実装に変更
+  - `getOrCreateBatchStmt()` メソッドを新規追加（バッチサイズごとの prepared statement 管理）
+  - `Close()` メソッドでバッチ用 prepared statement のクローズ処理を追加
+
+### 意図・設計上の判断
+- 高凝集: バッチ挿入の責務を `eventRepository` 内に集約し、prepared statement の管理も含める
+- 低結合: 既存の `CreateEvent()` メソッドには影響を与えず、バッチ処理のみを改善
+- パフォーマンス: prepared statement の再利用により、クエリ解析コストを削減
+- セキュリティ: 動的クエリ構築を廃止し、SQLインジェクション対策を強化
+- スレッドセーフ: RWMutex を使用して並行アクセス時の安全性を確保
+- リソース管理: `Close()` で適切にリソースを解放し、メモリリークを防止
+
+### 実装の詳細
+- バッチサイズごとに prepared statement をキャッシュすることで、同じサイズのバッチを繰り返し実行する場合の効率を最大化
+- ダブルチェックロッキングパターンを使用して、並行アクセス時の不要な prepared statement 作成を防止
+- エラーハンドリングを適切に行い、prepared statement 作成失敗時は詳細なログを出力
+
+### 今後の課題
+- バッチサイズが非常に多様な場合のメモリ使用量を監視
+- 使用頻度の低いバッチサイズの prepared statement を定期的にクリーンアップする仕組みの検討

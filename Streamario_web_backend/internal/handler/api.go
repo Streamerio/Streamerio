@@ -216,49 +216,53 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"viewer_summary": summary,
 		})
 	}
-
-	// PushCount合計のバリデーション（連打攻撃防止）
+	
+	// PushCount合計
 	totalPushCount := int64(0)
+	// PushEventMap: ボタン名とPushCountのマップ
+	PushEventMap := map[model.EventType]int64{
+		model.SKILL1: 0,
+		model.SKILL2: 0,
+		model.SKILL3: 0,
+		model.ENEMY1: 0,
+		model.ENEMY2: 0,
+		model.ENEMY3: 0,
+	}
+
+	// PushEventsのバリデーション
+	// PushEventMapへの登録もここで行う
 	for _, event := range req.PushEvents {
-		totalPushCount += event.PushCount
-	}
-	if totalPushCount > 20 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "total push count exceeds limit (20)"})
-	}
-
-	// リクエスト全体で共通のイベント種別が指定されていれば先に正規化
-	var defaultEventType model.EventType
-	if req.EventType != "" {
-		defaultEventType = model.EventType(req.EventType)
-	}
-
-	// ProcessEventの戻り値を格納する配列
-	var eventResults []*model.EventResult
-
-	for _, event := range req.PushEvents {
-		eventType := defaultEventType
-		if eventType == "" {
-			if event.ButtonName == "" {
-				return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
-			}
-			eventType = model.EventType(event.ButtonName)
+		eventType := model.EventType(event.ButtonName)
+		// EventTypeが未定義の場合はエラー
+		if _, ok := PushEventMap[eventType]; !ok {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid event type"})
 		}
-
 		pushCount := event.PushCount
-
-		res, err := h.eventService.ProcessEvent(roomID, eventType, pushCount, viewerID)
-		if err != nil {
-			h.logger.Error("process_event_failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		if pushCount <= 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "push count must be greater than 0"})
 		}
+		// 連打攻撃防止
+		// 1つのボタンごとに20回までしか押せないようにする
+		if pushCount > 20 {
+			pushCount = 20
+		}
+		totalPushCount += pushCount
+		PushEventMap[eventType] = pushCount
+	}
 
-		// 結果を配列に追加
-		eventResults = append(eventResults, res)
+	// イベントがない場合は何もしない
+	if totalPushCount == 0 {
+		return c.JSON(http.StatusOK, map[string]string{"INFO": "no push events"})
+	}
+
+	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
 	// 配列として結果を返す
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"event_results": eventResults,
+		"event_results": responses,
 	})
 }
 

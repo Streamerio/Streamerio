@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"streamerrio-backend/internal/config"
 	"streamerrio-backend/internal/handler"
@@ -71,6 +75,7 @@ func main() {
 	} else {
 		rdb = redis.NewClient(&redis.Options{Addr: cfg.RedisURL})
 	}
+	defer rdb.Close()
 	redisCounter := counter.NewRedisCounter(rdb, appLogger.With(slog.String("component", "redis_counter")))
 
 	// 6. Pub/Sub 初期化 (REST API → WebSocket サーバーへのイベント配信)
@@ -81,6 +86,11 @@ func main() {
 	eventRepo := repository.NewEventRepository(db, repoLogger.With(slog.String("repository", "event")))
 	roomRepo := repository.NewRoomRepository(db, repoLogger.With(slog.String("repository", "room")))
 	viewerRepo := repository.NewViewerRepository(db, repoLogger.With(slog.String("repository", "viewer")))
+
+	// リポジトリのリソース解放（Prepared Statement）
+	defer eventRepo.Close()
+	defer roomRepo.Close()
+	defer viewerRepo.Close()
 
 	// 8. サービス層生成
 	roomService := service.NewRoomService(roomRepo, cfg)
@@ -100,6 +110,7 @@ func main() {
 		os.Exit(1)
 	}
 	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService, logTokenService).WithLogger(appLogger.With(slog.String("component", "handler")))
+
 
 	// 10. Echo フレームワーク初期化 & ミドルウェア
 	e := echo.New()
@@ -138,10 +149,25 @@ func main() {
 
 	// 13. サーバ起動
 	log.Info("starting http server", slog.String("port", cfg.Port))
-	if err := e.Start(":" + cfg.Port); err != nil {
-		log.Error("server stopped", slog.Any("error", err))
-		os.Exit(1)
+	// サーバ起動を別goroutineで実行し、致命的でない終了はログのみに留める
+	go func() {
+		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
+		log.Error("server start failed", slog.Any("error", err))
+		}
+	}()
+
+	// シグナル待ち（Ctrl+C / SIGTERM でグレースフルシャットダウン）
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+	log.Info("shutting down http server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		log.Error("server shutdown error", slog.Any("error", err))
 	}
+	// ここで main が return し、上部の defer Close() が必ず実行される
 }
 
 func healthCheck(c echo.Context) error {
