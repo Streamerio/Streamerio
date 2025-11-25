@@ -10,7 +10,7 @@ namespace Common
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public class AutoSetDataScriptableObject<TKey, TValue> : ScriptableObject
+    public abstract class AutoSetDataScriptableObject<TKey, TValue> : ScriptableObject
         where TKey : Enum
     {
         [Header("取得ファイル名の最初の文字が (アルファベット | 日本語 | \"_\") となるように、文字を削除する")]
@@ -59,9 +59,12 @@ namespace Common
         public IReadOnlyDictionary<TKey, TValue> Dictionary => _dictionary.ToDictionary();
         
 #if UNITY_EDITOR
-        public void SetDictionary(SerializeDictionary<TKey, TValue> dictionary)
+        public void Add(TKey key, TValue value)
         {
-            _dictionary = dictionary;
+                if (!Dictionary.ContainsKey(key))
+                {
+                        _dictionary[key] = value;
+                }
         }
 
         public void ResetDictionary()

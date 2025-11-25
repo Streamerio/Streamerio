@@ -24,5 +24,9 @@ public class BulletShooter : MonoBehaviour
             bullet.gameObject.SetActive(true);
             bullet.OnSpawn();
         }
+        else
+        {
+            Debug.LogError("Failed to retrieve bullet from pool.");
+        }
     }
 }

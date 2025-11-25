@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2156599442745627322}
   - component: {fileID: -4985072300248894645}
   - component: {fileID: 5576284060451434925}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltThunder
   m_TagString: ULT
   m_Icon: {fileID: 0}

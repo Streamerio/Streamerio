@@ -22,6 +22,11 @@ MonoBehaviour:
   _dictionary:
     _keyValuePairs:
     - _key: 2
-      _value: {fileID: 8300000, guid: 22936aa67765c406db20a68ded07064e, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 22936aa67765c406db20a68ded07064e, type: 3}
+        Capacity: 1
     - _key: 3
-      _value: {fileID: 8300000, guid: ef7f8cdc6c7794ed1a75b8d971ebda0a, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: ef7f8cdc6c7794ed1a75b8d971ebda0a, type: 3}
+        Capacity: 1
+  _defaultCapacity: 1

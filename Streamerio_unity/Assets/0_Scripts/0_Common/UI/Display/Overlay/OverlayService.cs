@@ -1,36 +1,18 @@
-using UnityEngine;
+// ============================================================================
+// モジュール概要: Overlay 向けの DisplayService 派生クラスを定義し、契約を明示する。
+// 外部依存: DisplayService。
+// 使用例: Overlay 系 LifetimeScope が IOverlayService を解決し、UI スタック操作を行う。
+// ============================================================================
 
 namespace Common.UI.Display.Overlay
 {
     /// <summary>
-    /// Overlay 系の Display を生成・初期化するサービス。
-    /// - DisplayServiceBase を継承
-    /// - 共通の初期化処理に加え、型ごとにカスタム初期化を追加可能
+    /// オーバーレイ UI の表示制御を提供するサービス契約。
     /// </summary>
-    public class OverlayService : DisplayServiceBase
-    {
-        public OverlayService(OverlayRepositorySO repository, Transform parent)
-            : base(repository, parent)
-        {
-        }
+    public interface IOverlayService: IDisplayService { }
 
-        /// <summary>
-        /// Overlay の初期化処理。
-        /// - 共通初期化を実行
-        /// - 型ごとの追加初期化があれば switch-case で分岐
-        /// </summary>
-        protected override TDisplay InitializeDisplay<TDisplay>(TDisplay display)
-        {
-            switch (display)
-            {
-                default:
-                    display.Initialize();
-                    display.Hide();
-                    Debug.Log($"[OverlayService] {typeof(TDisplay).Name} を初期化しました");
-                    break;
-            }
-
-            return display;
-        }
-    }
+    /// <summary>
+    /// DisplayService を継承したオーバーレイ専用サービス。
+    /// </summary>
+    public class OverlayService : DisplayService, IOverlayService { }
 }

@@ -1,100 +1,75 @@
-using System.Threading;
-using Alchemy.Inspector;
+// モジュール概要:
+// 背景クリック用 Presenter を提供し、ダイアログなどの外側タップ処理を共通化する。
+// 依存関係: IClickEventBinder でクリック検出を委譲し、DisplayPresenterBase を継承して表示制御を統合。
+
 using Common.UI.Click;
-using Cysharp.Threading.Tasks;
 using R3;
-using R3.Triggers;
-using UnityEngine;
 
 namespace Common.UI.Display.Background
 {
-    /// <summary>
-    /// UI 背景の Presenter。
-    /// - 背景の表示/非表示を制御
-    /// - 背景クリックイベントを購読可能にする
-    /// </summary>
-    [RequireComponent(typeof(DisplayBackgroundView), typeof(ObservableEventTrigger), typeof(ClickEventBinder))]
-    public class DisplayBackgroundPresenter : DisplayPresenterBase<DisplayBackgroundView>
+    public interface IDisplayBackground : IDisplay, IAttachable<DisplayBackgroundContext>
     {
-        [SerializeField, ReadOnly]
-        private ObservableEventTrigger _clickTrigger;
-
-        [SerializeField, ReadOnly]
-        private ClickEventBinder _clickEventBinder;
-        
+        Observable<Unit> OnClickAsObservable { get; }
+    }
+    
+    /// <summary>
+    /// 【目的】背景の表示制御とクリックイベント配信を担当する。
+    /// 【理由】各ダイアログで同様の処理を重複記述せず、共通 Presenter として共有するため。
+    /// </summary>
+    public class DisplayBackgroundPresenter : DisplayPresenterBase<IDisplayBackgroundView, DisplayBackgroundContext>, IDisplayBackground
+    {
         /// <summary>
-        /// 背景クリック時のイベント購読用 Observable
+        /// 【目的】背景クリック検出を担うバインダーを保持する。
+        /// 【理由】AttachContext 以降もクリックイベントへアクセスし、Detach で確実に破棄するため。
+        /// </summary>
+        private IClickEventBinder _clickEventBinder;
+
+        /// <summary>
+        /// 【目的】背景クリックを購読可能なストリームとして公開する。
+        /// 【理由】外側タップで閉じるなどの UI 操作を他 Presenter から扱いやすくするため。
         /// </summary>
         public Observable<Unit> OnClickAsObservable => _clickEventBinder.ClickEvent;
-        
-        private CancellationTokenSource _cts;
 
-#if UNITY_EDITOR
         /// <summary>
-        /// エディタ上でコンポーネント参照を自動補完
+        /// 【目的】コンテキストから View と ClickBinder を取得し、Presenter の内部状態を構築する。
+        /// 【処理概要】CommonView のセット→Binder の保持→クリックイベントのバインド。
+        /// 【理由】Attach 時に依存が揃っていることを保証し、Start 以降の購読漏れを防ぐ。
         /// </summary>
-        protected override void OnValidate()
+        /// <param name="context">【用途】View と ClickBinder を束ねたコンテキスト。</param>
+        protected override void AttachContext(DisplayBackgroundContext context)
         {
-            base.OnValidate();
-            
-            _clickTrigger ??= GetComponent<ObservableEventTrigger>();
-            _clickEventBinder ??= GetComponent<ClickEventBinder>();
+            View = context.View;
+            _clickEventBinder = context.ClickEventBinder;
+            _clickEventBinder.BindClickEvent();
         }
-#endif
-        
+
         /// <summary>
-        /// 初期化処理。
-        /// - ClickEventBinder を初期化
-        /// - 基底クラスの初期化を呼ぶ
+        /// 【目的】Presenter 終了時にクリック購読を解除し、リソースを解放する。
+        /// 【理由】背景が破棄された後もイベントが飛ばないようにし、メモリリークを回避する。
         /// </summary>
-        public override void Initialize()
+        public override void Detach()
         {
-            _clickEventBinder.Initialize();
-            base.Initialize();
-        }
-        
-        /// <summary>
-        /// アニメーション付き表示。
-        /// - クリックイベント購読をバインド
-        /// - 基底クラスの表示処理を呼ぶ
-        /// </summary>
-        public override async UniTask ShowAsync(CancellationToken ct)
-        {
-            _clickEventBinder.BindClickEvent(_clickTrigger.OnPointerClickAsObservable());
-            await base.ShowAsync(ct);
-        }
-        
-        /// <summary>
-        /// 即時表示。
-        /// - クリックイベント購読をバインド
-        /// - 基底クラスの表示処理を呼ぶ
-        /// </summary>
-        public override void Show()
-        {
-            _clickEventBinder.BindClickEvent(_clickTrigger.OnPointerClickAsObservable());
-            base.Show();
-        }
-        
-        /// <summary>
-        /// アニメーション付き非表示。
-        /// - 基底クラスの非表示処理
-        /// - クリックイベント購読を破棄
-        /// </summary>
-        public override async UniTask HideAsync(CancellationToken ct)
-        {
-            await base.HideAsync(ct);
+            base.Detach();
             _clickEventBinder.Dispose();
         }
-        
+    }
+
+    /// <summary>
+    /// 【目的】背景 Presenter が必要とする依存（View と ClickBinder）を束ねる。
+    /// 【理由】LifetimeScope からまとめて渡せるようにし、初期化コードを簡潔にする。
+    /// </summary>
+    public class DisplayBackgroundContext
+    {
         /// <summary>
-        /// 即時非表示。
-        /// - 基底クラスの非表示処理
-        /// - クリックイベント購読を破棄
+        /// 【目的】背景の表示/非表示を担当する View を提供する。
+        /// 【理由】Presenter が DisplayViewBase の共通 API を利用できるようにするため。
         /// </summary>
-        public override void Hide()
-        {
-            base.Hide();
-            _clickEventBinder.Dispose();
-        }
+        public IDisplayBackgroundView View;
+
+        /// <summary>
+        /// 【目的】クリック検知と付随処理（SE 再生など）を担う Binder を提供する。
+        /// 【理由】背景クリック時の振る舞いを Presenter から切り離し、責務を明確にするため。
+        /// </summary>
+        public IClickEventBinder ClickEventBinder;
     }
 }

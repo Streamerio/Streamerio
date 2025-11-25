@@ -1,14 +1,12 @@
-using System;
 using System.Linq;
 using Common.UI;
-using Cysharp.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using VContainer.Unity;
 
 namespace InGame.UI.Timer
 {
-    public class TimerView: UIBehaviourBase
+    public class TimerView: UIBehaviourBase, ITimerView
     {
         [SerializeField]
         private TMP_Text _timerText;
@@ -18,13 +16,8 @@ namespace InGame.UI.Timer
         /// </summary>
         private string _zero;
 
-        /// <summary>
-        /// 初期化
-        /// </summary>
-        public void Initialize(float value)
+        public void ZeroSetting(float value)
         {
-            base.Initialize();
-
             int zeroCount = Digit(value);
             char[] zeros = Enumerable.Repeat('0',zeroCount).ToArray();
             _zero = new string(zeros);
@@ -44,9 +37,15 @@ namespace InGame.UI.Timer
         /// </summary>
         /// <param name="num"></param>
         /// <returns></returns>
-        public int Digit(float num)
+        private int Digit(float num)
         {
             return (num == 0) ? 1 : ((int)Mathf.Log10(num) + 1);
         }
+    }
+    
+    public interface ITimerView
+    {
+        void ZeroSetting(float value);
+        void UpdateTimerView(float value);
     }
 }

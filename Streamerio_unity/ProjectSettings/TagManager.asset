@@ -15,16 +15,16 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Enemy
+  - Ult
+  - BackgroundSky
+  - BackgroundMountain
+  - BackgroundGrass
+  - Goal
+  - Stage
+  - PlayerAttack
+  - StageBackground
   - 
   - 
   - 

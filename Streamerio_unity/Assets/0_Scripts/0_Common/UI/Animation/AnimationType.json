@@ -1,0 +1,54 @@
+[
+  {
+    "Name": "Show",
+    "Num": 1
+  },
+  {
+    "Name": "Hide",
+    "Num": 2
+  },
+  {
+    "Name": "ShowParts",
+    "Num": 3
+  },
+  {
+    "Name": "HideParts",
+    "Num": 4
+  },
+  {
+    "Name": "PushDown",
+    "Num": 5
+  },
+  {
+    "Name": "PushUp",
+    "Num": 6
+  },
+  {
+    "Name": "Enter",
+    "Num": 7
+  },
+  {
+    "Name": "Exit",
+    "Num": 8
+  },
+  {
+    "Name": "FlashText",
+    "Num": 9
+  },
+  {
+    "Name": "TitleBackground",
+    "Num": 10
+  },
+  {
+    "Name": "InGameBackground",
+    "Num": 11
+  },
+  {
+    "Name": "TurnLeft",
+    "Num": 12
+  },
+  {
+    "Name": "TurnRight",
+    "Num": 13
+  }
+]

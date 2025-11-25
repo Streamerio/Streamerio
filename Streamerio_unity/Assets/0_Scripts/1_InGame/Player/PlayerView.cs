@@ -62,7 +62,7 @@ public class PlayerView : MonoBehaviour
         if (!_groundedCollider.IsGrounded.CurrentValue) return;
         // Debug.Log($"PlayerView Jump with force {force}");
         // ジャンプの実装例（Rigidbody2Dがアタッチされている場合）
-        AudioManager.Instance.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _animation.PlayJump(true);
         _rb2D.AddForce(new Vector2(0, force), ForceMode2D.Impulse);
     }

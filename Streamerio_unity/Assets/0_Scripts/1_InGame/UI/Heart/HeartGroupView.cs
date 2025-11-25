@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace InGame.UI.Heart
 {
-    public class HeartGroupView: UIBehaviourBase
+    public class HeartGroupView: UIBehaviourBase, IHeartGroupView
     {
         [SerializeField, ReadOnly]
         private HeartIcon[] _heartIcons;
@@ -40,7 +40,6 @@ namespace InGame.UI.Heart
         /// <param name="value"></param>
         public void UpdateHP(float value)
         {
-            Debug.Log(value);
             float heartValue = value * _multiply;
 
             for (int i = 0; i < _heartLength; i++)
@@ -49,5 +48,11 @@ namespace InGame.UI.Heart
                 heartValue -= HeartIcon.MaxValue;
             }
         }
+    }
+    
+    public interface IHeartGroupView
+    {
+        void Initialize(float minHp, float maxHp);
+        void UpdateHP(float value);
     }
 }
