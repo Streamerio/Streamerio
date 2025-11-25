@@ -10,6 +10,7 @@ import (
 // 取得元は基本的に環境変数。存在しない項目はデフォルトを適用。
 type Config struct {
 	Port         string // APIサーバ待受ポート
+	UnityWSPort  string // Unity向けWebSocketサーバ待受ポート
 	FrontendURL  string // CORS 許可先 ("*" は全許可)
 	DatabaseURL  string // PostgreSQL 接続 DSN or URL
 	RedisURL     string // Redis アドレス (host:port)
@@ -28,6 +29,9 @@ func Load() (*Config, error) {
 
 	// Port
 	cfg.Port = getEnv("PORT", "8888")
+
+	// Unity WebSocket Port
+	cfg.UnityWSPort = getEnv("UNITY_WS_PORT", "8890")
 
 	// Frontend (CORS)
 	cfg.FrontendURL = getEnv("FRONTEND_URL", "*")

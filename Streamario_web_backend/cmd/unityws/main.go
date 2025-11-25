@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"strings"
+	"os/signal"
 	"syscall"
 	"time"
 
@@ -48,10 +48,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed to init logger: %v\n", err)
 		os.Exit(1)
 	}
-	log := appLogger.With(slog.String("component", "bootstrap"))
+	log := appLogger.With(slog.String("component", "unityws-bootstrap"))
 
 	// 4. DB 接続確立
-	// 接続先の概要を安全にログ（パスワードは出力しない）
 	host, port, dbname, sslmode := extractConnInfo(cfg.DatabaseURL)
 	log.Info("connecting to database", slog.String("host", host), slog.String("port", port), slog.String("db", dbname), slog.String("sslmode", sslmode))
 
@@ -62,7 +61,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// 5. Redis 初期化 & カウンタ (イベント数 / 視聴者アクティビティ)
+	// 5. Redis 初期化 & カウンタ
 	var rdb *redis.Client
 	if strings.HasPrefix(cfg.RedisURL, "redis://") || strings.HasPrefix(cfg.RedisURL, "rediss://") {
 		opt, err := redis.ParseURL(cfg.RedisURL)
@@ -77,96 +76,91 @@ func main() {
 	defer rdb.Close()
 	redisCounter := counter.NewRedisCounter(rdb, appLogger.With(slog.String("component", "redis_counter")))
 
-	// 6. Pub/Sub 初期化 (REST API → WebSocket サーバーへのイベント配信)
+	// 6. Pub/Sub 初期化
 	ps := pubsub.NewRedisPubSub(rdb, appLogger.With(slog.String("component", "pubsub")))
 
-	// 7. リポジトリ (永続層) 準備
+	// 7. リポジトリ
 	repoLogger := appLogger.With(slog.String("component", "repository"))
 	eventRepo := repository.NewEventRepository(db, repoLogger.With(slog.String("repository", "event")))
 	roomRepo := repository.NewRoomRepository(db, repoLogger.With(slog.String("repository", "room")))
 	viewerRepo := repository.NewViewerRepository(db, repoLogger.With(slog.String("repository", "viewer")))
 
-	// リポジトリのリソース解放（Prepared Statement）
 	defer eventRepo.Close()
 	defer roomRepo.Close()
 	defer viewerRepo.Close()
 
-	// 8. サービス層生成
+	// 8. サービス層
 	roomService := service.NewRoomService(roomRepo, cfg)
-	eventLogger := appLogger.With(slog.String("component", "event_service"))
+	wsHandlerLogger := appLogger.With(slog.String("component", "websocket_handler"))
+	wsHandler := handler.NewWebSocketHandler(ps, wsHandlerLogger)
+	wsHandler.SetRoomService(roomService)
+	sender := webSocketAdapter{ws: wsHandler}
 	sessionLogger := appLogger.With(slog.String("component", "session_service"))
-	eventService := service.NewEventService(redisCounter, eventRepo, ps, eventLogger)
-	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, nil, sessionLogger)
-	viewerService := service.NewViewerService(viewerRepo)
-	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService)
+	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, sender, sessionLogger)
+	wsHandler.SetGameSessionService(sessionService)
 
+	// 9. シグナルハンドリングと Pub/Sub 購読開始
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	// 10. Echo フレームワーク初期化 & ミドルウェア
-	e := echo.New()
-	e.Logger.SetLevel(elog.DEBUG)
-	e.Use(middleware.Logger())  // アクセスログ
-	e.Use(middleware.Recover()) // パニック回復
-
-	// 11. CORS 設定
-	// 認証付き（Cookie 同送）要求に対応するため AllowCredentials=true とし、
-	// オリジンは allowlist（環境変数 FRONTEND_URL）に限定する。
-	// 注意: AllowCredentials=true の場合、"*" は使用できない。
-	allowCredentials := true
-	allowOrigins := []string{cfg.FrontendURL}
-	if cfg.FrontendURL == "*" {
-		// デフォルト設定時は資格情報を扱わない想定
-		allowCredentials = false
-	}
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     allowOrigins,
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
-		AllowHeaders:     []string{"ngrok-skip-browser-warning", echo.HeaderContentType},
-		AllowCredentials: allowCredentials,
-	}))
-
-	// 12. ルーティング定義
-	e.GET("/", healthCheck)
-	e.GET("/get_viewer_id", apiHandler.GetOrCreateViewerID)
-	// REST API
-	api := e.Group("/api")
-	api.GET("/rooms/:id", apiHandler.GetRoom)
-	api.POST("/rooms/:id/events", apiHandler.SendEvent)
-	api.GET("/rooms/:id/stats", apiHandler.GetRoomStats)
-	api.GET("/rooms/:id/results", apiHandler.GetRoomResult)
-	api.POST("/viewers/set_name", apiHandler.SetViewerName)
-
-	// 13. サーバ起動
-	log.Info("starting http server", slog.String("port", cfg.Port))
-	// サーバ起動を別goroutineで実行し、致命的でない終了はログのみに留める
 	go func() {
-		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
-		log.Error("server start failed", slog.Any("error", err))
+		if err := wsHandler.StartPubSubSubscription(ctx); err != nil {
+			log.Error("pubsub subscription terminated", slog.Any("error", err))
 		}
 	}()
 
-	// シグナル待ち（Ctrl+C / SIGTERM でグレースフルシャットダウン）
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
-	log.Info("shutting down http server")
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(sigCh)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
+	// 10. Echo 初期化
+	e := echo.New()
+	e.Logger.SetLevel(elog.DEBUG)
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	e.GET("/", healthCheck)
+	e.GET("/ws-unity", wsHandler.HandleUnityConnection)
+	e.GET("/clients", wsHandler.ListClients)
+
+	log.Info("starting unity websocket server", slog.String("port", cfg.UnityWSPort))
+
+	go func() {
+		select {
+		case <-sigCh:
+			log.Info("shutdown signal received")
+			cancel()
+			e.Shutdown(context.Background())
+		}
+	}()
+
+	if err := e.Start(":" + cfg.UnityWSPort); err != nil && err != http.ErrServerClosed {
+		log.Error("server stopped", slog.Any("error", err))
+		os.Exit(1)
+	}
+
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelShutdown()
+	if err := e.Shutdown(ctxShutdown); err != nil {
 		log.Error("server shutdown error", slog.Any("error", err))
 	}
-	// ここで main が return し、上部の defer Close() が必ず実行される
 }
 
 func healthCheck(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"status":  "ok",
-		"service": "streamerrio",
+		"service": "streamerrio-unityws",
 		"version": "1.0.0",
 	})
 }
 
-// extractConnInfo: DSN/URL から host/port/dbname/sslmode を抽出（ログ用途）
+// webSocketAdapter: WebSocketHandler をサービス側インタフェースに適合させる薄いアダプタ
+type webSocketAdapter struct{ ws *handler.WebSocketHandler }
+
+func (a webSocketAdapter) SendEventToUnity(roomID string, payload map[string]interface{}) error {
+	return a.ws.SendEventToUnity(roomID, payload)
+}
+
 func extractConnInfo(dsn string) (host, port, dbname, sslmode string) {
 	host, port, dbname, sslmode = "", "", "", ""
 	lower := strings.ToLower(dsn)
@@ -183,8 +177,6 @@ func extractConnInfo(dsn string) (host, port, dbname, sslmode string) {
 		}
 		return
 	}
-	// キーバリュースタイル: key=value key=value ...
-	// 例: host=... port=5432 user=... password=... dbname=... sslmode=require
 	parts := strings.Fields(dsn)
 	for _, p := range parts {
 		kv := strings.SplitN(p, "=", 2)

@@ -198,6 +198,57 @@
 - 超過分が非常に大きくなった場合の上限設定を検討
 - 長時間プレイ時のバランス調整の必要性を検討
 
+## 2025-11-05 WebSocket サーバー切り出し前段対応
+
+### 目的
+- REST API と Unity 向け WebSocket を別プロセスでスケールさせられるよう起動系を分離
+- Pub/Sub を介した配信を前提に、API サーバーから WebSocket 依存を取り除き役割を明確化
+
+### 実装概要
+- `cmd/server/main.go` から WebSocket ハンドラ初期化と購読処理を削除し、REST API 専用の起動構成に変更
+- 新エントリポイント `cmd/unityws/main.go` を追加し、Redis Pub/Sub 購読と `/ws-unity` エンドポイントを担当させた
+- 設定値に `UNITY_WS_PORT` を追加して WebSocket サーバーの待受ポートを独立管理
+- API サーバー側の `GameSessionService` には WebSocket 送信者を注入せず、終了集計と REST レスポンスに専念させた
+- Cloud Run 用のイメージ切り分け準備として `Dockerfile.unityws` を新設し、WebSocket サーバー専用バイナリをビルドできるようにした
+- WebSocket イベント確認を容易にする `docs/ws-debug.html` を追加し、ブラウザから `/ws-unity` に接続して Pub/Sub 経由の通知を可視化できるようにした
+
+### 意図・設計上の判断
+- **高凝集**: API サーバーは REST, WebSocket サーバーは Unity 通信という単一責務になるよう依存を整理
+- **低結合**: 共通インフラ（DB, Redis, Pub/Sub）は共有しつつ、起動単位で切り替え可能にするためインタフェース実装（`WebSocketSender`）はそのまま利用
+- **スケーリング性**: 負荷に応じて WebSocket サーバーだけを水平スケールしやすくするため、設定とブートストラップを分離
+- **互換性**: 既存の Pub/Sub チャネルやハンドラ構成は維持し、Unity 側の接続先はポート変更のみで動作するよう配慮
+
+### 今後の課題
+- Docker やデプロイ定義で新しい WebSocket サーバーの起動フローを明記（別コンテナ化）
+- 監視・ヘルスチェックエンドポイントを整備し、両サーバーの死活監視を行えるようにする
+
+#### 2025-11-09 GitHub Actions / Cloud Run デュアルサービス対応
+- GitHub Actions (`.github/workflows/deploy.yml`) を更新し、REST API（`cmd/server`）と Unity WebSocket（`cmd/unityws`）の 2 イメージをビルドして Artifact Registry にプッシュ。
+- Cloud Run も `streamario-web-backend` と `streamario-unityws` の 2 サービスを自動デプロイするようにし、後者には `UNITY_WS_PORT=8080` を明示設定して $PORT と整合させた。
+- 既存 Secret（`DATABASE_URL`, `REDIS_URL`, `FRONTEND_URL`）を使い回しつつ、WebSocket サービス側では DB/Redis のみ注入することで高凝集（専門の役割）と低結合（共通依存のみ共有）を維持。
+
+
+## 2025-11-18 処理フローのシーケンス図追加（docs/flow.md）
+
+### 目的
+- 仕様が口頭・メモで散在していたため、配信者サイド/視聴者側の処理を時系列で可視化し、合意形成と保守性を向上させる。
+
+### 変更点
+- `docs/flow.md` を新規整備し、Mermaid による2本のシーケンス図（配信者サイド、視聴者側）を追加。
+- 図内では REST(API)/WebSocket/Redis/PubSub/Postgres の役割を分離して表現し、`1.2秒` の集計ウィンドウと `しきい値判定→Pub/Sub→WS→Unity` の伝搬を明示。
+
+### 意図・設計上の判断
+- 高凝集: API は集計・永続化・サマリ取得、WS は Unity 通信に専念。図もこの責務分離に沿って構成。
+- 低結合: API と WS は Pub/Sub 経由で疎結合に連携し、水平スケール/独立デプロイを前提化。
+- 整合性: `docs/game_end_plan.md` の終了処理に合わせ、ゲーム終了時のサマリ取得と配信者/視聴者への返却ルートを明示。
+
+### 今後
+- ハンドラ/エンドポイント命名やイベント型が変わった場合は、本図を同ブランチで都度更新する運用にする（PR テンプレへチェック項目追加予定）。
+
+#### 追記（挙動訂正）
+- 1.2秒の周期は「視聴者Webサイト側の集計と送信タイミング」を指し、閾値判定は「HTTPサーバがイベント受信のたびに」実施するため、`docs/flow.md` のシーケンス図を受信毎判定の表現へ修正（配信者図のAPI内部タイマー表現を削除、視聴者図に判定行を追加）。
+
+
 ## 2025-01-27 CreateEventsBatch()でprepared statementを使用
 
 ### 目的
