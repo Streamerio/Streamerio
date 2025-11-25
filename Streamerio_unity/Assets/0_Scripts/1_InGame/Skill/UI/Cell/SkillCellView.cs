@@ -1,4 +1,3 @@
-using Common.UI;
 using InGame.Skill.UI.Icon;
 using TMPro;
 using UnityEngine;

@@ -6,11 +6,26 @@ using UnityEngine;
 namespace InGame.Skill.UI.Icon
 {
     [CreateAssetMenu(fileName = "SkillIconDataSO", menuName = "SO/Skill/Icon")]
-    public class SkillIconDataSO: ScriptableObject
+    public class SkillIconDataSO: ScriptableObject, ISkillIconRepository
     {
         [SerializeField]
         private SerializeDictionary<MasterUltType, SkillIconData> _skillIconDataDict;
-        public IReadOnlyDictionary<MasterUltType, SkillIconData> SkillIconDataDict => _skillIconDataDict.ToDictionary();
+        
+        public SkillIconData GetSkillIconData(MasterUltType skillType)
+        {
+            if (_skillIconDataDict.ContainsKey(skillType))
+            {
+                return _skillIconDataDict[skillType];
+            }
+            
+            Debug.LogError("SkillIconDataSO: Skill icon data not found for type " + skillType);
+            return default;
+        }
+    }
+    
+    public interface ISkillIconRepository
+    {
+        SkillIconData GetSkillIconData(MasterUltType skillType);
     }
 
     [Serializable]

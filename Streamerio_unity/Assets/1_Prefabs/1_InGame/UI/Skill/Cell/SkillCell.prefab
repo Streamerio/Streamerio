@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7799616565514865721}
   - component: {fileID: 8499390573666342754}
   - component: {fileID: 7854168915650928993}
+  - component: {fileID: 4778777850402416022}
   m_Layer: 5
   m_Name: SkillCell
   m_TagString: Untagged
@@ -77,6 +78,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4778777850402416022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286610494538453205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 183f85316ab84303b87b02321b0b983b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  _rectTransform: {fileID: 7799616565514865721}
+  _userText: {fileID: 4269635388391326731}
 --- !u!1 &2632434939724336712
 GameObject:
   m_ObjectHideFlags: 0
