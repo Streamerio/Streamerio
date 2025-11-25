@@ -20,6 +20,32 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
+// WebSocketMessageType: WebSocket通信で使用するメッセージタイプ
+// Unity ↔ Backend 間の通信で使用されるメッセージタイプを定義
+type WebSocketMessageType string
+
+const (
+	// UnityからBackendへ送信されるメッセージタイプ
+
+	// MessageTypeGameStart: ゲーム開始通知
+	// Unityから送信され、ゲームセッションの開始を通知
+	MessageTypeGameStart WebSocketMessageType = "game_start"
+
+	// MessageTypeGameEnd: ゲーム終了通知
+	// Unityから送信され、ゲームセッションの終了を通知
+	MessageTypeGameEnd WebSocketMessageType = "game_end"
+
+	// BackendからUnityへ送信されるメッセージタイプ
+
+	// MessageTypeRoomCreated: ルーム作成通知
+	// 新規接続時にBackendからUnityへ送信される
+	MessageTypeRoomCreated WebSocketMessageType = "room_created"
+
+	// MessageTypeRoomReady: ルーム準備完了通知
+	// 再接続時にBackendからUnityへ送信される
+	MessageTypeRoomReady WebSocketMessageType = "room_ready"
+)
+
 type WebSocketHandler struct {
 	connections    map[string]*websocket.Conn
 	mu             sync.RWMutex
@@ -67,15 +93,13 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 			c.Logger().Infof("Client connected: %s id=%s", c.Request().RemoteAddr, id)
 
 			// 初期メッセージ（再接続時はタイプのみ変える）
-			initType := "room_created"
+			initType := MessageTypeRoomCreated
 			if requestedID != "" {
-				initType = "room_ready"
+				initType = MessageTypeRoomReady
 			}
 			payload := map[string]interface{}{
-				"type":    initType,
+				"type":    string(initType),
 				"room_id": id,
-				"qr_code": "data:image/png;base64,...",
-				"web_url": "https://example.com",
 			}
 			if err := h.SendEventToUnity(id, payload); err != nil {
 				c.Logger().Errorf("initial send failed: %v", err)
@@ -104,8 +128,20 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 				if err := json.Unmarshal([]byte(msg), &incoming); err != nil {
 					continue
 				}
-				switch incoming.Type {
-				case "game_end":
+
+				// 文字列をWebSocketMessageTypeに変換
+				messageType := WebSocketMessageType(incoming.Type)
+
+				switch messageType {
+				case MessageTypeGameStart:
+					if h.sessionService == nil {
+						c.Logger().Warn("game_start received but sessionService not set")
+						continue
+					}
+					c.Logger().Infof("game start received id=%s", id)
+					c.Logger().Infof("game start を受け取りました\n 具体的な実装はまだです")
+
+				case MessageTypeGameEnd:
 					if h.sessionService == nil {
 						c.Logger().Warn("game_end received but sessionService not set")
 						continue
@@ -114,7 +150,8 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 						c.Logger().Errorf("game end handling failed id=%s err=%v", id, err)
 					}
 				default:
-					// その他のメッセージは現状無視
+					c.Logger().Warn("unhandled message type", slog.String("type", incoming.Type))
+					continue
 				}
 			}
 		},

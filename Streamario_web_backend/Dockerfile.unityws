@@ -1,20 +1,29 @@
-# Goの公式イメージを使用
-FROM golang:1.25
+# ビルドステージ
+FROM golang:alpine AS builder
 
-# 作業ディレクトリを設定
 WORKDIR /app
 
-# Goアプリケーションのソースコードをコピー
+# 依存関係のみ先にコピーしてキャッシュを活用
+COPY go.mod go.sum ./
+RUN go mod download
+
+# ソースコードをコピー
 COPY . .
 
-# 依存関係を解決
-RUN go mod tidy
+# WebSocket サーバーをビルド(静的リンク)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o unityws cmd/unityws/main.go
 
-# WebSocket サーバーをビルド
-RUN go build -o unityws cmd/unityws/main.go
+# 実行ステージ
+FROM alpine:latest
 
-# コンテナが起動時に実行するコマンド
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder /app/unityws .
+
+# Cloud Run は 8080 をデフォルトで期待
+EXPOSE 8080
+
 CMD ["./unityws"]
-
-# Unity 向け WebSocket サーバーのポートを公開
-EXPOSE 8890
