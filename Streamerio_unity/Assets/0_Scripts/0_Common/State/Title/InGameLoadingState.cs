@@ -49,15 +49,21 @@ namespace Common.State
         }
         public async UniTask EnterAsync(CancellationToken ct)
         {
-            await _webSocketManager.ConnectWebSocketAsync(null, ct);
-            _qrCodeService.UpdateURL(_webSocketManager.GetFrontUrl());
-
+            List<UniTask> tasks = new List<UniTask>();
+            // マスターデータ未取得の場合は取得処理を追加
             if (!_masterData.IsDataFetched)
             {
-                await _masterData.FetchDataAsync(ct);
+                tasks.Add(_masterData.FetchDataAsync(ct));
             }
-
-            if (_masterData.IsDataFetched)
+            // WebSocket接続処理
+            tasks.Add(_webSocketManager.ConnectWebSocketAsync(null, ct));
+            
+            await UniTask.WhenAll(tasks);
+            
+            _qrCodeService.UpdateSprite(_webSocketManager.GetFrontUrl());
+            
+            // 両方成功していればゲーム画面へ遷移、どちらかが失敗していれば再接続ダイアログを表示
+            if (_masterData.IsDataFetched && _webSocketManager.IsConnectedProp.CurrentValue)
             {
                 _stateManager.ChangeState(_toInGameState);
             }

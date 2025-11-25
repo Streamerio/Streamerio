@@ -35,7 +35,7 @@ namespace OutGame.Title
             builder.Register<ITitleScreen, TitleScreenPresenter>(Lifetime.Singleton)
                 .As<IStartable>();
             
-            builder.RegisterInstance<IUIAnimation>(new CloseAnimation(_background, _closeAnimationParam))
+            builder.RegisterInstance<IUIAnimation, IInitializableAnimation>(new CloseAnimation(_background, _closeAnimationParam))
                 .Keyed(AnimationType.TitleBackground);
 
             SceneBoosterBinder.Bind(builder, StateType.TitleStart);
