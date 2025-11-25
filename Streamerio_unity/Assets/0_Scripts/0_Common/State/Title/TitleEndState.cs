@@ -11,6 +11,7 @@ namespace Common.State
     public class TitleEndState: IState
     {
         private readonly IUIAnimation _titleBackgroundAnimation;
+        private readonly IInitializableAnimation _titleBackgroundInitializableAnimation;
         private readonly ILoadingScreen _loadingScreen;
         private readonly IAudioFacade _audioFacade;
         
@@ -20,12 +21,15 @@ namespace Common.State
         [Inject]
         public TitleEndState(
             [Key(AnimationType.TitleBackground)] IUIAnimation titleBackgroundAnimation,
+            [Key(AnimationType.TitleBackground)] IInitializableAnimation titleBackgroundInitializableAnimation,
             ILoadingScreen loadingScreen,
             IAudioFacade audioFacade,
             IStateManager stateManager,
             [Key(StateType.InGameLoading)] IState nextState)
         {
             _titleBackgroundAnimation = titleBackgroundAnimation;
+            _titleBackgroundInitializableAnimation = titleBackgroundInitializableAnimation;
+            
             _loadingScreen = loadingScreen;
             _audioFacade = audioFacade;
             
@@ -45,6 +49,7 @@ namespace Common.State
         
         public async UniTask ExitAsync(CancellationToken ct)
         {
+            _titleBackgroundInitializableAnimation.InitializeAnimation();
             await UniTask.WaitForEndOfFrame(cancellationToken: ct);
         }
     }
