@@ -30,15 +30,15 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private GameEndSummaryNotification _gameEndSummary = null;
   public GameEndSummaryNotification GameEndSummary => _gameEndSummary;
 
-  private readonly MasterBackendSettings _masterBackendSetting;
+  private readonly IMasterData _masterData;
   
   private string _qrCodeURL = string.Empty;
 
   private float _connectionTimeout = 10f;
 
-  public WebSocketManager(MasterBackendSettings masterBackendSetting)
+  public WebSocketManager(IMasterData masterData)
   {
-    _masterBackendSetting = masterBackendSetting;
+    _masterData = masterData;
   }
   
   void ITickable.Tick()
@@ -64,11 +64,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     string websocketUrl;
     if (string.IsNullOrEmpty(websocketId))
     {
-      websocketUrl = _masterBackendSetting.BackendWebSocketURL;  
+      websocketUrl = _masterData.BackendSettings.BackendWebSocketURL;
     }
     else
     {
-      websocketUrl = ZString.Format(_masterBackendSetting.FrontendQueryParamFormat, _masterBackendSetting.BackendWebSocketURL, websocketId);
+      websocketUrl = ZString.Format(_masterData.BackendSettings.FrontendQueryParamFormat, _masterData.BackendSettings.BackendWebSocketURL, websocketId);
     }
     
     _websocket = new WebSocket(websocketUrl);
@@ -284,7 +284,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       Debug.LogError("Room ID is not set!");
       return string.Empty;
     }
-    _qrCodeURL = ZString.Format(_masterBackendSetting.FrontendURLFormat, _roomId);
+    _qrCodeURL = ZString.Format(_masterData.BackendSettings.FrontendURLFormat, _roomId);
     
     return _qrCodeURL;
   }
@@ -294,7 +294,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameStartAsync()
   {
-    await SendWebSocketMessageAsync( _masterBackendSetting.GameStartResponse );
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameStartResponse );
   }
 
   ///<summary>
@@ -302,7 +302,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameEndAsync()
   {
-    await SendWebSocketMessageAsync( _masterBackendSetting.GameEndResponse );
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameEndResponse );
   }
 
 
@@ -325,7 +325,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void HealthCheck()
   {
-    UnityWebRequest.Get(_masterBackendSetting.BackHttpURL).SendWebRequest();
+    UnityWebRequest.Get(_masterData.BackendSettings.BackHttpURL).SendWebRequest();
     Debug.Log("HealthCheck");
   }
 

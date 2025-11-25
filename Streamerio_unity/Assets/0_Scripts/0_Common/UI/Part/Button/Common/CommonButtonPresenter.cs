@@ -128,7 +128,7 @@ namespace Common.UI.Part.Button
                 .RegisterTo(_cts.Token);
 
             OnClickAsObservable
-                .Subscribe(_ => _view.ResetButtonState())
+                .SubscribeAwait(async (_, ct) => await _view.PlayPointerClickAsync(ct))
                 .RegisterTo(_cts.Token);
         }
 

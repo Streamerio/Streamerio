@@ -182,9 +182,9 @@ MonoBehaviour:
   _button: {fileID: 9142547757995953084}
   _eventTrigger: {fileID: 4912602742198087361}
   _buttonType: 5
-  _clickSE: 29
-  _rectTransform: {fileID: 0}
-  _canvasGroup: {fileID: 0}
+  _clickSE: 28
+  _rectTransform: {fileID: 4221449946496692487}
+  _canvasGroup: {fileID: 6994753916140120727}
   _pushDownAnimParam: {fileID: 11400000, guid: 074f80ad137834388969a515f78218e3, type: 2}
   _pushUpAnimParam: {fileID: 11400000, guid: 8e261b4e484834da8b31bed4e19ab4a6, type: 2}
   _enterAnimParam: {fileID: 11400000, guid: c39b138e5830641b8a2dfb87a515647c, type: 2}
