@@ -65,12 +65,16 @@ namespace InGame
             builder.Register<IState, ToResultState>(Lifetime.Singleton)
                 .Keyed(StateType.ToResult);
 
-            builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
+            builder
+                .Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
                 .Keyed(ButtonType.Jump);
-            builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
+            builder
+                .Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
                 .Keyed(ButtonType.Attack);
 
-            builder.Register<StickInput>(Lifetime.Singleton);
+            builder.RegisterComponentInHierarchy<StickInput>()
+                .As<IStartable>()
+                .As<ITickable>();
             builder.RegisterComponentInHierarchy<Result>();
             builder.RegisterComponentInHierarchy<SkillRandomActivator>();
             builder.RegisterComponentInHierarchy<EnemyRandomActivator>();

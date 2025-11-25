@@ -502,9 +502,6 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 3721028956187467722}
   - {fileID: 6270614026918786864}
   - {fileID: 3571618937860523397}

@@ -46,7 +46,7 @@ namespace Common.UI.Part.Button
     /// 【目的】Unity UI Button のイベントを購読し、View への演出指示とクリック通知を担う。
     /// 【理由】入力経路と演出・副作用を Presenter に集約することで、View や呼び出し元からロジックを分離する。
     /// </summary>
-    public class CommonButtonPresenter : IAttachable<CommonButtonContext>, ICommonButton
+    public class CommonButtonPresenter : ICommonButton
     {
         /// <summary>
         /// 【目的】実際のクリック操作を受け取る Unity ボタン参照を保持する。
@@ -70,7 +70,7 @@ namespace Common.UI.Part.Button
         private CancellationTokenSource _cts;
 
         /// <inheritdoc />
-        public Observable<Unit> OnClickAsObservable => _button.OnClickAsObservable();
+        public Observable<Unit> OnClickAsObservable => _clickEventBinder.ClickEvent;
 
         /// <summary>
         /// 【目的】Button/View/Binder/EventTrigger をコンテキストから受け取り、Presenter の動作準備を行う。
