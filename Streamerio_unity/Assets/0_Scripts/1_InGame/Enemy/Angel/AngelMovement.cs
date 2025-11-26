@@ -28,9 +28,7 @@ public class AngelMovement : MonoBehaviour
     private float _horizontalTimer;
     private float _attackTimer;
     private EnemyAttackManager _attackManager;
-    private EnemyHpManager _enemyHpManager;
-
-    // プーリング関連
+    private EnemyHpManager _enemyHp_manager;
     private List<AngelEnergyCircle> _circlePool = new List<AngelEnergyCircle>();
     private bool _poolInitialized = false;
 
@@ -38,12 +36,12 @@ public class AngelMovement : MonoBehaviour
     {
         _startPosition = transform.position;
         _attackManager = GetComponent<EnemyAttackManager>();
-        _enemyHpManager = GetComponent<EnemyHpManager>();
+        _enemyHp_manager = GetComponent<EnemyHpManager>();
         _attackTimer = attackInterval;
 
-        if (_enemyHpManager != null)
+        if (_enemyHp_manager != null)
         {
-            _enemyHpManager.Initialize(_hp);
+            _enemyHp_manager.Initialize(_hp);
         }
     }
 
@@ -86,7 +84,6 @@ public class AngelMovement : MonoBehaviour
         // プール初期化（初回のみ）
         if (!_poolInitialized)
         {
-            // ここで +1 を削除：重複して二倍生成される問題を解消
             int maxConcurrentWaves = Mathf.Max(1, Mathf.CeilToInt(circleLifetime / Mathf.Max(0.0001f, attackInterval)));
             int initialPoolSize = circleCount * maxConcurrentWaves;
 
@@ -141,8 +138,8 @@ public class AngelMovement : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
-        if (_enemyHpManager != null) _enemyHpManager.TakeDamage(amount);
+        if (_enemyHp_manager == null) _enemyHp_manager = GetComponent<EnemyHpManager>();
+        if (_enemyHp_manager != null) _enemyHp_manager.TakeDamage(amount);
     }
 
     public void TakeDamage(float amount)
