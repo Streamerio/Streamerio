@@ -9,6 +9,9 @@ public class AngelMovement : MonoBehaviour
     [SerializeField] private float horizontalRange = 4f;
     [SerializeField] private float baseLeftSpeed = 0.8f;
 
+    [Header("体力設定")]
+    [SerializeField] private int _hp = 100;
+
     [Header("攻撃設定")]
     [SerializeField] private GameObject energyCirclePrefab;
     [SerializeField] private float attackInterval = 4f;
@@ -24,12 +27,16 @@ public class AngelMovement : MonoBehaviour
     private float _horizontalTimer;
     private float _attackTimer;
     private EnemyAttackManager _attackManager;
+    private EnemyHpManager _enemyHpManager;
 
     void Start()
     {
         _startPosition = transform.position;
         _attackManager = GetComponent<EnemyAttackManager>();
+        _enemyHpManager = GetComponent<EnemyHpManager>();
         _attackTimer = attackInterval;
+
+        _enemyHpManager.Initialize(_hp);
     }
 
     void Update()
@@ -97,5 +104,16 @@ public class AngelMovement : MonoBehaviour
         }
 
         Debug.Log("[AngelMovement] Created energy circle wave");
+    }
+
+    public void TakeDamage(int amount)
+    {
+        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
+        _enemyHpManager.TakeDamage(amount);
+    }
+
+    public void TakeDamage(float amount)
+    {
+        TakeDamage(Mathf.CeilToInt(amount));
     }
 }
