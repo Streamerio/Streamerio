@@ -247,7 +247,7 @@ MonoBehaviour:
   energyCirclePrefab: {fileID: 2809420527495918, guid: f0ed061f81f6b42939b35899dc4a3e95, type: 3}
   attackInterval: 4
   circleLifetime: 2
-  circleRadius: 12
+  circleRadius: 3
   circleCount: 8
   circleExpandDuration: 0.6
   circleOrbitSpeedDeg: 50
