@@ -29,6 +29,9 @@ public class AngelEnergyCircle : MonoBehaviour
         float orbitSpeedDeg
     )
     {
+        // 既存の Invoke 等をクリア
+        CancelInvoke();
+
         _damage = damage;
         _lifetime = lifetime;
         _initialLife = lifetime;
@@ -40,26 +43,49 @@ public class AngelEnergyCircle : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
 
         _currentRadius = 0f;
+        _age = 0f;
+        _hasHitPlayer = false;
         _angleDeg = Mathf.Atan2(_dir.y, _dir.x) * Mathf.Rad2Deg;
 
-        // 生成直後は本体位置
+        // 生成直後は本体位置に配置
         if (_followTarget != null)
         {
             transform.position = _followTarget.position;
         }
 
-        // 明示的な Destroy 保険
-        Destroy(gameObject, lifetime + 0.2f);
+        // 非破壊化戦略: lifetime が尽きたら Deactivate を呼ぶ
+        CancelInvoke(nameof(Deactivate));
+        if (_lifetime > 0f)
+        {
+            Invoke(nameof(Deactivate), _lifetime + 0.2f);
+        }
+
+        // 表示系を初期化（フェード等の残存対策）
+        if (_renderer != null)
+        {
+            var c = _renderer.color;
+            c.a = 1f;
+            _renderer.color = c;
+        }
     }
 
     void Update()
     {
+        // GameObject が非アクティブなら Update は呼ばれないため追加チェック不要だが安全策として
+        if (!gameObject.activeInHierarchy) return;
+
         float dt = Time.deltaTime;
         _age += dt;
         _lifetime -= dt;
 
         UpdateMotion(dt);
         UpdateFade();
+
+        // ライフが尽きたら非アクティブ化
+        if (_lifetime <= 0f)
+        {
+            Deactivate();
+        }
     }
 
     private void UpdateMotion(float dt)
@@ -119,7 +145,15 @@ public class AngelEnergyCircle : MonoBehaviour
             Debug.Log($"[AngelEnergyCircle] Hit Player damage={_damage}");
         }
 
-        // 即座に縮退して消す (ビジュアル猶予 0.1s)
-        Destroy(gameObject, 0.1f);
+        // ヒット時は短時間の猶予を置いて非アクティブ化（エフェクト残し）
+        CancelInvoke(nameof(Deactivate));
+        Invoke(nameof(Deactivate), 0.1f);
+    }
+
+    private void Deactivate()
+    {
+        CancelInvoke(nameof(Deactivate));
+        // 内部状態は Initialize 時にリセットされる想定で非アクティブ化のみ行う
+        gameObject.SetActive(false);
     }
 }
