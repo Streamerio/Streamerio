@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 // Config: アプリケーション全体の設定値コンテナ
@@ -17,6 +18,11 @@ type Config struct {
 	LogLevel     string // ログレベル (debug/info/warn/error)
 	LogFormat    string // ログ出力フォーマット (text/json)
 	LogAddSource bool   // ログに呼び出し元を付与するか
+	// Log relay token 発行用設定
+	LogRelayTokenSecret   string
+	LogRelayTokenTTL      time.Duration
+	LogRelayDefaultScopes []string
+	LogRelayAllowedScopes []string
 }
 
 // Load: 環境変数から設定を組み立て (不足はデフォルト補完)
@@ -68,9 +74,23 @@ func Load() (*Config, error) {
 	}
 
 	// Logging
-	cfg.LogLevel = getEnv("LOG_LEVEL", "info")
+	cfg.LogLevel = getEnv("LOG_LEVEL", "error")
 	cfg.LogFormat = getEnv("LOG_FORMAT", "text")
 	cfg.LogAddSource = getEnvBool("LOG_ADD_SOURCE", false)
+
+	// Log relay token
+	cfg.LogRelayTokenSecret = getEnv("LOG_RELAY_TOKEN_SECRET", "local-dev-log-token-secret")
+	cfg.LogRelayTokenTTL = parseDuration(getEnv("LOG_RELAY_TOKEN_TTL", "10m"), 10*time.Minute)
+	defaultScopes := parseCSV(getEnv("LOG_RELAY_DEFAULT_SCOPES", "log:write"))
+	if len(defaultScopes) == 0 {
+		defaultScopes = []string{"log:write"}
+	}
+	allowedScopes := parseCSV(os.Getenv("LOG_RELAY_ALLOWED_SCOPES"))
+	if len(allowedScopes) == 0 {
+		allowedScopes = append([]string{}, defaultScopes...)
+	}
+	cfg.LogRelayDefaultScopes = defaultScopes
+	cfg.LogRelayAllowedScopes = allowedScopes
 
 	return cfg, nil
 }
@@ -92,4 +112,29 @@ func getEnvBool(key string, def bool) bool {
 		}
 	}
 	return def
+}
+
+func parseDuration(value string, fallback time.Duration) time.Duration {
+	if value == "" {
+		return fallback
+	}
+	if d, err := time.ParseDuration(value); err == nil && d > 0 {
+		return d
+	}
+	return fallback
+}
+
+func parseCSV(value string) []string {
+	if value == "" {
+		return nil
+	}
+	parts := strings.Split(value, ",")
+	var result []string
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
