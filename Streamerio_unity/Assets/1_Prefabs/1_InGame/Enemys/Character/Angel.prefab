@@ -34,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: 7, y: 7, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -244,10 +244,11 @@ MonoBehaviour:
   verticalRange: 3
   horizontalRange: 4
   baseLeftSpeed: 0.8
+  _hp: 100
   energyCirclePrefab: {fileID: 2809420527495918, guid: f0ed061f81f6b42939b35899dc4a3e95, type: 3}
   attackInterval: 4
   circleLifetime: 2
-  circleRadius: 3
+  circleRadius: 7
   circleCount: 8
   circleExpandDuration: 0.6
   circleOrbitSpeedDeg: 50

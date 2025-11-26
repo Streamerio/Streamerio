@@ -253,36 +253,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1599244660 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4317687067625818719, guid: 63d1818a53102440e837cf6e81ed14dd, type: 3}
-  m_PrefabInstance: {fileID: 1700048808}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1599244661
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1599244660}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74bd5366f441c4419b857fd16ba1d4e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  verticalSpeed: 2
-  horizontalSpeed: 1
-  verticalRange: 3
-  horizontalRange: 4
-  baseLeftSpeed: 0.8
-  energyCirclePrefab: {fileID: 0}
-  attackInterval: 4
-  circleLifetime: 2
-  circleRadius: 12
-  circleCount: 8
-  circleExpandDuration: 0.6
-  circleOrbitSpeedDeg: 50
-  randomizeStartAngle: 1
 --- !u!1001 &1700048808
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -291,6 +261,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -8700195646738777867, guid: 63d1818a53102440e837cf6e81ed14dd, type: 3}
+      propertyPath: circleRadius
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 273671756187862472, guid: 63d1818a53102440e837cf6e81ed14dd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.411004
@@ -338,10 +312,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4317687067625818719, guid: 63d1818a53102440e837cf6e81ed14dd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1599244661}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 63d1818a53102440e837cf6e81ed14dd, type: 3}
 --- !u!1 &1848167959
 GameObject:
