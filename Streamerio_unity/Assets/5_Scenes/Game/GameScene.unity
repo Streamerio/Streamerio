@@ -136,6 +136,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 749793414}
     - target: {fileID: 550934121132340350, guid: 0719b636b23b94ed1baf2b0e569781bf, type: 3}
+      propertyPath: stageParent
+      value: 
+      objectReference: {fileID: 701347307}
+    - target: {fileID: 550934121132340350, guid: 0719b636b23b94ed1baf2b0e569781bf, type: 3}
       propertyPath: stageCountToGoal
       value: 6
       objectReference: {fileID: 0}
@@ -368,10 +372,10 @@ Transform:
   m_Children:
   - {fileID: 6583393167888128268}
   - {fileID: 1206152081}
-  - {fileID: 744812237}
   - {fileID: 249727132}
   - {fileID: 1298905385}
   - {fileID: 2017660798}
+  - {fileID: 701347308}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &563864947
@@ -477,13 +481,45 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &701347307
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 701347308}
+  m_Layer: 0
+  m_Name: Stages
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &701347308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701347307}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 744812237}
+  m_Father: {fileID: 545541908}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &744812236
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 545541908}
+    m_TransformParent: {fileID: 701347308}
     m_Modifications:
     - target: {fileID: 203328460559069796, guid: 5dd0b506028d04a2b8418fefce302c80, type: 3}
       propertyPath: m_TagString
