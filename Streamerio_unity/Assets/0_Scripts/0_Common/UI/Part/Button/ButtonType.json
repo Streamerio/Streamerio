@@ -1,0 +1,50 @@
+[
+  {
+    "Name": "Close",
+    "Num": 2
+  },
+  {
+    "Name": "Restart",
+    "Num": 3
+  },
+  {
+    "Name": "Title",
+    "Num": 4
+  },
+  {
+    "Name": "Default",
+    "Num": 5
+  },
+  {
+    "Name": "NextPage",
+    "Num": 6
+  },
+  {
+    "Name": "BackPage",
+    "Num": 8
+  },
+  {
+    "Name": "GameStart",
+    "Num": 9
+  },
+  {
+    "Name": "HowToPlay",
+    "Num": 10
+  },
+  {
+    "Name": "Option",
+    "Num": 11
+  },
+  {
+    "Name": "Credit",
+    "Num": 12
+  },
+  {
+    "Name": "Jump",
+    "Num": 13
+  },
+  {
+    "Name": "Attack",
+    "Num": 14
+  }
+]

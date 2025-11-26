@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
 using System.Linq;
+using VContainer;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class UltThunder : MonoBehaviour
@@ -26,6 +27,14 @@ public class UltThunder : MonoBehaviour
     private GameObject _player;
     private BoxCollider2D _box;
     private float _damageIntervalFrames;
+    
+    private IAudioFacade _audioFacade;
+    
+    [Inject]
+    public void Construct(IAudioFacade audioFacade)
+    {
+        _audioFacade = audioFacade;
+    }
 
     void Awake()
     {
@@ -59,7 +68,7 @@ public class UltThunder : MonoBehaviour
         
         StartThunderStrike();
 
-        AudioManager.Instance.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
     }
 
     void Update()

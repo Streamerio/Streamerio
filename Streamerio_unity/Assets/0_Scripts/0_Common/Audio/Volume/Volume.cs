@@ -1,3 +1,8 @@
+// モジュール概要:
+// 音量値を UI 表現(0-100)と AudioMixer 用 dB 表現に変換して保持する値オブジェクト。
+// 依存関係: UnityEngine.Mathf を用いてクランプと対数変換を実施。
+// 使用例: VolumeMediator が辞書に保持し、AudioMixerMediator へ MixerValue を渡す。
+
 using System;
 using UnityEngine;
 

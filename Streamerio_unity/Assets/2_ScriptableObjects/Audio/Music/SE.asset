@@ -22,46 +22,91 @@ MonoBehaviour:
   _dictionary:
     _keyValuePairs:
     - _key: 43
-      _value: {fileID: 8300000, guid: 7e6a1f277fc564c829cdac8ee832730e, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 7e6a1f277fc564c829cdac8ee832730e, type: 3}
+        Capacity: 1
     - _key: 41
-      _value: {fileID: 8300000, guid: 6afe731b132684d2cb60494ccc83712d, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 6afe731b132684d2cb60494ccc83712d, type: 3}
+        Capacity: 1
     - _key: 42
-      _value: {fileID: 8300000, guid: f7caa74352a7743758187f3e3de013ba, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: f7caa74352a7743758187f3e3de013ba, type: 3}
+        Capacity: 1
     - _key: 19
-      _value: {fileID: 8300000, guid: 8b46ffb16f9f94150b524d70ac6213ef, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 8b46ffb16f9f94150b524d70ac6213ef, type: 3}
+        Capacity: 1
     - _key: 20
-      _value: {fileID: 8300000, guid: a6b74a30f496a4a7682250c4922d1a28, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: a6b74a30f496a4a7682250c4922d1a28, type: 3}
+        Capacity: 1
     - _key: 21
-      _value: {fileID: 8300000, guid: 0a329b0eff6d54bbe98776462aed1201, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 0a329b0eff6d54bbe98776462aed1201, type: 3}
+        Capacity: 1
     - _key: 22
-      _value: {fileID: 8300000, guid: b52fb4d73d24746c4861c8fffe3c32f4, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: b52fb4d73d24746c4861c8fffe3c32f4, type: 3}
+        Capacity: 1
     - _key: 23
-      _value: {fileID: 8300000, guid: cbe0d7feecfd248d7b5fb90b7b65aff0, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: cbe0d7feecfd248d7b5fb90b7b65aff0, type: 3}
+        Capacity: 1
     - _key: 24
-      _value: {fileID: 8300000, guid: 27488ad00c65b4d9c9ce74b014027f31, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 27488ad00c65b4d9c9ce74b014027f31, type: 3}
+        Capacity: 1
     - _key: 25
-      _value: {fileID: 8300000, guid: aa4c08288ed6d423a8ea954b6889ecc6, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: aa4c08288ed6d423a8ea954b6889ecc6, type: 3}
+        Capacity: 1
     - _key: 26
-      _value: {fileID: 8300000, guid: f014b81db9ae44b4b80f220f0c6af3d3, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: f014b81db9ae44b4b80f220f0c6af3d3, type: 3}
+        Capacity: 1
     - _key: 30
-      _value: {fileID: 8300000, guid: b19a91b7fdddd44d89d6bb14c6b1d8dd, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: b19a91b7fdddd44d89d6bb14c6b1d8dd, type: 3}
+        Capacity: 1
     - _key: 31
-      _value: {fileID: 8300000, guid: 05c966aea46f04a4a97a493f308784b9, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 05c966aea46f04a4a97a493f308784b9, type: 3}
+        Capacity: 1
     - _key: 32
-      _value: {fileID: 8300000, guid: 84002cc3e186843e5b9cefe281197a46, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 84002cc3e186843e5b9cefe281197a46, type: 3}
+        Capacity: 1
     - _key: 33
-      _value: {fileID: 8300000, guid: dc6b3fbff31f044c8aa0965c9ca88cb3, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: dc6b3fbff31f044c8aa0965c9ca88cb3, type: 3}
+        Capacity: 1
     - _key: 29
-      _value: {fileID: 8300000, guid: 96c184b94dfe745d993319e937b1ed17, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 96c184b94dfe745d993319e937b1ed17, type: 3}
+        Capacity: 1
     - _key: 28
-      _value: {fileID: 8300000, guid: c046e2b333d164b838d3041b72ba056b, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: c046e2b333d164b838d3041b72ba056b, type: 3}
+        Capacity: 1
     - _key: 38
-      _value: {fileID: 8300000, guid: 393c9daac8c054c99920b719ce862397, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 393c9daac8c054c99920b719ce862397, type: 3}
+        Capacity: 1
     - _key: 35
-      _value: {fileID: 8300000, guid: fc64fc38d1e654a9cb0fc84076c8e037, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: fc64fc38d1e654a9cb0fc84076c8e037, type: 3}
+        Capacity: 1
     - _key: 36
-      _value: {fileID: 8300000, guid: 78b75f3a1e626465598cc6dde0fbc1e9, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 78b75f3a1e626465598cc6dde0fbc1e9, type: 3}
+        Capacity: 1
     - _key: 39
-      _value: {fileID: 8300000, guid: 02cdacefb41ef4e21b9eae22ea315272, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: 02cdacefb41ef4e21b9eae22ea315272, type: 3}
+        Capacity: 1
     - _key: 37
-      _value: {fileID: 8300000, guid: a4911a24738aa4b9a9de9d856d1cdad7, type: 3}
+      _value:
+        Clip: {fileID: 8300000, guid: a4911a24738aa4b9a9de9d856d1cdad7, type: 3}
+        Capacity: 1
+  _defaultCapacity: 1

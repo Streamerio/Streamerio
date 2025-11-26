@@ -1,41 +1,38 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-namespace Common.UI.Test
+public class UIDebugClickLogger : MonoBehaviour
 {
-    /// <summary>
-    /// UI のクリック対象をデバッグ出力するスクリプト。
-    /// - Update 内でマウス左クリックを検知
-    /// - EventSystem.current から現在選択中の UI を取得
-    /// - 名前を Debug.Log に出力
-    /// </summary>
-    public class UIDebugClickLogger : MonoBehaviour
+    void Update()
     {
-        void Update()
+        if (Input.GetMouseButtonDown(0))
         {
-            // 左クリックを検知
-            if (Input.GetMouseButtonDown(0))
+            if (EventSystem.current == null)
             {
-                // EventSystem がアクティブか確認
-                if (EventSystem.current == null)
-                {
-                    Debug.LogWarning("[UIDebugClickLogger] EventSystem が存在しません。");
-                    return;
-                }
+                Debug.LogWarning("EventSystem が存在しません。");
+                return;
+            }
 
-                // 現在クリックされた UI オブジェクトを取得
-                var selected = EventSystem.current.currentSelectedGameObject;
+            var pointerData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
 
-                if (selected != null)
-                {
-                    Debug.Log($"[UIDebugClickLogger] Clicked: {selected.name}");
-                }
-                else
-                {
-                    Debug.Log("[UIDebugClickLogger] UI 以外がクリックされました。");
-                }
+            var results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointerData, results); // ←ここポイント
+
+            if (results.Count == 0)
+            {
+                Debug.Log("UIヒットなし");
+            }
+            else
+            {
+                Debug.Log("UIヒット:");
+                foreach (var r in results)
+                    Debug.Log($"- {r.gameObject.name}");
             }
         }
     }
-
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
+using VContainer;
 
 public class UltChargeBeam : MonoBehaviour
 {
@@ -21,6 +22,14 @@ public class UltChargeBeam : MonoBehaviour
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
     private GameObject _player;
+    
+    private IAudioFacade _audioFacade;
+
+    [Inject]
+    public void Construct(IAudioFacade audioFacade)
+    {
+        _audioFacade = audioFacade;
+    }
 
     void Awake()
     {
@@ -47,7 +56,7 @@ public class UltChargeBeam : MonoBehaviour
         // チャージエフェクト（色変化など）
         StartChargingEffect();
         
-        AudioManager.Instance.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
     }
 
     void Update()

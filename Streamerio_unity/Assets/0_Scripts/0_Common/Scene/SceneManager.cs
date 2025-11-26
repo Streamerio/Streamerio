@@ -1,21 +1,55 @@
-using Common.Save;
-using Common.UI.Loading;
+using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using VContainer.Unity;
 
 namespace Common.Scene
 {
-    public class SceneManager : SingletonBase<SceneManager>
+    public interface ISceneManager
     {
-        private SceneType _currentScene = SceneType.None;
-        
-        private bool _isReloaded = false;
         /// <summary>
         /// リロードしたか
         /// </summary>
-        public bool IsReloaded => _isReloaded;
+        bool IsRestart { get; }
+        
+        /// <summary>
+        /// シーンをロードする(前のシーンがアンロード)
+        /// </summary>
+        /// <param name="sceneType"></param>
+        UniTask LoadSceneAsync(SceneType sceneType);
+        
+        /// <summary>
+        /// リロード
+        /// </summary>
+        UniTask ReloadSceneAsync();
+        
+        void UpdateRestartFlag(bool isRestart);
+    }
+    
+    public class SceneManager: ISceneManager, IInitializable, IDisposable
+    {
+        private SceneType _currentScene = SceneType.None;
+        
+        private bool _isRestart = false;
+        /// <summary>
+        /// リロードしたか
+        /// </summary>
+        public bool IsRestart => _isRestart;
+        
+        private CancellationTokenSource _cts;
+        
+        public void Initialize()
+        {
+            _cts = new CancellationTokenSource();
+        }
 
-
+        public void Dispose()
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        
         /// <summary>
         /// シーンをロードする(前のシーンがアンロード)
         /// </summary>
@@ -28,21 +62,18 @@ namespace Common.Scene
                 return;
             }
             
-            _isReloaded=false;
-            LoadingScreenPresenter.Instance.Show();
-
             if(_currentScene != SceneType.None)
             {
                 // 現在のシーンをアンロード
                 await UnityEngine.SceneManagement.SceneManager
                     .UnloadSceneAsync(_currentScene.ToString())
-                    .ToUniTask(cancellationToken: destroyCancellationToken);
+                    .ToUniTask(cancellationToken: _cts.Token);
             }
 
             _currentScene = sceneType;
             await UnityEngine.SceneManagement.SceneManager
                 .LoadSceneAsync(sceneType.ToString(), LoadSceneMode.Additive)
-                .ToUniTask(cancellationToken: destroyCancellationToken);
+                .ToUniTask(cancellationToken: _cts.Token);
         }
 
         /// <summary>
@@ -50,16 +81,18 @@ namespace Common.Scene
         /// </summary>
         public async UniTask ReloadSceneAsync()
         {
-            _isReloaded=true;
-            LoadingScreenPresenter.Instance.Show();
-
             await UnityEngine.SceneManagement.SceneManager
                 .UnloadSceneAsync(_currentScene.ToString())
-                .ToUniTask(cancellationToken: destroyCancellationToken);
+                .ToUniTask(cancellationToken: _cts.Token);
 
             await UnityEngine.SceneManagement.SceneManager
                 .LoadSceneAsync(_currentScene.ToString(), LoadSceneMode.Additive)
-                .ToUniTask(cancellationToken: destroyCancellationToken);
+                .ToUniTask(cancellationToken: _cts.Token);
+        }
+
+        public void UpdateRestartFlag(bool isRestart)
+        {
+            _isRestart = isRestart;
         }
     }
 }

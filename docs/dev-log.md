@@ -307,3 +307,4 @@
 ### 今後の TODO
 - Backend のトークン発行 API と SDK 実装を接続し、エンドツーエンドで疎通確認を行う。
 - Miniflare を用いた自動テスト、Queue コンシューマ Worker の雛形追加、Metrics エクスポートを整備。
+- 長時間プレイ

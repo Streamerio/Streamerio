@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 5766337913556623395}
   - component: {fileID: 8868842075768407016}
   - component: {fileID: 1657299187829668816}
+  - component: {fileID: 3692982160879774031}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -144,6 +145,18 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!225 &3692982160879774031
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005526453516843381}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2854347308675805854
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,8 +386,8 @@ MonoBehaviour:
     of the Software.\n\nTHE SOFTWARE IS PROVIDED \u201CAS IS\u201D, WITHOUT WARRANTY
     OF ANY KIND, EXPRESS OR IMPLIED...\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 3ea3e7bad60324e4bb47c342ef7b1a7a, type: 2}
-  m_sharedMaterial: {fileID: 968898699081592503, guid: 3ea3e7bad60324e4bb47c342ef7b1a7a, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3d62bf0d7d992b841bbaae3de5b16e62, type: 2}
+  m_sharedMaterial: {fileID: 968898699081592503, guid: 3d62bf0d7d992b841bbaae3de5b16e62, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -562,8 +575,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4065495976066013298}
   m_HandleRect: {fileID: 1367011736774436660}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.83646744
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

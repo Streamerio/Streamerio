@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 9142547757995953084}
   - component: {fileID: 6994753916140120727}
   - component: {fileID: 468641349361246420}
+  - component: {fileID: 4912602742198087361}
+  - component: {fileID: -5814382344113009507}
   m_Layer: 5
   m_Name: IconButton
   m_TagString: Untagged
@@ -146,22 +148,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1349826275c8402a913b2d31124b9ecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameObject: {fileID: 4646078564785471903}
   _rectTransform: {fileID: 4221449946496692487}
   _canvasGroup: {fileID: 6994753916140120727}
+--- !u!114 &4912602742198087361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4646078564785471903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd253e17d14ec9346b4e8ec0b1ecf277, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-5814382344113009507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4646078564785471903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5b5a92d0ab748df8ca73008444cc784, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
   _button: {fileID: 9142547757995953084}
-  _pushDownAnimParam:
-    Duration: 0.1
-    Ease: 2
-    Scale: 0.75
-  _pushUpAnimParam:
-    Duration: 0.1
-    Ease: 3
-    Scale: 1
-  _enterAnimParam:
-    Duration: 0.1
-    Ease: 2
-    Alpha: 0.5
-  _exitAnimParam:
-    Duration: 0.1
-    Ease: 3
-    Alpha: 1
+  _eventTrigger: {fileID: 4912602742198087361}
+  _buttonType: 5
+  _clickSE: 28
+  _rectTransform: {fileID: 4221449946496692487}
+  _canvasGroup: {fileID: 6994753916140120727}
+  _pushDownAnimParam: {fileID: 11400000, guid: 074f80ad137834388969a515f78218e3, type: 2}
+  _pushUpAnimParam: {fileID: 11400000, guid: 8e261b4e484834da8b31bed4e19ab4a6, type: 2}
+  _enterAnimParam: {fileID: 11400000, guid: c39b138e5830641b8a2dfb87a515647c, type: 2}
+  _exitAnimParam: {fileID: 11400000, guid: 27c822b2c22d94034b591f5cd3e26715, type: 2}

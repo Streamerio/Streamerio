@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d5d86003e854227b180781cc057381d, type: 3}
+  m_Name: BookTurnLeftAnimationParamSO
+  m_EditorClassIdentifier: 
+  DurationSec: 0.5
+  Ease: 1
+  InitialBookParam:
+    page: {fileID: 8760810709888329790, guid: 8e19ec000146f4d9f91ea92051853b61, type: 3}
+    posY: 0
+    height: 865.8768
+  BookParams:
+  - page: {fileID: -7959125592595512692, guid: f93d68102109b439493777dd2c171bd9, type: 3}
+    posY: 0
+    height: 865.8768
+  - page: {fileID: -8368809492938935747, guid: 5f82ebe9a177246ec828e73e46bf9139, type: 3}
+    posY: 0
+    height: 865.8768
+  - page: {fileID: -4234584803604654108, guid: b541a57febb154d3db6a60b1a9d2b7ec, type: 3}
+    posY: -29.6
+    height: 917.8294
+  - page: {fileID: 8386236096470351724, guid: d167563f160cb435ea3e4966e02becca, type: 3}
+    posY: -29.6
+    height: 917.8294
+  - page: {fileID: -1839235895815122226, guid: 99c3af697ba6a4c1ba5da5088f062a99, type: 3}
+    posY: 0
+    height: 865.8768
+  - page: {fileID: -3265537912715371028, guid: 3278e014b543045298a45288aa3578a3, type: 3}
+    posY: 0
+    height: 865.8768
+  - page: {fileID: 8760810709888329790, guid: 8e19ec000146f4d9f91ea92051853b61, type: 3}
+    posY: 0
+    height: 865.8768
