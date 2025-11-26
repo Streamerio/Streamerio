@@ -89,7 +89,7 @@ public class AngelMovement : MonoBehaviour
 
             for (int i = 0; i < initialPoolSize; i++)
             {
-                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity, this.transform);
                 var circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
                 circleObj.SetActive(false);
                 _circlePool.Add(circle);
@@ -112,7 +112,7 @@ public class AngelMovement : MonoBehaviour
             if (circle == null)
             {
                 // 足りなければ追加生成してプールに加える
-                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity, this.transform);
                 circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
                 circleObj.SetActive(false);
                 _circlePool.Add(circle);
