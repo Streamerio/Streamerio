@@ -1,40 +1,48 @@
 using System.Threading;
-using Alchemy.Inspector;
 using Common;
+using Common.State;
 using R3;
-using UnityEngine;
-using UnityEngine.EventSystems;
+using VContainer.Unity;
 
 namespace InGame.UI.Timer
 {
-    [RequireComponent(typeof(TimerView))]
-    public class TimerPresenter: UIBehaviour
+    public interface ITimer: IAttachable<TimerContext>
     {
-        [SerializeField, ReadOnly]
-        private TimerView _view;
-
-        private TimerModel _model;
-        private LinkedCancellationToken _lct;
+        void StartCountdownTimer();
+        void StopCountdownTimer();
+    }
+    
+    public class TimerPresenter: ITimer, IStartable
+    {
+        private ITimerModel _model;
+        private ITimerView _view;
         
-#if UNITY_EDITOR
-        protected override void OnValidate()
-        {
-            _view ??= GetComponent<TimerView>();
-        }
-#endif
+        private IStateManager _stateManager;
+        private IState _gameOverState;
 
-        /// <summary>
-        /// 初期化
-        /// </summary>
-        /// <param name="initialValue">タイマーの初期値</param>
-        public void Initialize(float initialValue)
+        private CancellationTokenSource _cts;
+        
+        public void Attach(TimerContext context)
         {
-            _model = new(initialValue);
-            _view.Initialize(initialValue);
-
-            _lct = new();
+            _model = context.Model;
+            _view = context.View;
+            _stateManager = context.StateManager;
+            _gameOverState = context.GameOverState;
             
+            _cts = new CancellationTokenSource();
+            
+            _view.ZeroSetting(_model.ValueProp.CurrentValue);
+        }
+        
+        public void Start()
+        {
             Bind();
+        }
+        
+        public void Detach()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
         }
         
         private void Bind()
@@ -44,23 +52,35 @@ namespace InGame.UI.Timer
                 .Subscribe(value =>
                 {
                     _view.UpdateTimerView(value);
-                }).RegisterTo(destroyCancellationToken);
+                }).RegisterTo(_cts.Token);
             
             _model.ValueProp
                 .Where(value => value <= 0)
                 .Subscribe(_ =>
                 {
-                    InGameManager.Instance.GameOver();
-                }).RegisterTo(destroyCancellationToken);
+                    _stateManager.ChangeState(_gameOverState);
+                }).RegisterTo(_cts.Token);
         }
 
         /// <summary>
         /// カウントダウンタイマー開始
         /// </summary>
-        /// <param name="ct"></param>
-        public void StartCountdownTimer(CancellationToken ct)
+        public void StartCountdownTimer()
         {
-            _model.StartCountdownTimer(_lct.GetCancellationToken(ct));
+            _model.StartCountdownTimer();
         }
+        
+        public void StopCountdownTimer()
+        {
+            _model.StopCountdownTimer();
+        }
+    }
+
+    public class TimerContext
+    {
+        public ITimerModel Model;
+        public ITimerView View;
+        public IStateManager StateManager;
+        public IState GameOverState;
     }
 }

@@ -26,7 +26,7 @@ public class PlayerGrounded : MonoBehaviour
     public void OnTriggerExit2D(Collider2D collision)
     {
         if (!collision.CompareTag("Ground")) return;
-        AudioManager.Instance.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _isGrounded.Value = false;
     }
 }

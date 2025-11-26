@@ -92,6 +92,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5080520027346092714, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5795364933297346473, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -750
+      objectReference: {fileID: 0}
+    - target: {fileID: 6522818499888311231, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: _buttonType
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6522818499888311231, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: parentReference.TypeName
+      value: InGame.InGameLifetimeScope
+      objectReference: {fileID: 0}
+    - target: {fileID: 8020483017167548131, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: _buttonType
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 8020483017167548131, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: parentReference.TypeName
+      value: InGame.InGameLifetimeScope
+      objectReference: {fileID: 0}
+    - target: {fileID: 8307571341316032502, guid: 0878852b8ce1f47d9a84e433336018f5, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4502902962766520377, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
       propertyPath: m_Name
-      value: WindowCanvas Variant
+      value: WindowCanvas
       objectReference: {fileID: 0}
     - target: {fileID: 4584673777822270809, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
       propertyPath: m_Pivot.x
@@ -99,32 +99,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4502902962766520377, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1240523656145598850}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
---- !u!224 &2900189160432655006 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4584673777822270809, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
-  m_PrefabInstance: {fileID: 1702222319644303303}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &3017979430978158590 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4502902962766520377, guid: 55bb7eb4aab6a434b95e1bd0d4dbfef0, type: 3}
-  m_PrefabInstance: {fileID: 1702222319644303303}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1240523656145598850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3017979430978158590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5298af1e06584283b217dd89c8e78407, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _displayRepository: {fileID: 11400000, guid: 927a83cefe2654bbda641038c800dd77, type: 2}
-  _parent: {fileID: 2900189160432655006}

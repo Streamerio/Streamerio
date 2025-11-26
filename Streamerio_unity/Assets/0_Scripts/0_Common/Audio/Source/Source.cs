@@ -1,3 +1,8 @@
+// モジュール概要:
+// 個別に再生される AudioSource ラッパー。プールに対応し、フェード停止やミュート切替などのユーティリティを提供する。
+// 依存関係: UnityEngine.AudioSource、Cysharp.Threading.Tasks、DOTween を使用し、プールからの再利用を可能にする。
+// 使用例: AudioSourcePool が Source を生成・初期化し、AudioPlayerBase が PlayAsync/Stop を呼び出す。
+
 using System;
 using System.Threading;
 
@@ -17,25 +22,40 @@ namespace Common.Audio
     [RequireComponent(typeof(AudioSource))]
     public class Source : MonoBehaviour, IDisposable
     {
+        /// <summary>
+        /// 【目的】実際の音再生に使用する AudioSource を参照する。
+        /// 【理由】プールから復帰したときに再取得を避け、各再生 API が即座に利用できるようにするため。
+        /// </summary>
         [SerializeField, ReadOnly]
         private AudioSource _audioSource;
+        
+        [SerializeField]
+        private float _stopFadeDuration = 1f;
 
+        /// <summary>
+        /// 【目的】再生終了時にプールへ返却するコールバック。
+        /// 【理由】AudioSourcePool が Release を呼べるようにし、利用側が返却を意識せずに済ませるため。
+        /// </summary>
         private Action _onDisable;                // 再生終了時に呼ぶコールバック（プールに返す用）
+        /// <summary>
+        /// 【目的】破棄や外部キャンセルと連動するトークンを保持する。
+        /// 【理由】PlayAsync/StopAsync 実行中に GameObject が破棄された場合でも漏れなく終了させるため。
+        /// </summary>
         private LinkedCancellationToken _lct;    // 外部と連動したキャンセルトークン
 
 #if UNITY_EDITOR
         protected void OnValidate()
         {
             // Editor 上で AudioSource を自動取得
-            _audioSource = _audioSource == null ? GetComponent<AudioSource>() : _audioSource;
+            _audioSource ??= GetComponent<AudioSource>();
         }  
 #endif
 
         /// <summary>
-        /// 初期化。
-        /// - プールから取り出された時に呼び出される
-        /// - 終了時にプールへ返却するためのコールバックを保持
+        /// 【目的】プールから取り出された際に返却用コールバックとキャンセル連携をセットアップする。
+        /// 【理由】再生終了時に Release できるようにし、Reuse までのリソース管理を安定させるため。
         /// </summary>
+        /// <param name="onDisable">【用途】Dispose 時に呼び出すプール返却コールバック。</param>
         public void Initialize(Action onDisable)
         {
             _onDisable = onDisable;
@@ -43,8 +63,11 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// 指定した AudioClip を再生し、終了まで待機。
+        /// 【目的】指定した AudioClip を再生し、終了するまで待機する。
+        /// 【理由】BGM/SE プレイヤーが非同期で再生完了を待てるようにするため。
         /// </summary>
+        /// <param name="clip">【用途】再生する AudioClip。</param>
+        /// <param name="ct">【用途】外部から再生を中断したい場合に使用する CancellationToken。</param>
         public async UniTask PlayAsync(AudioClip clip, CancellationToken ct)
         {
             _audioSource.clip = clip;
@@ -57,7 +80,8 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// 即座に停止。
+        /// 【目的】再生を即座に停止し、プールへ返却する。
+        /// 【理由】SE の打ち切りなど遅延を許容しないケースで即時停止できるようにするため。
         /// </summary>
         public void Stop()
         {
@@ -66,30 +90,34 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// 音量を徐々に下げて停止。
+        /// 【目的】指定時間でフェードアウトしながら停止する。
+        /// 【理由】BGM の切り替えなど、唐突な音切れを避けたいケースに対応するため。
         /// </summary>
-        public async UniTask StopAsync(float duration, CancellationToken ct)
+        /// <param name="ct">【用途】フェード途中で停止処理をキャンセルするためのトークン。</param>
+        public async UniTask StopAsync(CancellationToken ct)
         {
             await _audioSource
-                .DOFade(0, duration)
+                .DOFade(0, _stopFadeDuration)
                 .SetEase(Ease.InOutQuad)
                 .ToUniTask(cancellationToken: _lct.GetCancellationToken(ct));
 
             Stop();
+            _audioSource.volume = 1f; // フェード後に音量を元に戻す
         }
 
         /// <summary>
-        /// ミュート設定を変更。
+        /// 【目的】ミュート状態を切り替える。
+        /// 【理由】VolumeMediator からのミュート指示に従い、個別 Source の発音を抑制するため。
         /// </summary>
+        /// <param name="isMute">【用途】true でミュート、false でミュート解除。</param>
         public void SetMute(bool isMute)
         {
             _audioSource.mute = isMute;
         }
 
         /// <summary>
-        /// 再生終了や停止時に呼ばれる。
-        /// - コールバックを実行し、プールへ返却
-        /// - 内部リソースを解放
+        /// 【目的】再生終了や停止後のクリーンアップを行い、プールへ返却する。
+        /// 【理由】Source 再利用時に前回のコールバックやトークンが残らないようにするため。
         /// </summary>
         public void Dispose()
         {

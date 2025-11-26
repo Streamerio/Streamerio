@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c64ca9fff0a449ccb33055f5661f06c5, type: 3}
+  m_Name: FlashTextAnimationSO
+  m_EditorClassIdentifier: 
+  DurationSec: 0.75
+  Ease: 1
+  InitialAlpha: 1
+  MinAlpha: 0
+  MaxAlpha: 1
+  FlashCount: -1

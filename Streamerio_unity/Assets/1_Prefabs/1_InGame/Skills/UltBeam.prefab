@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7297035569871632621}
   - component: {fileID: 3612613897381698526}
   - component: {fileID: 7038179332553123644}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltBeam
   m_TagString: ULT
   m_Icon: {fileID: 0}

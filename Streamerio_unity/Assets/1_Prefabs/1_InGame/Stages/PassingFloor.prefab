@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6501045865214589059}
   - component: {fileID: 5609050668864353135}
   - component: {fileID: 2064125557957950325}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: PassingFloor
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ PlatformEffector2D:
   m_RotationalOffset: 0
   m_UseOneWay: 1
   m_UseOneWayGrouping: 0
-  m_SurfaceArc: 180
+  m_SurfaceArc: 130
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
