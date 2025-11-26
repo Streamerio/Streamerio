@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AngelMovement : MonoBehaviour
@@ -29,6 +30,10 @@ public class AngelMovement : MonoBehaviour
     private EnemyAttackManager _attackManager;
     private EnemyHpManager _enemyHpManager;
 
+    // プーリング関連
+    private List<AngelEnergyCircle> _circlePool = new List<AngelEnergyCircle>();
+    private bool _poolInitialized = false;
+
     void Start()
     {
         _startPosition = transform.position;
@@ -36,7 +41,10 @@ public class AngelMovement : MonoBehaviour
         _enemyHpManager = GetComponent<EnemyHpManager>();
         _attackTimer = attackInterval;
 
-        _enemyHpManager.Initialize(_hp);
+        if (_enemyHpManager != null)
+        {
+            _enemyHpManager.Initialize(_hp);
+        }
     }
 
     void Update()
@@ -75,6 +83,24 @@ public class AngelMovement : MonoBehaviour
     {
         if (energyCirclePrefab == null || circleCount <= 0) return;
 
+        // プール初期化（初回のみ）
+        if (!_poolInitialized)
+        {
+            // ここで +1 を削除：重複して二倍生成される問題を解消
+            int maxConcurrentWaves = Mathf.Max(1, Mathf.CeilToInt(circleLifetime / Mathf.Max(0.0001f, attackInterval)));
+            int initialPoolSize = circleCount * maxConcurrentWaves;
+
+            for (int i = 0; i < initialPoolSize; i++)
+            {
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
+                var circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
+                circleObj.SetActive(false);
+                _circlePool.Add(circle);
+            }
+
+            _poolInitialized = true;
+        }
+
         float baseAngleOffset = randomizeStartAngle ? Random.Range(0f, 360f) : 0f;
         float angleStep = 360f / circleCount;
 
@@ -84,14 +110,21 @@ public class AngelMovement : MonoBehaviour
             float rad = deg * Mathf.Deg2Rad;
             Vector3 dir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
 
-            GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
-            var circle = circleObj.GetComponent<AngelEnergyCircle>();
+            // 非アクティブなプール要素を探す
+            AngelEnergyCircle circle = _circlePool.Find(c => !c.gameObject.activeInHierarchy);
             if (circle == null)
             {
-                circle = circleObj.AddComponent<AngelEnergyCircle>();
+                // 足りなければ追加生成してプールに加える
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
+                circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
+                circleObj.SetActive(false);
+                _circlePool.Add(circle);
             }
 
             int damage = _attackManager != null ? _attackManager.CurrentDamage : 10;
+
+            // 再利用: アクティブにして初期化（Initialize 内で位置を設定）
+            circle.gameObject.SetActive(true);
             circle.Initialize(
                 damage,
                 circleLifetime,
@@ -103,13 +136,13 @@ public class AngelMovement : MonoBehaviour
             );
         }
 
-        Debug.Log("[AngelMovement] Created energy circle wave");
+        Debug.Log("[AngelMovement] Created energy circle wave (pooled)");
     }
 
     public void TakeDamage(int amount)
     {
         if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
-        _enemyHpManager.TakeDamage(amount);
+        if (_enemyHpManager != null) _enemyHpManager.TakeDamage(amount);
     }
 
     public void TakeDamage(float amount)
