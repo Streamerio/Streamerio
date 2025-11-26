@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 2288233384233059691}
   - component: {fileID: 5891050382537822940}
   - component: {fileID: 6605509701492970868}
-  - component: {fileID: -3343573026250612961}
   - component: {fileID: 2196653627995611947}
   - component: {fileID: 834650233351161892}
+  - component: {fileID: -8700195646738777867}
   m_Layer: 7
   m_Name: Angel
   m_TagString: Enemy
@@ -202,31 +202,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &-3343573026250612961
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4317687067625818719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74bd5366f441c4419b857fd16ba1d4e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  verticalSpeed: 2
-  horizontalSpeed: 1
-  verticalRange: 3
-  horizontalRange: 2
-  baseLeftSpeed: 0.8
-  energyCirclePrefab: {fileID: 2809420527495918, guid: f0ed061f81f6b42939b35899dc4a3e95, type: 3}
-  attackInterval: 4
-  circleLifetime: 2
-  circleRadius: 1.5
-  circleCount: 8
-  circleExpandDuration: 0.6
-  circleOrbitSpeedDeg: 50
-  randomizeStartAngle: 1
 --- !u!114 &2196653627995611947
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,4 +227,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 50
+--- !u!114 &-8700195646738777867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4317687067625818719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bd5366f441c4419b857fd16ba1d4e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  verticalSpeed: 2
+  horizontalSpeed: 1
+  verticalRange: 3
+  horizontalRange: 4
+  baseLeftSpeed: 0.8
+  energyCirclePrefab: {fileID: 2809420527495918, guid: f0ed061f81f6b42939b35899dc4a3e95, type: 3}
+  attackInterval: 4
+  circleLifetime: 2
+  circleRadius: 12
+  circleCount: 8
+  circleExpandDuration: 0.6
+  circleOrbitSpeedDeg: 50
+  randomizeStartAngle: 1
