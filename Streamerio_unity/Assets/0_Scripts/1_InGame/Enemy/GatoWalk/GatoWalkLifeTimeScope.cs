@@ -12,6 +12,6 @@ public class GatoWalkLifeTimeScope : LifetimeScope
     {
         builder.RegisterInstance<GatoWalkScriptableObject>(config);
         builder.RegisterComponentInHierarchy<GatoWalkMovement>();
-        builder.RegisterComponentInHierarchy<EnemyHpManager>();
+        builder.RegisterComponentInHierarchy<EnemyHP>();
     }
 }

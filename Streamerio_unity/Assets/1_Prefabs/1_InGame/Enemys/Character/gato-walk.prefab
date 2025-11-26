@@ -12,14 +12,12 @@ GameObject:
   - component: {fileID: 8449293448883861110}
   - component: {fileID: 1468994174554843752}
   - component: {fileID: 8910763696074469947}
-  - component: {fileID: -1516463916998867121}
-  - component: {fileID: 5197483903276070194}
   - component: {fileID: 3106905771826119889}
   - component: {fileID: 1222040185213489629}
-  - component: {fileID: 2318439381449355405}
-  - component: {fileID: 5197483903276070194}
+  - component: {fileID: 2480621959694698262}
+  - component: {fileID: 417157757550299825}
   m_Layer: 7
-  m_Name: gato-walk-1
+  m_Name: gato-walk
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,35 +127,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa82a4350bef847cf9d3abe211ddf3a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-1516463916998867121
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4980451966244278551}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 020e980bb6c04b54ba87fbb250d987e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parentReference:
-    TypeName: 
-  autoRun: 1
-  autoInjectGameObjects: []
-  config: {fileID: 11400000, guid: afee86ae09e84dd4c946b15b980972cc, type: 2}
---- !u!114 &5197483903276070194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4980451966244278551}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  _transform: {fileID: 4473947801299940977}
+  _rb: {fileID: 1222040185213489629}
+  _jumpForce: 40
+  _jumpInterval: 5
+  _gravityScale: 4
 --- !u!70 &3106905771826119889
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -210,7 +184,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 4
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -222,7 +196,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &2318439381449355405
+--- !u!114 &2480621959694698262
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -231,7 +205,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 4980451966244278551}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Script: {fileID: 11500000, guid: 8615d4256fc2437d8ecc1ccaf1bc6cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 20
+  _gameObject: {fileID: 4980451966244278551}
+  _height: 5.2999997
+--- !u!114 &417157757550299825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4980451966244278551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f259981e0fbf484c82013e2449b36075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
+  _movement: {fileID: 8910763696074469947}
+  _enemyPresenter: {fileID: 2480621959694698262}

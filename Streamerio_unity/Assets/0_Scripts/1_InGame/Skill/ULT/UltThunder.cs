@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
 using System.Linq;
+using InGame.Enemy.Object;
 using VContainer;
 
 [RequireComponent(typeof(BoxCollider2D))]
@@ -100,7 +101,7 @@ public class UltThunder : MonoBehaviour
             try
             {
                 if (_hitEnemies.Contains(enemyObj)) continue;
-                var hp = enemyObj.GetComponent<EnemyHpManager>();
+                var hp = enemyObj.GetComponent<IEnemy>();
                 if (hp != null)
                 {
                     hp.TakeDamage((int)_damage);
@@ -137,7 +138,7 @@ public class UltThunder : MonoBehaviour
             _enemyTimers[enemyObj] += dt;
             if (_enemyTimers[enemyObj] >= _continuousDamageInterval)
             {
-                var hp = enemyObj.GetComponent<EnemyHpManager>();
+                var hp = enemyObj.GetComponent<IEnemy>();
                 if (hp != null)
                 {
                     hp.TakeDamage((int)_continuousDamage);

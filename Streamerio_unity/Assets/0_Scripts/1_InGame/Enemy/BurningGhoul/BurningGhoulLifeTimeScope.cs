@@ -15,6 +15,6 @@ public class BurningGhoulLifeTimeScope : LifetimeScope
     {
         builder.RegisterInstance<BurningGhoulScriptableObject>(config);
         builder.RegisterComponentInHierarchy<BurningGhoulMovement>();
-        builder.RegisterComponentInHierarchy<EnemyHpManager>();
+        builder.RegisterComponentInHierarchy<EnemyHP>();
     }
 }

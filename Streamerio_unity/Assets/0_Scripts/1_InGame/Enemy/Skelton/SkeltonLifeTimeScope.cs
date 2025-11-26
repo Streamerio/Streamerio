@@ -11,6 +11,6 @@ public class SkeltonLifetimeScope : LifetimeScope
     {
         builder.RegisterInstance<SkeltonScriptableObject>(config);
         builder.RegisterComponentInHierarchy<Skelton>();
-        builder.RegisterComponentInHierarchy<EnemyHpManager>();
+        builder.RegisterComponentInHierarchy<EnemyHP>();
     }
 }
