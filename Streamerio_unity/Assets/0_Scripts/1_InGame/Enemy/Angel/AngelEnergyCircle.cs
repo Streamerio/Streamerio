@@ -110,7 +110,7 @@ public class AngelEnergyCircle : MonoBehaviour
         var hpPresenter = collision.GetComponent<HpPresenter>();
         if (hpPresenter == null)
         {
-            hpPresenter = FindObjectOfType<HpPresenter>();
+            hpPresenter = collision.GetComponentInParent<HpPresenter>();
         }
 
         if (hpPresenter != null)
