@@ -107,12 +107,6 @@ func Load() (*Config, error) {
 
 func getEnvInt(key string, def int) int {
 	if v := os.Getenv(key); v != "" {
-		if i, err :=  fmt.Sscanf(v, "%d", &def); err == nil && i > 0 {
-			// Sscanf writes to def, so we just return it
-			return def
-		}
-		// If Sscanf fails or returns 0 items, we might need to parse manually or handle error better.
-		// Simpler approach for int parsing:
 		var val int
 		if _, err := fmt.Sscanf(v, "%d", &val); err == nil {
 			return val
