@@ -190,6 +190,7 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	var req struct {
 		EventType  string      `json:"event_type"`
 		ViewerID   string      `json:"viewer_id"`
+		ViewerName string      `json:"viewer_name"`
 		PushEvents []PushEvent `json:"push_events"`
 	}
 
@@ -198,10 +199,13 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	}
 
 	var viewerID *string
+	var viewerName *string
 	if req.ViewerID != "" {
 		viewerID = &req.ViewerID
 	}
-
+	if req.ViewerName != "" {
+		viewerName = &req.ViewerName
+	}
 	if room.Status == "ended" {
 		if viewerID == nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "viewer_id is required after game end"})
@@ -255,7 +259,7 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"INFO": "no push events"})
 	}
 
-	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID)
+	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID, viewerName)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
