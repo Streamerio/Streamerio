@@ -29,7 +29,7 @@ namespace InGame.Enemy.Object
             builder.RegisterComponent<IEnemyMovement>(_movement);
 
             // 敵の体力
-            builder.Register<IDamageable, EnemyHP>(Lifetime.Singleton);
+            builder.Register<IEnemyHP, EnemyHP>(Lifetime.Singleton);
 
             // 敵のPresenter
             builder.RegisterComponent<IEnemy>(_enemyPresenter);
