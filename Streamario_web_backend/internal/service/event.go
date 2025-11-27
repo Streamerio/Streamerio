@@ -94,6 +94,17 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 
 	res := &model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
 
+	res.RemainingCount = res.RequiredCount - res.CurrentCount
+	if res.RemainingCount < 0 {
+		res.RemainingCount = 0
+	}
+	if res.RequiredCount > 0 {
+		res.Progress = float64(res.CurrentCount) / float64(res.RequiredCount)
+		if res.Progress > 1 {
+			res.Progress = 1
+		}
+	}
+
 	if int(current) >= threshold {
 		s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
 
@@ -140,6 +151,13 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, Ev
 			if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, resetMsg); err != nil {
 				s.logger.Warn("reset count update publish failed", slog.String("room_id", roomID), slog.Any("error", err))
 			}
+		}
+
+		res.RemainingCount = res.NextThreshold
+		if res.NextThreshold > 0 {
+			res.Progress = 0
+		} else {
+			res.Progress = 1
 		}
 	}
 	return res, nil
@@ -196,6 +214,8 @@ type RoomEventStat struct {
 	RequiredCount int             `json:"required_count"`
 	NextThreshold int             `json:"next_threshold"`
 	ViewerCount   int             `json:"viewer_count"`
+	RemainingCount int            `json:"remaining_count"`
+	Progress       float64        `json:"progress"`
 }
 
 // GetRoomStats: 全イベント種別について現在カウントと閾値をまとめて返却
@@ -208,7 +228,29 @@ func (s *EventService) GetRoomStats(roomID string) ([]RoomEventStat, error) {
 			return nil, fmt.Errorf("get counter failed: %w", err)
 		}
 		th := s.calculateDynamicThreshold(cfg, viewers)
-		stats = append(stats, RoomEventStat{EventType: et, CurrentCount: int(cur), CurrentLevel: 1, RequiredCount: th, NextThreshold: th, ViewerCount: viewers})
+
+		remaining := th - int(cur)
+		if remaining < 0 {
+			remaining = 0
+		}
+		progress := 0.0
+		if th > 0 {
+			progress = float64(cur) / float64(th)
+			if progress > 1 {
+				progress = 1
+			}
+		}
+
+		stats = append(stats, RoomEventStat{
+			EventType:      et,
+			CurrentCount:   int(cur),
+			CurrentLevel:   1,
+			RequiredCount:  th,
+			NextThreshold:  th,
+			ViewerCount:    viewers,
+			RemainingCount: remaining,
+			Progress:       progress,
+		})
 	}
 	return stats, nil
 }
