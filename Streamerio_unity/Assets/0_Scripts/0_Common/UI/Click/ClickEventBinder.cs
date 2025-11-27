@@ -45,7 +45,7 @@ namespace Common.UI.Click
         /// <summary>
         /// クリック連打を抑制する間隔。0.1 秒未満の入力は無視して意図しない多重実行を防ぐ。
         /// </summary>
-        private const float _clickIntervalSec = 0.1f;
+        private const float _clickIntervalSec = 0.2f;
 
         // クリック時の効果音再生を委譲するファサード。UI 毎に実装を変えず再生方法を統一する。
         private readonly IAudioFacade _audioFacade;

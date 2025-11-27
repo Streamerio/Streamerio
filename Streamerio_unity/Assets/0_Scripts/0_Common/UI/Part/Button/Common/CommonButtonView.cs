@@ -4,12 +4,9 @@
 // 使用例: ButtonLifetimeScope から IButtonView として注入され、CommonButtonPresenter が PlayPointerXXAsync を呼び出す。
 
 using System.Threading;
-using Alchemy.Inspector;
 using Common.UI.Animation;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using VContainer;
-using VContainer.Unity;
 
 namespace Common.UI.Part.Button
 {
@@ -58,7 +55,7 @@ namespace Common.UI.Part.Button
         /// </summary>
         /// <param name="ct">【用途】押下演出を中断したい場合に使用する CancellationToken。</param>
         /// <returns>【戻り値】縮小アニメーションが完了したことを示す UniTask。</returns>
-        public async UniTask PlayPointerDownAsync(CancellationToken ct)
+        public virtual async UniTask PlayPointerDownAsync(CancellationToken ct)
         {
             // 倒し込み演出中にボタンが破棄された場合でも確実に停止させるため、Destroy トークンを利用する。
             await _pushDownAnim.PlayAsync(destroyCancellationToken);            
@@ -100,11 +97,17 @@ namespace Common.UI.Part.Button
             );
         }
         
+        public virtual async UniTask PlayPointerClickAsync(CancellationToken ct)
+        {
+            ResetButtonState();
+            await UniTask.CompletedTask;
+        }
+        
         /// <summary>
         /// 【目的】ボタンの透明度とスケールを既定状態へ戻す。
         /// 【理由】同一ボタンを非表示→再表示した際に演出残りが無い状態から始めるため。
         /// </summary>
-        public void ResetButtonState()
+        public virtual void ResetButtonState()
         {
             _exitAnim.PlayImmediate();
             _pushUpAnim.PlayImmediate();

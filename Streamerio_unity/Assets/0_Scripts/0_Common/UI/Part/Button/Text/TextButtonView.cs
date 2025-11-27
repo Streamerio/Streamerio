@@ -105,6 +105,12 @@ namespace Common.UI.Part.Button
             await _pushUpAnim.PlayAsync(ct, false);
         }
         
+        public async UniTask PlayPointerClickAsync(CancellationToken ct)
+        {
+            ResetButtonState();
+            await UniTask.CompletedTask;
+        }
+        
         /// <summary>
         /// 【目的】ボタンを初期状態へ戻し、装飾を非表示にする。
         /// 【理由】SetActive(false) → SetActive(true) などの再利用時に、演出残りがない状態から開始するため。

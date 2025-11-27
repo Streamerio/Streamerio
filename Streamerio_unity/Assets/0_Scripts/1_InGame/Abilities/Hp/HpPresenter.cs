@@ -1,17 +1,18 @@
 using Common.Audio;
 using Common.State;
 using Cysharp.Threading.Tasks;
-using InGame;
 using InGame.UI.Heart;
 using UnityEngine;
 using R3;
 using VContainer;
+using VContainer.Unity;
+using IState = Common.State.IState;
 
-public class HpPresenter : MonoBehaviour, IAbility
+public class HpPresenter : MonoBehaviour, IAbility, IInitializable, IStartable
 {
     private HpModel _hpModel;
     public float Amount => _hpModel.CurrentHp.Value;
-    [SerializeField] private HeartGroupView _hpView;
+    private IHeartGroupView _hpView;
     [SerializeField] private PlayerScriptableObject _scriptableObject;
 
     private float _currentHp;
@@ -22,14 +23,15 @@ public class HpPresenter : MonoBehaviour, IAbility
     private IAudioFacade _audioFacade;
     
     [Inject]
-    public void Construct([Key(StateType.ToGameOver)] IState gameOverState, IStateManager stateManager, IAudioFacade audioFacade)
+    public void Construct([Key(StateType.ToGameOver)] IState gameOverState, IStateManager stateManager, IAudioFacade audioFacade, IHeartGroupView hpView)
     {
         _gameOverState = gameOverState;
         _stateManager = stateManager;
         _audioFacade = audioFacade;
+        _hpView = hpView;
     }
 
-    void Awake()
+    public void Initialize()
     {
         _currentHp = _scriptableObject.InitialHp;
         _maxHp = _scriptableObject.MaxHp;
@@ -37,7 +39,7 @@ public class HpPresenter : MonoBehaviour, IAbility
         _hpView.Initialize(0, _currentHp);
     }
 
-    void Start()
+    public void Start()
     {
         Bind();
     }
@@ -62,7 +64,7 @@ public class HpPresenter : MonoBehaviour, IAbility
 
     public void Decrease(float amount)
     {
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerDamage, destroyCancellationToken).Forget();
+        _audioFacade.PlayAsync(SEType.PlayerDamage, destroyCancellationToken).Forget();
         _hpModel.Decrease(amount);
     }
 }

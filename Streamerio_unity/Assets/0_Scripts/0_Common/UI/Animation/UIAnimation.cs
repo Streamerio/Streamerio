@@ -36,6 +36,11 @@ namespace Common.UI.Animation
 
         void Skip();
     }
+
+    public interface IInitializableAnimation
+    {
+        void InitializeAnimation();
+    }
     
     /// <summary>
     /// DOTween Sequence を使ったアニメーションの基底クラス。

@@ -6,6 +6,7 @@ using Common.UI.Animation;
 using Common.UI.Part.Button;
 using InGame.Goal;
 using InGame.Setting;
+using InGame.UI.Heart;
 using InGame.UI.Timer;
 using UnityEngine;
 using VContainer;
@@ -15,8 +16,6 @@ namespace InGame
 {
     public class InGameLifetimeScope: LifetimeScope
     {
-        [SerializeField]
-        private HpPresenter _hpPresenter;
         [SerializeField]
         private InGameSettingSO _inGameSetting;
         
@@ -66,16 +65,24 @@ namespace InGame
             builder.Register<IState, ToResultState>(Lifetime.Singleton)
                 .Keyed(StateType.ToResult);
 
-            builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
+            builder
+                .Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
                 .Keyed(ButtonType.Jump);
-            builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
+            builder
+                .Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
                 .Keyed(ButtonType.Attack);
 
-            builder.Register<StickInput>(Lifetime.Singleton);
+            builder.RegisterComponentInHierarchy<StickInput>()
+                .As<IStartable>()
+                .As<ITickable>();
             builder.RegisterComponentInHierarchy<Result>();
             builder.RegisterComponentInHierarchy<SkillRandomActivator>();
             builder.RegisterComponentInHierarchy<EnemyRandomActivator>();
-            builder.RegisterInstance<HpPresenter>(_hpPresenter);
+            builder.RegisterComponentInHierarchy<IHeartGroupView>();
+            builder.RegisterComponentInHierarchy<HpPresenter>()
+                .AsSelf()
+                .As<IInitializable>()
+                .As<IStartable>();
 
             builder.RegisterInstance<IUIAnimation>(new ZoomAnimation(ingameCamera, _zoomAnimationParam))
                 .Keyed(AnimationType.InGameBackground);

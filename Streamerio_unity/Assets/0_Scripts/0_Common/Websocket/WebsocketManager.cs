@@ -25,20 +25,33 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private Dictionary<FrontKey, Subject<Unit>> _frontEventDict = Enum.GetValues(typeof(FrontKey))
     .Cast<FrontKey>()
     .ToDictionary(key => key, key => new Subject<Unit>());
+  
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _enemyEventViewerNameDict = new (){
+    { FrontKey.enemy1, new Subject<ViewerDetails>() },
+    { FrontKey.enemy2, new Subject<ViewerDetails>() },
+    { FrontKey.enemy3, new Subject<ViewerDetails>() },
+  };
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _ultEventViewerNameDict = new (){
+    { FrontKey.skill1, new Subject<ViewerDetails>() },
+    { FrontKey.skill2, new Subject<ViewerDetails>() },
+    { FrontKey.skill3, new Subject<ViewerDetails>() },
+  };
   public IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict => _frontEventDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> EnemyEventViewerNameDict => _enemyEventViewerNameDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> UltEventViewerNameDict => _ultEventViewerNameDict;
   
   private GameEndSummaryNotification _gameEndSummary = null;
   public GameEndSummaryNotification GameEndSummary => _gameEndSummary;
 
-  private readonly MasterBackendSettings _masterBackendSetting;
+  private readonly IMasterData _masterData;
   
   private string _qrCodeURL = string.Empty;
 
   private float _connectionTimeout = 10f;
 
-  public WebSocketManager(MasterBackendSettings masterBackendSetting)
+  public WebSocketManager(IMasterData masterData)
   {
-    _masterBackendSetting = masterBackendSetting;
+    _masterData = masterData;
   }
   
   void ITickable.Tick()
@@ -64,11 +77,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     string websocketUrl;
     if (string.IsNullOrEmpty(websocketId))
     {
-      websocketUrl = _masterBackendSetting.BackendWebSocketURL;  
+      websocketUrl = _masterData.BackendSettings.BackendWebSocketURL;
     }
     else
     {
-      websocketUrl = ZString.Format(_masterBackendSetting.FrontendQueryParamFormat, _masterBackendSetting.BackendWebSocketURL, websocketId);
+      websocketUrl = ZString.Format(_masterData.BackendSettings.FrontendQueryParamFormat, _masterData.BackendSettings.BackendWebSocketURL, websocketId);
     }
     
     _websocket = new WebSocket(websocketUrl);
@@ -200,6 +213,15 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
           if (Enum.TryParse<FrontKey>(gameEvent.event_type, true, out var keyType))
           {
             _frontEventDict[keyType]?.OnNext(Unit.Default);
+
+            if (_enemyEventViewerNameDict.TryGetValue(keyType, out var enemyEventViewerNameSubject))
+            {
+              enemyEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
+            else if (_ultEventViewerNameDict.TryGetValue(keyType, out var ultEventViewerNameSubject))
+            {
+              ultEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
           }
           else
           {
@@ -284,7 +306,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       Debug.LogError("Room ID is not set!");
       return string.Empty;
     }
-    _qrCodeURL = ZString.Format(_masterBackendSetting.FrontendURLFormat, _roomId);
+    _qrCodeURL = ZString.Format(_masterData.BackendSettings.FrontendURLFormat, _roomId);
     
     return _qrCodeURL;
   }
@@ -294,7 +316,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameStartAsync()
   {
-    await SendWebSocketMessageAsync( _masterBackendSetting.GameStartResponse );
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameStartResponse );
   }
 
   ///<summary>
@@ -302,7 +324,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public async UniTask GameEndAsync()
   {
-    await SendWebSocketMessageAsync( _masterBackendSetting.GameEndResponse );
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameEndResponse );
   }
 
 
@@ -325,7 +347,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void HealthCheck()
   {
-    UnityWebRequest.Get(_masterBackendSetting.BackHttpURL).SendWebRequest();
+    UnityWebRequest.Get(_masterData.BackendSettings.BackHttpURL).SendWebRequest();
     Debug.Log("HealthCheck");
   }
 
@@ -363,8 +385,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private class GameEventNotification
   {
     public string type;
+    public string room_id;
     public string event_type;
     public int trigger_count;
+    public int viewer_count;
+    public string viewer_name;
   }
 
   public  class GameEndSummaryNotification
@@ -380,6 +405,16 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       public int count;
       public string viewer_id;
       public string viewer_name;
+    }
+  }
+
+  public class ViewerDetails
+  {
+    public string ViewerName;
+
+    public ViewerDetails(string viewerName)
+    {
+      ViewerName = viewerName;
     }
   }
 }
