@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2779366d964794c14a30d14767174ba0, type: 3}
   m_Name: MasterDataSO
   m_EditorClassIdentifier: 
+  _isLoad: 1
   _timeOutTime: 10
   _gameSetting:
     TimeLimit: 300
@@ -40,21 +41,21 @@ MonoBehaviour:
       _value:
         HP: 20
         AttackPower: 5
-        Speed: 10
+        Speed: 1
     - _key: 1
       _value:
         HP: 10
         AttackPower: 5
-        Speed: 20
+        Speed: 2
     - _key: 2
       _value:
         HP: 10
         AttackPower: 10
-        Speed: 10
+        Speed: 1
   _backendSettings:
     FrontendURLFormat: https://streamerio.vercel.app/?streamer_id={0}
     FrontendQueryParamFormat: '{0}?room_id={1}'
-    BackendWebSocketURL: wss://streamario-web-backend-282618030957.asia-northeast1.run.app/ws-unity
+    BackendWebSocketURL: wss://streamario-unityws-282618030957.asia-northeast1.run.app/ws-unity
     BackHttpURL: https://streamario-web-backend-282618030957.asia-northeast1.run.app/
     GameStartResponse: '{\"type\": \"game_start\" }'
     GameEndResponse: '{\"type\": \"game_end\" }'
