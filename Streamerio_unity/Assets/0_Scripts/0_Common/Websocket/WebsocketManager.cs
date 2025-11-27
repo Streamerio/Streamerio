@@ -25,7 +25,20 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private Dictionary<FrontKey, Subject<Unit>> _frontEventDict = Enum.GetValues(typeof(FrontKey))
     .Cast<FrontKey>()
     .ToDictionary(key => key, key => new Subject<Unit>());
+  
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _enemyEventViewerNameDict = new (){
+    { FrontKey.enemy1, new Subject<ViewerDetails>() },
+    { FrontKey.enemy2, new Subject<ViewerDetails>() },
+    { FrontKey.enemy3, new Subject<ViewerDetails>() },
+  };
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _ultEventViewerNameDict = new (){
+    { FrontKey.skill1, new Subject<ViewerDetails>() },
+    { FrontKey.skill2, new Subject<ViewerDetails>() },
+    { FrontKey.skill3, new Subject<ViewerDetails>() },
+  };
   public IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict => _frontEventDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> EnemyEventViewerNameDict => _enemyEventViewerNameDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> UltEventViewerNameDict => _ultEventViewerNameDict;
   
   private GameEndSummaryNotification _gameEndSummary = null;
   public GameEndSummaryNotification GameEndSummary => _gameEndSummary;
@@ -200,6 +213,15 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
           if (Enum.TryParse<FrontKey>(gameEvent.event_type, true, out var keyType))
           {
             _frontEventDict[keyType]?.OnNext(Unit.Default);
+
+            if (_enemyEventViewerNameDict.TryGetValue(keyType, out var enemyEventViewerNameSubject))
+            {
+              enemyEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
+            else if (_ultEventViewerNameDict.TryGetValue(keyType, out var ultEventViewerNameSubject))
+            {
+              ultEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
           }
           else
           {
@@ -363,8 +385,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private class GameEventNotification
   {
     public string type;
+    public string room_id;
     public string event_type;
     public int trigger_count;
+    public int viewer_count;
+    public string viewer_name;
   }
 
   public  class GameEndSummaryNotification
@@ -380,6 +405,16 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       public int count;
       public string viewer_id;
       public string viewer_name;
+    }
+  }
+
+  public class ViewerDetails
+  {
+    public string ViewerName;
+
+    public ViewerDetails(string viewerName)
+    {
+      ViewerName = viewerName;
     }
   }
 }
