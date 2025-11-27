@@ -14,6 +14,7 @@ import (
 
 	"streamerrio-backend/internal/config"
 	"streamerrio-backend/internal/handler"
+	httpmiddleware "streamerrio-backend/internal/middleware"
 	"streamerrio-backend/internal/repository"
 	"streamerrio-backend/internal/service"
 	"streamerrio-backend/pkg/counter"
@@ -42,7 +43,7 @@ func main() {
 	}
 
 	// 3. ロガー初期化
-	logCfg := logger.Config{Level: cfg.LogLevel, Format: cfg.LogFormat, AddSource: cfg.LogAddSource}
+	logCfg := logger.Config{Level: cfg.LogLevel, Format: cfg.LogFormat, AddSource: cfg.LogAddSource, Service: "streamerio-api", Component: "api"}
 	appLogger, err := logger.Init(logCfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to init logger: %v\n", err)
@@ -98,13 +99,23 @@ func main() {
 	eventService := service.NewEventService(redisCounter, eventRepo, ps, eventLogger)
 	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, nil, sessionLogger)
 	viewerService := service.NewViewerService(viewerRepo)
-	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService)
+	logTokenService, err := service.NewLogTokenService(
+		cfg.LogRelayTokenSecret,
+		cfg.LogRelayTokenTTL,
+		cfg.LogRelayDefaultScopes,
+		cfg.LogRelayAllowedScopes,
+	)
+	if err != nil {
+		log.Error("failed to init log token service", slog.Any("error", err))
+		os.Exit(1)
+	}
+	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService, logTokenService).WithLogger(appLogger.With(slog.String("component", "handler")))
 
 
 	// 10. Echo フレームワーク初期化 & ミドルウェア
 	e := echo.New()
 	e.Logger.SetLevel(elog.DEBUG)
-	e.Use(middleware.Logger())  // アクセスログ
+	e.Use(httpmiddleware.StructuredLogger(appLogger.With(slog.String("component", "http"))))
 	e.Use(middleware.Recover()) // パニック回復
 
 	// 11. CORS 設定
@@ -134,6 +145,7 @@ func main() {
 	api.GET("/rooms/:id/stats", apiHandler.GetRoomStats)
 	api.GET("/rooms/:id/results", apiHandler.GetRoomResult)
 	api.POST("/viewers/set_name", apiHandler.SetViewerName)
+	api.POST("/log-token", apiHandler.IssueLogToken)
 
 	// 13. サーバ起動
 	log.Info("starting http server", slog.String("port", cfg.Port))
