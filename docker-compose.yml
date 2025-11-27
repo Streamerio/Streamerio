@@ -22,7 +22,7 @@ services:
 
   # ローカルdbを使いたい場合は以下を復活させてください
   # db:
-  #   image: postgres:latest
+  #   image: postgres:16-alpine
   #   ports:
   #     - "5432:5432"
   #   container_name: postgres
