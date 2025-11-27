@@ -363,8 +363,11 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private class GameEventNotification
   {
     public string type;
+    public string room_id;
     public string event_type;
     public int trigger_count;
+    public int viewer_count;
+    public string viewer_name;
   }
 
   public  class GameEndSummaryNotification
