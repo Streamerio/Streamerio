@@ -101,7 +101,7 @@ public class UltThunder : MonoBehaviour
             try
             {
                 if (_hitEnemies.Contains(enemyObj)) continue;
-                var hp = enemyObj.GetComponent<IEnemy>();
+                var hp = enemyObj.GetComponent<IDamageable>();
                 if (hp != null)
                 {
                     hp.TakeDamage((int)_damage);
@@ -138,7 +138,7 @@ public class UltThunder : MonoBehaviour
             _enemyTimers[enemyObj] += dt;
             if (_enemyTimers[enemyObj] >= _continuousDamageInterval)
             {
-                var hp = enemyObj.GetComponent<IEnemy>();
+                var hp = enemyObj.GetComponent<IDamageable>();
                 if (hp != null)
                 {
                     hp.TakeDamage((int)_continuousDamage);

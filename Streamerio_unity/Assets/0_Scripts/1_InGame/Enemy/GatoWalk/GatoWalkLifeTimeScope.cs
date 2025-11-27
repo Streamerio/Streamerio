@@ -1,4 +1,5 @@
 using System;
+using InGame.Enemy;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;

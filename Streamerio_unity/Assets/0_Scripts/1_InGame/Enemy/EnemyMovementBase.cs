@@ -5,15 +5,35 @@ using UnityEngine;
 
 namespace InGame.Enemy
 {
+    /// <summary>
+    /// 敵の動作インターフェース
+    /// </summary>
     public interface IEnemyMovement
     {
+        /// <summary>
+        /// 現在地
+        /// </summary>
         ReadOnlyReactiveProperty<Vector2> PositionProp { get; }
         
+        /// <summary>
+        /// 初期化(使用前に呼ぶ)
+        /// </summary>
+        /// <param name="initialPosition"></param>
+        /// <param name="moveSpeed"></param>
         void Initialize(Vector2 initialPosition, float moveSpeed);
+        /// <summary>
+        /// 移動開始
+        /// </summary>
         void MoveStart();
+        /// <summary>
+        /// 移動を止める
+        /// </summary>
         void MoveStop();
     }
     
+    /// <summary>
+    /// 敵の移動の基底クラス
+    /// </summary>
     public abstract class EnemyMovementBase: MonoBehaviour, IEnemyMovement, IDisposable
     {
         [SerializeField, Tooltip("移動対象のTransform")]
@@ -23,8 +43,8 @@ namespace InGame.Enemy
         protected float MoveSpeed;
         
         private ReactiveProperty<Vector2> _positionProp = new();
+        /// <inheritdoc/>
         public ReadOnlyReactiveProperty<Vector2> PositionProp => _positionProp;
-        public Vector2 CurrentPosition => _positionProp.Value;
         
         private CancellationTokenSource _cts = new ();
 
@@ -35,6 +55,7 @@ namespace InGame.Enemy
         }
 #endif
         
+        /// <inheritdoc/>
         public virtual void Initialize(Vector2 initialPosition, float moveSpeed)
         {
             _positionProp.Value = initialPosition;
@@ -43,11 +64,16 @@ namespace InGame.Enemy
             MoveSpeed = moveSpeed;
         }
         
+        /// <inheritdoc/>
         public virtual void MoveStart()
         {
             Bind(_cts.Token);
         }
 
+        /// <summary>
+        /// 移動処理のバインド
+        /// </summary>
+        /// <param name="ct"></param>
         protected virtual void Bind(CancellationToken ct)
         {
             Observable.EveryUpdate()
@@ -59,8 +85,13 @@ namespace InGame.Enemy
                 .RegisterTo(ct);
         }
         
+        /// <summary>
+        /// 移動量を取得する
+        /// </summary>
+        /// <returns></returns>
         protected abstract Vector2 GetMovePosition();
         
+        /// <inheritdoc/>
         public virtual void MoveStop()
         {
             _cts.Cancel();

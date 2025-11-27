@@ -6,6 +6,7 @@ namespace InGame.Enemy.Common
     {
         protected override Vector2 GetMovePosition()
         {
+            // 左方向に直進する
             return Transform.position - new Vector3(MoveSpeed, 0, 0) * Time.deltaTime;
         }
     }

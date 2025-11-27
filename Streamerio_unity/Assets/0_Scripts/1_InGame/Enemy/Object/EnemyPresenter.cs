@@ -1,19 +1,32 @@
 using System;
 using System.Threading;
 using Common;
+using InGame.Enemy.Helper;
 using R3;
 using UnityEngine;
 using VContainer;
 
 namespace InGame.Enemy.Object
 {
-    public interface IEnemy
+    /// <summary>
+    /// 敵オブジェクトのインターフェース
+    /// </summary>
+    public interface IEnemy: IAttackable, IDamageable
     {
-        float AttackPower { get; }
-        
+        /// <summary>
+        /// オブジェクト生成時の初期化(生成直後に1回だけ呼ばれる)
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="playerTransform"></param>
         void OnCreate(MasterEnemyStatus status, Transform playerTransform);
+        /// <summary>
+        /// 初期化処理(使いたい時に呼ばれる)
+        /// </summary>
+        /// <param name="onRelease"></param>
         void Initialize(Action onRelease);
-        void TakeDamage(int damage);
+        /// <summary>
+        /// 無効化処理(使い終わった時に呼ばれる)
+        /// </summary>
         void Disable();
     }
     
@@ -27,7 +40,7 @@ namespace InGame.Enemy.Object
         private MasterEnemyStatus _status;
         
         private IEnemyMovement _movement;
-        private IDamageable _hp;
+        private IEnemyHP _hp;
         
         private Transform _playerTransform;
         
@@ -35,7 +48,7 @@ namespace InGame.Enemy.Object
         
         private CancellationTokenSource _cts;
 
-        public float AttackPower => _status.AttackPower;
+        public float Power => _status.AttackPower;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -53,7 +66,7 @@ namespace InGame.Enemy.Object
 #endif
         
         [Inject]
-        public void Construct(IEnemyMovement movement, IDamageable hp)
+        public void Construct(IEnemyMovement movement, IEnemyHP hp)
         {
             _movement = movement;
             _hp = hp;
@@ -100,7 +113,7 @@ namespace InGame.Enemy.Object
                 .RegisterTo(_cts.Token);
         }
      
-        public void TakeDamage(int damage)
+        public void TakeDamage(float damage)
         {
             _hp.TakeDamage(damage);
         }

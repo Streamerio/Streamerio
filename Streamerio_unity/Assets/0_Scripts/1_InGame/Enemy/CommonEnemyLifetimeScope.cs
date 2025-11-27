@@ -6,6 +6,9 @@ using VContainer.Unity;
 
 namespace InGame.Enemy
 {
+    /// <summary>
+    /// 敵の共通LifetimeScope: EnemySpawnerとEnemyObjectRepositoryを登録します
+    /// </summary>
     public class CommonEnemyLifetimeScope: LifetimeScope
     {
         [SerializeField, Tooltip("Enemyオブジェクトリポジトリ")]
@@ -19,13 +22,16 @@ namespace InGame.Enemy
         {
             base.Configure(builder);
 
+            // EnemyObjectRepositoryを登録
             builder.RegisterInstance<IEnemyObjectRepository>(_enemyObjectRepositorySO);
 
+            // EnemySpawnerを登録
             builder.Register<IEnemySpawner, EnemySpawner>(Lifetime.Singleton)
                 .WithParameter(_parent)
                 .WithParameter(_parentScope)
                 .As<IDisposable>();
 
+            // EnemyMediatorを登録
             builder.RegisterEntryPoint<EnemyMediator>();
         }
     }

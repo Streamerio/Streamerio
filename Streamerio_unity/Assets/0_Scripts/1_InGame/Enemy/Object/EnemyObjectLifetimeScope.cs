@@ -25,10 +25,13 @@ namespace InGame.Enemy.Object
         {
             base.Configure(builder);
 
+            // 敵の動作
             builder.RegisterComponent<IEnemyMovement>(_movement);
 
+            // 敵の体力
             builder.Register<IDamageable, EnemyHP>(Lifetime.Singleton);
 
+            // 敵のPresenter
             builder.RegisterComponent<IEnemy>(_enemyPresenter);
         }
     }

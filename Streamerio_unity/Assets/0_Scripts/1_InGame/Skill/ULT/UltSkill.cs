@@ -31,7 +31,7 @@ public class UltSkill : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<IEnemy>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 Debug.Log($"UltSkill hit: {collision.gameObject.name}");

@@ -30,6 +30,9 @@ namespace InGame.Enemy
             Bind();
         }
 
+        /// <summary>
+        /// バインド処理
+        /// </summary>
         private void Bind()
         {
             BindSpawnEnemy(FrontKey.enemy1,  MasterEnemyRarityType.Weak); 
@@ -37,6 +40,11 @@ namespace InGame.Enemy
             BindSpawnEnemy(FrontKey.enemy3, MasterEnemyRarityType.Strong);
         }
         
+        /// <summary>
+        /// WebSocketのイベントと敵出現処理を紐付ける
+        /// </summary>
+        /// <param name="frontKey"></param>
+        /// <param name="rarityType"></param>
         private void BindSpawnEnemy(FrontKey frontKey, MasterEnemyRarityType rarityType)
         {
             _webSocketManager.FrontEventDict[frontKey]

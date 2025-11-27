@@ -4,56 +4,58 @@ using Cysharp.Threading.Tasks;
 using R3;
 using VContainer;
 
-public interface IDamageable
+namespace InGame.Enemy
 {
-    void Initialize(float initialHealth);
-    ReadOnlyReactiveProperty<bool> IsDeadProp { get; }
-    void TakeDamage(float amount);
-}
-
-public class EnemyHP: IDamageable
-{
-    private float _health;
-    public float CurrentHealth => _health;
-    private ReactiveProperty<bool> _isDeadProp = new (false);
-    public ReadOnlyReactiveProperty<bool> IsDeadProp => _isDeadProp;
-
-    private IAudioFacade _audioFacade;
-    
-    private CancellationTokenSource _cts = new ();
-    
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    public interface IEnemyHP : IDamageable
     {
-        _audioFacade = audioFacade;
-    }
-    
-    public void Initialize(float initialHealth)
-    {
-        _health = initialHealth;
-        _isDeadProp.Value = false;
+        void Initialize(float initialHealth);
+        ReadOnlyReactiveProperty<bool> IsDeadProp { get; }
     }
 
-    public void TakeDamage(float amount)
+    public class EnemyHP: IEnemyHP
     {
-        if (IsDeadProp.CurrentValue) return;
-        
-        _health -= amount;
-        
-        if (_health <= 0)
+        private float _health;
+        public float CurrentHealth => _health;
+        private ReactiveProperty<bool> _isDeadProp = new (false);
+        public ReadOnlyReactiveProperty<bool> IsDeadProp => _isDeadProp;
+
+        private IAudioFacade _audioFacade;
+    
+        private CancellationTokenSource _cts = new ();
+    
+        [Inject]
+        public void Construct(IAudioFacade audioFacade)
         {
-            _health = 0;
-            Die();
+            _audioFacade = audioFacade;
         }
-        else
+    
+        public void Initialize(float initialHealth)
         {
-            _audioFacade.PlayAsync(SEType.どん_効果音,_cts.Token).Forget();
+            _health = initialHealth;
+            _isDeadProp.Value = false;
         }
-    }
 
-    protected virtual void Die()
-    {
-        _audioFacade.PlayAsync(SEType.敵のダウン,_cts.Token).Forget();
-        _isDeadProp.Value = true;
-    }
+        public void TakeDamage(float amount)
+        {
+            if (IsDeadProp.CurrentValue) return;
+        
+            _health -= amount;
+        
+            if (_health <= 0)
+            {
+                _health = 0;
+                Die();
+            }
+            else
+            {
+                _audioFacade.PlayAsync(SEType.どん_効果音,_cts.Token).Forget();
+            }
+        }
+
+        protected virtual void Die()
+        {
+            _audioFacade.PlayAsync(SEType.敵のダウン,_cts.Token).Forget();
+            _isDeadProp.Value = true;
+        }
+    }   
 }

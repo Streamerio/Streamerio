@@ -4,12 +4,16 @@ using VContainer.Unity;
 
 namespace InGame.Enemy.Object
 {
+    /// <summary>
+    /// 敵のプレファブ管理用
+    /// </summary>
     [CreateAssetMenu(fileName = "EnemyObjectRepositorySO", menuName = "SO/Enemy/EnemyObjectRepository")]
     public class EnemyObjectRepositorySO: ScriptableObject, IEnemyObjectRepository
     {
-        [SerializeField]
+        [SerializeField, Tooltip("敵オブジェクト辞書")]
         private SerializeDictionary<MasterEnemyType, LifetimeScope> _enemyObjectDictionary;
         
+        /// <inheritdoc/>
         public LifetimeScope GetEnemyObject(MasterEnemyType type)
         {
             if (_enemyObjectDictionary.ContainsKey(type))
@@ -24,6 +28,11 @@ namespace InGame.Enemy.Object
     
     public interface IEnemyObjectRepository
     {
+        /// <summary>
+        /// 敵のプレファブを取得する
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         LifetimeScope GetEnemyObject(MasterEnemyType type);
     }
 }

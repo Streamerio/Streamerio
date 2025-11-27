@@ -132,7 +132,7 @@ public class UltChargeBeam : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<IEnemy>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 //Debug.Log($"UltChargeBeam entered: {collision.gameObject.name} for {_currentDamage} damage");
@@ -155,7 +155,7 @@ public class UltChargeBeam : MonoBehaviour
             // インターバルに達したら持続ダメージを与える
             if (_enemyDamageCounters[collision.gameObject] >= _damageIntervalFrames)
             {
-                var enemy = collision.gameObject.GetComponent<IEnemy>();
+                var enemy = collision.gameObject.GetComponent<IDamageable>();
                 if (enemy != null)
                 {
                     float continuousDmg = _isCharging ? _continuousDamage : _continuousDamage * 1.5f; // チャージ完了後は持続ダメージも増加

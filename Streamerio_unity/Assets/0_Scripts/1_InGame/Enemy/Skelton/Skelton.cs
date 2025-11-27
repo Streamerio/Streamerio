@@ -1,5 +1,6 @@
 using Common.Audio;
 using Cysharp.Threading.Tasks;
+using InGame.Enemy;
 using UnityEngine;
 using VContainer;
 

@@ -9,8 +9,16 @@ using VContainer.Unity;
 
 namespace InGame.Enemy
 {
+    /// <summary>
+    /// 敵のスポナー
+    /// </summary>
     public interface IEnemySpawner
     {
+        /// <summary>
+        /// 敵のスポーン
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         IEnemy Spawn(MasterEnemyType type);
     }
     
@@ -37,8 +45,10 @@ namespace InGame.Enemy
             _masterData = masterData;
         }
         
+        /// <inheritdoc/>
         public IEnemy Spawn(MasterEnemyType type)
         {
+            // プールが存在しない場合は作成
             if (!_enemyPoolDict.ContainsKey(type))
             {
                 _enemyPoolDict[type] = new EnemyPool(

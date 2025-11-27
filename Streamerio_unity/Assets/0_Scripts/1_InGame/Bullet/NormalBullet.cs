@@ -47,7 +47,7 @@ public class NormalBullet : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<IEnemy>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 enemy.TakeDamage((int)_damage);
