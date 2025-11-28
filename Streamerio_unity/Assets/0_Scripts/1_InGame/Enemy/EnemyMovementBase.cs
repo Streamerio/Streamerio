@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace InGame.Enemy
         /// <summary>
         /// 移動開始
         /// </summary>
-        void MoveStart();
+        UniTaskVoid MoveStart();
         /// <summary>
         /// 移動を止める
         /// </summary>
@@ -46,7 +47,7 @@ namespace InGame.Enemy
         /// <inheritdoc/>
         public ReadOnlyReactiveProperty<Vector2> PositionProp => _positionProp;
         
-        private CancellationTokenSource _cts = new ();
+        private CancellationTokenSource _cts;
 
 #if UNITY_EDITOR
         protected virtual void OnValidate()
@@ -65,9 +66,20 @@ namespace InGame.Enemy
         }
         
         /// <inheritdoc/>
-        public virtual void MoveStart()
+        public virtual async UniTaskVoid MoveStart()
         {
+            _cts = new CancellationTokenSource();
+            await WaitMoveAsync(_cts.Token);
             Bind(_cts.Token);
+        }
+        
+        /// <summary>
+        /// 動き始めまで待機
+        /// </summary>
+        /// <param name="ct"></param>
+        protected virtual async UniTask WaitMoveAsync(CancellationToken ct)
+        {
+            
         }
 
         /// <summary>

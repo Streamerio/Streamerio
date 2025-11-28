@@ -4,7 +4,7 @@ using InGame.Enemy;
 using R3;
 using UnityEngine;
 
-namespace InGame.Enemy
+namespace InGame.Enemy.GotoWalk
 {
     /// <summary>
     /// 猫の動作

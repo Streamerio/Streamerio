@@ -1,5 +1,6 @@
 using System;
 using InGame.Enemy;
+using InGame.Enemy.GotoWalk;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
