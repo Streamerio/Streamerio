@@ -45,8 +45,10 @@ namespace Common.UI.Loading
 
         public override async UniTask ShowAsync(CancellationToken ct)
         {
+            View.SetInteractable(true);
+            _isShow = true;
             _playerAnimator.enabled = true;
-            await base.ShowAsync(ct);
+            await View.ShowAsync(ct);
         }
 
         public async UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct)
@@ -65,8 +67,10 @@ namespace Common.UI.Loading
         
         public override async UniTask HideAsync(CancellationToken ct)
         {
-            await base.HideAsync(ct);
+            await View.HideAsync(ct);
+            View.SetInteractable(false);
             _playerAnimator.enabled = false;
+            _isShow = false;
         }
         
         public async UniTask HideAsync(Vector3 centerCirclePosition, CancellationToken ct)

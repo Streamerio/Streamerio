@@ -36,7 +36,7 @@ func NewEventService(counter counter.Counter, eventRepo repository.EventReposito
 }
 
 // ProcessEvent: 1イベント処理の本流 (DB保存→視聴者アクティビティ更新→カウント加算→閾値判定→発動通知/リセット)
-func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventType]int64, viewerID *string) ([]model.EventResult, error) {
+func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventType]int64, viewerID *string, viewerName *string) ([]model.EventResult, error) {
 	responses := []model.EventResult{}
 
 	// 1. Record events
@@ -80,6 +80,7 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 				"event_type":    string(eventType),
 				"trigger_count": int(current),
 				"viewer_count":  viewers,
+				"viewer_name":   viewerName,
 			}
 
 			message, err := json.Marshal(payload)

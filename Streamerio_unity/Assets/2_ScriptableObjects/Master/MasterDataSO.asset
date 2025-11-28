@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2779366d964794c14a30d14767174ba0, type: 3}
   m_Name: MasterDataSO
   m_EditorClassIdentifier: 
+  _isLoad: 1
   _timeOutTime: 10
   _gameSetting:
     TimeLimit: 300

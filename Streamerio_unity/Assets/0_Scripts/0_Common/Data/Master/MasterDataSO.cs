@@ -39,35 +39,49 @@ namespace Common
             UnityEditor.AssetDatabase.Refresh();
         }
 #endif
+#if UNITY_EDITOR
+        [SerializeField, Tooltip("ゲーム開始時にマスターデータを取得するか")]
+        private bool _isLoad = true;
+#endif
+        
         private bool _isDataFetched = false;
         public bool IsDataFetched => _isDataFetched;
         
         [SerializeField, Min(0f), Tooltip("マスターデータ取得のタイムアウト時間(秒)")]
         private int _timeOutTime = 8;
         
-        [SerializeField, ReadOnly, Tooltip("ゲーム設定")]
+        [SerializeField, Tooltip("ゲーム設定")]
         private MasterGameSetting _gameSetting;
         public MasterGameSetting GameSetting => _gameSetting;
 
-        [SerializeField, ReadOnly, Tooltip("プレイヤーステータス")]
+        [SerializeField, Tooltip("プレイヤーステータス")]
         private MasterPlayerStatus _playerStatus; 
         public MasterPlayerStatus PlayerStatus => _playerStatus;
-        [SerializeField, ReadOnly, Tooltip("スキルステータス辞書")]
+        [SerializeField, Tooltip("スキルステータス辞書")]
         private SerializeDictionary<MasterUltType, MasterUltStatus> _ultStatusDictionary;
         public IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary => _ultStatusDictionary.ToDictionary();
-        [SerializeField, ReadOnly, Tooltip("敵ステータス辞書")]
+        [SerializeField, Tooltip("敵ステータス辞書")]
         private SerializeDictionary<MasterEnemyType, MasterEnemyStatus> _enemyStatusDictionary;
         public IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary => _enemyStatusDictionary.ToDictionary();
         [SerializeField, ReadOnly, Tooltip("敵ステータスレアリティ辞書")]
         private SerializeDictionary<MasterEnemyRarityType, List<MasterEnemyType>> _enemyRarityDictionary;
         public IReadOnlyDictionary<MasterEnemyRarityType, List<MasterEnemyType>> EnemyRarityDictionary => _enemyRarityDictionary.ToDictionary();
         
-        [SerializeField, ReadOnly, Tooltip("バックエンド設定")]
+        [SerializeField, Tooltip("バックエンド設定")]
         private MasterBackendSettings _backendSettings;
         public MasterBackendSettings BackendSettings => _backendSettings;
         
         public async UniTask FetchDataAsync(CancellationToken ct)
         {
+#if UNITY_EDITOR
+            if (!_isDataFetched && !_isLoad)
+            {
+                _isDataFetched = true;
+                Debug.Log("MasterDataSO FetchDataAsync skipped due to already fetched and _isLoad is false.");
+                return;
+            }
+#endif
+            
             var gameTask    = SpreadSheetClient.GetRequestAsync(SheetType.GameSettings, ct, _timeOutTime);
             var playerTask  = SpreadSheetClient.GetRequestAsync(SheetType.PlayerStatus, ct, _timeOutTime);
             var ultTask     = SpreadSheetClient.GetRequestAsync(SheetType.UltStatus, ct, _timeOutTime);
