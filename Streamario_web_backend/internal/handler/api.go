@@ -254,19 +254,24 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		PushEventMap[eventType] = pushCount
 	}
 
-	// イベントがない場合は何もしない
-	if totalPushCount == 0 {
-		return c.JSON(http.StatusOK, map[string]string{"INFO": "no push events"})
-	}
-
 	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID, viewerName)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
+	// 最新の統計情報を取得
+	stats, err := h.eventService.GetRoomStats(roomID)
+	if err != nil {
+		// 統計取得失敗はログに出すが、イベント送信自体は成功しているので続行するか、エラーにするか
+		// ここではフロントエンドが stats 依存になったため、不整合を防ぐためエラーログを出して stats は空にするか、500にする
+		h.logger.Error("failed to get room stats after event", slog.String("room_id", roomID), slog.Any("error", err))
+		// 必要であれば return c.JSON(...) でエラーを返してください
+	}
+
 	// 配列として結果を返す
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"event_results": responses,
+		"stats":         stats,
 	})
 }
 
