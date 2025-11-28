@@ -1,0 +1,33 @@
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "AngelScriptableObject", menuName = "SO/InGame/Enemy/Character/Angel")]
+public class AngelScriptableObject : ScriptableObject
+{
+    [Header("Base Parameter")]
+    public float Speed = 1.5f;
+    public float Power = 10;
+    public int Health = 30;
+
+    [Header("Relative Spawn Position With Player")]
+    public float MinRelativeSpawnPosX = 10;
+    public float MaxRelativeSpawnPosX = 15;
+    public float MinRelativeSpawnPosY = 0;
+    public float MaxRelativeSpawnPosY = 0;
+
+    [Header("移動設定")]
+    public float verticalSpeed = 2f;
+    public float horizontalSpeed = 1f;
+    public float verticalRange = 3f;
+    public float horizontalRange = 4f;
+    public float baseLeftSpeed = 0.8f;
+
+    [Header("攻撃設定")]
+    public GameObject energyCirclePrefab;
+    public float attackInterval = 4f;
+    public float circleLifetime = 2f;
+    public float circleRadius = 12f;
+    public int circleCount = 8;
+    public float circleExpandDuration = 0.6f;
+    public float circleOrbitSpeedDeg = 50f;
+    public bool randomizeStartAngle = true;
+}
