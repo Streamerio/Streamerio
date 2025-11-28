@@ -117,6 +117,7 @@ public class AngelMovement : MonoBehaviour
         float randPosX = Random.Range(_config.MinRelativeSpawnPosX, _config.MaxRelativeSpawnPosX);
         float randPosY = Random.Range(_config.MinRelativeSpawnPosY, _config.MaxRelativeSpawnPosY);
         transform.position += new Vector3(player.position.x + randPosX, player.position.y + randPosY, 0);
+        _startPosition = transform.position;
     }
 
     void Update()
