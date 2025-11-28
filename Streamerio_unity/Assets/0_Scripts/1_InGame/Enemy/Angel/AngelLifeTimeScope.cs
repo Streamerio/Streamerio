@@ -11,7 +11,6 @@ public class AngelLifeTimeScope : EnemyObjectLifetimeScope
 {
     [SerializeField] private AngelScriptableObject config;
     public AngelScriptableObject Config => config;
-
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);

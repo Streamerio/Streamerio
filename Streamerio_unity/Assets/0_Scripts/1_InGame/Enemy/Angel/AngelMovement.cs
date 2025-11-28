@@ -32,7 +32,6 @@ public class AngelMovement : EnemyMovementBase
 
     void Awake()
     {
-        
     }
 
     // VContainer による注入メソッド
@@ -74,7 +73,6 @@ public class AngelMovement : EnemyMovementBase
         if (cfg == null) return;
 
         _config = cfg;
-
         verticalSpeed = _config.verticalSpeed;
         horizontalSpeed = _config.horizontalSpeed;
         verticalRange = _config.verticalRange;
