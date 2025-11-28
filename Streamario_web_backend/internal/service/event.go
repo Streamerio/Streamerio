@@ -121,6 +121,25 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 			res.EffectTriggered = true
 			res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
 			res.CurrentCount = int(excess)
+
+			// 閾値到達時は、リセット後の次のサイクルに向けた残り回数と進捗率を計算
+			res.RemainingCount = res.NextThreshold - res.CurrentCount
+			res.Progress = float64(res.CurrentCount) / float64(res.NextThreshold)
+		} else {
+			// 通常時
+			res.RemainingCount = threshold - int(current)
+			res.Progress = float64(current) / float64(threshold)
+		}
+
+		// 安全策: マイナスや1.0超過をクランプ
+		if res.RemainingCount < 0 {
+			res.RemainingCount = 0
+		}
+		if res.Progress < 0.0 {
+			res.Progress = 0.0
+		}
+		if res.Progress > 1.0 {
+			res.Progress = 1.0
 		}
 		responses = append(responses, res)
 	}
@@ -169,28 +188,40 @@ func (s *EventService) getActiveViewerCount(roomID string) int {
 	return int(c)
 }
 
-// Stats (simplified, no level)
-// RoomEventStat: 統計表示用の簡易集計構造体
-type RoomEventStat struct {
-	EventType     model.EventType `json:"event_type"`
-	CurrentCount  int             `json:"current_count"`
-	CurrentLevel  int             `json:"current_level"` // always 1
-	RequiredCount int             `json:"required_count"`
-	NextThreshold int             `json:"next_threshold"`
-	ViewerCount   int             `json:"viewer_count"`
-}
-
 // GetRoomStats: 全イベント種別について現在カウントと閾値をまとめて返却
-func (s *EventService) GetRoomStats(roomID string) ([]RoomEventStat, error) {
+func (s *EventService) GetRoomStats(roomID string) ([]model.RoomEventStat, error) {
 	viewers := s.getActiveViewerCount(roomID)
-	stats := make([]RoomEventStat, 0, len(s.configs))
+	stats := make([]model.RoomEventStat, 0, len(s.configs))
 	for et, cfg := range s.configs {
 		cur, err := s.counter.Get(roomID, string(et))
 		if err != nil {
 			return nil, fmt.Errorf("get counter failed: %w", err)
 		}
 		th := s.calculateDynamicThreshold(cfg, viewers)
-		stats = append(stats, RoomEventStat{EventType: et, CurrentCount: int(cur), CurrentLevel: 1, RequiredCount: th, NextThreshold: th, ViewerCount: viewers})
+
+		// 残り回数と進捗率の計算
+		rem := th - int(cur)
+		if rem < 0 {
+			rem = 0
+		}
+		prog := float64(cur) / float64(th)
+		if prog > 1.0 {
+			prog = 1.0
+		}
+		if prog < 0.0 {
+			prog = 0.0
+		}
+
+		stats = append(stats, model.RoomEventStat{
+			EventType:      et,
+			CurrentCount:   int(cur),
+			CurrentLevel:   1,
+			RequiredCount:  th,
+			RemainingCount: rem,
+			Progress:       prog,
+			NextThreshold:  th,
+			ViewerCount:    viewers,
+		})
 	}
 	return stats, nil
 }
