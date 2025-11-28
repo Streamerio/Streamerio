@@ -21,6 +21,7 @@ public class AngelScriptableObject : ScriptableObject
 
     [Header("攻撃設定")]
     public GameObject energyCirclePrefab;
+    public int Damage = 10;
     public float attackInterval = 4f;
     public float circleLifetime = 2f;
     public float circleRadius = 12f;

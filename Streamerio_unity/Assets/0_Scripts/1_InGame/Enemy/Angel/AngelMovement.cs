@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
-public class AngelMovement : MonoBehaviour
+using InGame.Enemy;
+public class AngelMovement : EnemyMovementBase
 {
     private AngelScriptableObject _config;
 
@@ -26,27 +27,21 @@ public class AngelMovement : MonoBehaviour
     private float _verticalTimer;
     private float _horizontalTimer;
     private float _attackTimer;
-    private EnemyAttackManager _attackManager;
-    private EnemyHpManager _enemyHpManager;
     private List<AngelEnergyCircle> _circlePool = new List<AngelEnergyCircle>();
     private bool _poolInitialized = false;
 
     void Awake()
     {
-        // 保険で取得しておく
-        if (_attackManager == null) _attackManager = GetComponent<EnemyAttackManager>();
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
+        
     }
 
     // VContainer による注入メソッド
     [Inject]
-    private void Construct(AngelScriptableObject config, EnemyHpManager enemyHpManager)
+    private void Construct(AngelScriptableObject config)
     {
         if (config == null) throw new System.ArgumentNullException(nameof(config));
-        if (enemyHpManager == null) throw new System.ArgumentNullException(nameof(enemyHpManager));
 
         _config = config;
-        _enemyHpManager = enemyHpManager;
 
         // SO から各値をコピー
         verticalSpeed = _config.verticalSpeed;
@@ -65,9 +60,6 @@ public class AngelMovement : MonoBehaviour
         circleExpandDuration = _config.circleExpandDuration;
         circleOrbitSpeedDeg = _config.circleOrbitSpeedDeg;
         randomizeStartAngle = _config.randomizeStartAngle;
-
-        // HP マネージャ初期化
-        _enemyHpManager.Initialize(_hp);
     }
 
     // Scope から SO を取得するフォールバック（BurningGhoul と同様の保険）
@@ -108,9 +100,6 @@ public class AngelMovement : MonoBehaviour
         EnsureConfigFromScopeFallback();
 
         _startPosition = transform.position;
-        if (_attackManager == null) _attackManager = GetComponent<EnemyAttackManager>();
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
-        if (_enemyHpManager != null) _enemyHpManager.Initialize(_hp);
 
         _attackTimer = attackInterval;
 
@@ -194,7 +183,7 @@ public class AngelMovement : MonoBehaviour
                 _circlePool.Add(circle);
             }
 
-            int damage = _attackManager != null ? _attackManager.CurrentDamage : 10;
+            int damage = _config.Damage;
 
             // 再利用: アクティブにして初期化
             circle.gameObject.SetActive(true);
@@ -212,14 +201,8 @@ public class AngelMovement : MonoBehaviour
         Debug.Log("[AngelMovement] Created energy circle wave (pooled)");
     }
 
-    public void TakeDamage(int amount)
+    protected override Vector2 GetMovePosition()
     {
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
-        if (_enemyHpManager != null) _enemyHpManager.TakeDamage(amount);
-    }
-
-    public void TakeDamage(float amount)
-    {
-        TakeDamage(Mathf.CeilToInt(amount));
+        return transform.position;
     }
 }
