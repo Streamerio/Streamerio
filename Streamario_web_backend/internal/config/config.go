@@ -23,6 +23,11 @@ type Config struct {
 	LogRelayTokenTTL      time.Duration
 	LogRelayDefaultScopes []string
 	LogRelayAllowedScopes []string
+
+	// DB Connection Pool Settings
+	DBMaxOpenConns    int
+	DBMaxIdleConns    int
+	DBConnMaxLifetime time.Duration
 }
 
 // Load: 環境変数から設定を組み立て (不足はデフォルト補完)
@@ -92,7 +97,22 @@ func Load() (*Config, error) {
 	cfg.LogRelayDefaultScopes = defaultScopes
 	cfg.LogRelayAllowedScopes = allowedScopes
 
+	// DB Connection Pool
+	cfg.DBMaxOpenConns = getEnvInt("DB_MAX_OPEN_CONNS", 10)
+	cfg.DBMaxIdleConns = getEnvInt("DB_MAX_IDLE_CONNS", 10)
+	cfg.DBConnMaxLifetime = parseDuration(getEnv("DB_CONN_MAX_LIFETIME", "5m"), 5*time.Minute)
+
 	return cfg, nil
+}
+
+func getEnvInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		var val int
+		if _, err := fmt.Sscanf(v, "%d", &val); err == nil {
+			return val
+		}
+	}
+	return def
 }
 
 func getEnv(key, def string) string {

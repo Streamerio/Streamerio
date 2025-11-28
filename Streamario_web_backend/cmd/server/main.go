@@ -61,6 +61,9 @@ func main() {
 		log.Error("failed to connect to database", slog.Any("error", err))
 		os.Exit(1)
 	}
+	db.SetMaxOpenConns(cfg.DBMaxOpenConns)
+	db.SetMaxIdleConns(cfg.DBMaxIdleConns)
+	db.SetConnMaxLifetime(cfg.DBConnMaxLifetime)
 	defer db.Close()
 
 	// 5. Redis 初期化 & カウンタ (イベント数 / 視聴者アクティビティ)
