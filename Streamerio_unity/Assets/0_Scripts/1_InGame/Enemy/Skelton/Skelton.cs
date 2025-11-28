@@ -1,5 +1,6 @@
 using Common.Audio;
 using Cysharp.Threading.Tasks;
+using InGame.Enemy;
 using UnityEngine;
 using VContainer;
 
@@ -15,7 +16,7 @@ public class Skelton : MonoBehaviour, IAttackable, IHealth
     private Transform _player;
 
     private IAudioFacade _audioFacade;
-    private EnemyHpManager _enemyHpManager;
+    private EnemyHP _enemyHp;
 
     public float Power => _config.Power;
     public int Health => _config.Health;
@@ -27,17 +28,17 @@ public class Skelton : MonoBehaviour, IAttackable, IHealth
     }
 
     [Inject]
-    private void Construct(SkeltonScriptableObject config, EnemyHpManager enemyHpManager)
+    private void Construct(SkeltonScriptableObject config, EnemyHP enemyHp)
     {
         _config = config;
-        _enemyHpManager = enemyHpManager;
+        _enemyHp = enemyHp;
 
         _audioFacade = null;
 
         _speed = _config.Speed;
         _startMoveDelay = _config.StartMoveDelay;
 
-        _enemyHpManager.Initialize(_config.Health);
+        _enemyHp.Initialize(_config.Health);
     }
 
     /// <summary>
@@ -59,11 +60,11 @@ public class Skelton : MonoBehaviour, IAttackable, IHealth
         _speed = _config.Speed;
         _startMoveDelay = _config.StartMoveDelay;
 
-        if (_enemyHpManager == null)
+        if (_enemyHp == null)
         {
-            _enemyHpManager = GetComponent<EnemyHpManager>();
-            if (_enemyHpManager == null) throw new System.InvalidOperationException("EnemyHpManager not found on Skelton.");
-            _enemyHpManager.Initialize(_config.Health);
+            _enemyHp = GetComponent<EnemyHP>();
+            if (_enemyHp == null) throw new System.InvalidOperationException("EnemyHpManager not found on Skelton.");
+            _enemyHp.Initialize(_config.Health);
         }
     }
 

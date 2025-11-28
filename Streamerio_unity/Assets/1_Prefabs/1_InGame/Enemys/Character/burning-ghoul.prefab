@@ -12,11 +12,10 @@ GameObject:
   - component: {fileID: 1581859663908105476}
   - component: {fileID: 5813405247601079915}
   - component: {fileID: 398202972740722870}
-  - component: {fileID: 7651444912312915467}
-  - component: {fileID: 8159115702965081793}
-  - component: {fileID: 951967592393679611}
   - component: {fileID: 6895875478511990101}
-  - component: {fileID: -2685457706154009142}
+  - component: {fileID: 5477702197302399875}
+  - component: {fileID: 108575051213214548}
+  - component: {fileID: 3963490663028693512}
   m_Layer: 7
   m_Name: burning-ghoul
   m_TagString: Enemy
@@ -143,47 +142,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &7651444912312915467
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1384593174560067801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ab3d1335756d3748a6128fbccf6b6bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8159115702965081793
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1384593174560067801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 457141c04a46b8042ab9c896fd0f323e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parentReference:
-    TypeName: 
-  autoRun: 1
-  autoInjectGameObjects: []
-  config: {fileID: 11400000, guid: 4445e3dd613e44d45b47ea643bc8e77a, type: 2}
---- !u!114 &951967592393679611
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1384593174560067801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!70 &6895875478511990101
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -221,7 +179,7 @@ CapsuleCollider2D:
   m_Offset: {x: -0.02, y: -0.1}
   m_Size: {x: 0.36, y: 0.5}
   m_Direction: 0
---- !u!114 &-2685457706154009142
+--- !u!114 &5477702197302399875
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -230,7 +188,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 1384593174560067801}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Script: {fileID: 11500000, guid: fc4fc0d91f654cbfa18d1c682f50a82f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
+  _transform: {fileID: 2862061852281406798}
+--- !u!114 &108575051213214548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384593174560067801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f259981e0fbf484c82013e2449b36075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
+  _movement: {fileID: 5477702197302399875}
+  _enemyPresenter: {fileID: 3963490663028693512}
+--- !u!114 &3963490663028693512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384593174560067801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8615d4256fc2437d8ecc1ccaf1bc6cbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gameObject: {fileID: 1384593174560067801}

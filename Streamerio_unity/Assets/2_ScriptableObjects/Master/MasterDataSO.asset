@@ -39,19 +39,51 @@ MonoBehaviour:
     _keyValuePairs:
     - _key: 0
       _value:
+        EnemyType: 0
+        Rarity: 0
         HP: 20
         AttackPower: 5
-        Speed: 1
+        Speed: 10
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 0
+        PoolSize: 100
     - _key: 1
       _value:
+        EnemyType: 1
+        Rarity: 1
         HP: 10
         AttackPower: 5
-        Speed: 2
+        Speed: 20
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 0
+        PoolSize: 100
     - _key: 2
       _value:
+        EnemyType: 2
+        Rarity: 2
         HP: 10
         AttackPower: 10
-        Speed: 1
+        Speed: 10
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 20
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 10
+        PoolSize: 100
+  _enemyRarityDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value: 00000000
+    - _key: 1
+      _value: 01000000
+    - _key: 2
+      _value: 02000000
   _backendSettings:
     FrontendURLFormat: https://streamerio.vercel.app/?streamer_id={0}
     FrontendQueryParamFormat: '{0}?room_id={1}'

@@ -20,6 +20,9 @@ namespace InGame
         private InGameSettingSO _inGameSetting;
         
         [SerializeField]
+        private Transform _playerTransform;
+        
+        [SerializeField]
         private Camera _mainCamera;
         [SerializeField]
         private Camera[] _overlayCameras;
@@ -42,6 +45,9 @@ namespace InGame
         protected override void Configure(IContainerBuilder builder)
         {
             base.Configure(builder);
+
+            builder.RegisterInstance(_playerTransform)
+                .Keyed("Player");
             
             var ingameCamera = new CameraManager(_mainCamera, _overlayCameras);
             builder.RegisterInstance<ICameraManager>(ingameCamera);

@@ -63,6 +63,9 @@ namespace Common
         [SerializeField, Tooltip("敵ステータス辞書")]
         private SerializeDictionary<MasterEnemyType, MasterEnemyStatus> _enemyStatusDictionary;
         public IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary => _enemyStatusDictionary.ToDictionary();
+        [SerializeField, ReadOnly, Tooltip("敵ステータスレアリティ辞書")]
+        private SerializeDictionary<MasterEnemyRarityType, List<MasterEnemyType>> _enemyRarityDictionary;
+        public IReadOnlyDictionary<MasterEnemyRarityType, List<MasterEnemyType>> EnemyRarityDictionary => _enemyRarityDictionary.ToDictionary();
         
         [SerializeField, Tooltip("バックエンド設定")]
         private MasterBackendSettings _backendSettings;
@@ -125,10 +128,31 @@ namespace Common
                     MasterEnemyStatus.EnemyTypeKey,
                     i => new MasterEnemyStatus()
                     {
+                        EnemyType = (MasterEnemyType)Enum.Parse(typeof(MasterEnemyType), (string)enemyRows[MasterEnemyStatus.EnemyTypeKey][i]),
+                        Rarity = (MasterEnemyRarityType)Enum.Parse(typeof(MasterEnemyRarityType), (string)enemyRows[MasterEnemyStatus.EnemyRarityTypeKey][i]),
                         HP = ToFloat(enemyRows[MasterEnemyStatus.HPKey][i]),
                         AttackPower = ToFloat(enemyRows[MasterEnemyStatus.AttackPowerKey][i]),
                         Speed = ToFloat(enemyRows[MasterEnemyStatus.SpeedKey][i]),
-                    });   
+                        AblePlayerDistance = ToFloat(enemyRows[MasterEnemyStatus.AblePlayerDistanceKey][i]),
+                        MinSpawnPositionX = ToFloat(enemyRows[MasterEnemyStatus.MinSpawnPositionXKey][i]),
+                        MaxSpawnPositionX = ToFloat(enemyRows[MasterEnemyStatus.MaxSpawnPositionXKey][i]),
+                        MinSpawnPositionY = ToFloat(enemyRows[MasterEnemyStatus.MinSpawnPositionYKey][i]),
+                        MaxSpawnPositionY = ToFloat(enemyRows[MasterEnemyStatus.MaxSpawnPositionYKey][i]),
+                        PoolSize = Convert.ToInt32(enemyRows[MasterEnemyStatus.PoolSizeKey][i], CultureInfo.InvariantCulture),
+                    });
+                
+                // レアリティ辞書の作成
+                _enemyRarityDictionary = new SerializeDictionary<MasterEnemyRarityType, List<MasterEnemyType>>();
+                foreach (var enemyStatus in EnemyStatusDictionary.Keys)
+                {
+                    var rarity = _enemyStatusDictionary[enemyStatus].Rarity;
+                    if (!_enemyRarityDictionary.ContainsKey(rarity))
+                    {
+                        _enemyRarityDictionary[rarity] = new List<MasterEnemyType>();
+                    }
+                    _enemyRarityDictionary[rarity].Add(enemyStatus);
+                }
+                
             }
 
             if (IsValidDataRow(urlRows))
@@ -186,6 +210,7 @@ namespace Common
         MasterPlayerStatus PlayerStatus { get; }
         IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary { get; }
         IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary { get; }
+        IReadOnlyDictionary<MasterEnemyRarityType, List<MasterEnemyType>> EnemyRarityDictionary { get; }
         
         MasterBackendSettings BackendSettings { get; }
         
@@ -235,13 +260,28 @@ namespace Common
     public class MasterEnemyStatus
     {
         public const string EnemyTypeKey = "Type";
+        public const string EnemyRarityTypeKey = "Rarity";
         public const string HPKey = "HP";
         public const string AttackPowerKey = "AttackPower";
         public const string SpeedKey = "Speed";
+        public const string AblePlayerDistanceKey = "AblePlayerDistance";
+        public const string MinSpawnPositionXKey = "MinSpawnPositionX";
+        public const string MaxSpawnPositionXKey = "MaxSpawnPositionX";
+        public const string MinSpawnPositionYKey = "MinSpawnPositionY";
+        public const string MaxSpawnPositionYKey = "MaxSpawnPositionY";
+        public const string PoolSizeKey = "PoolSize";
         
+        public MasterEnemyType EnemyType;
+        public MasterEnemyRarityType Rarity;
         public float HP;
         public float AttackPower;
         public float Speed;
+        public float AblePlayerDistance;
+        public float MinSpawnPositionX;
+        public float MaxSpawnPositionX;
+        public float MinSpawnPositionY;
+        public float MaxSpawnPositionY;
+        public int PoolSize;
     }
     
     public enum MasterEnemyType
@@ -249,6 +289,13 @@ namespace Common
         Skelton,
         FireMan,
         Cat,
+    }
+    
+    public enum MasterEnemyRarityType
+    {
+        Weak,
+        Normal,
+        Strong,
     }
 
     [Serializable]

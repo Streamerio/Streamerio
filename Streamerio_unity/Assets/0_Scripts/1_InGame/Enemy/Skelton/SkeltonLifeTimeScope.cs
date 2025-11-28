@@ -1,4 +1,5 @@
 using System;
+using InGame.Enemy;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -11,6 +12,6 @@ public class SkeltonLifetimeScope : LifetimeScope
     {
         builder.RegisterInstance<SkeltonScriptableObject>(config);
         builder.RegisterComponentInHierarchy<Skelton>();
-        builder.RegisterComponentInHierarchy<EnemyHpManager>();
+        builder.RegisterComponentInHierarchy<EnemyHP>();
     }
 }

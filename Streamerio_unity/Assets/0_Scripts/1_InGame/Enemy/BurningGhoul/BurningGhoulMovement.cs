@@ -1,5 +1,6 @@
 using Common.Audio;
 using Cysharp.Threading.Tasks;
+using InGame.Enemy;
 using UnityEngine;
 using VContainer;
 
@@ -12,18 +13,18 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
 
     private Transform _player;
 
-    private EnemyHpManager _enemyHpManager;
+    private EnemyHP _enemyHpManager;
 
     public float Power => _config.Power;
     public int Health => _config.Health;
 
     void Awake()
     {
-        _enemyHpManager = GetComponent<EnemyHpManager>();
+        _enemyHpManager = GetComponent<EnemyHP>();
     }
 
     [Inject]
-    private void Construct(BurningGhoulScriptableObject config, EnemyHpManager enemyHpManager)
+    private void Construct(BurningGhoulScriptableObject config, EnemyHP enemyHpManager)
     {
         if (config == null) throw new System.ArgumentNullException(nameof(config));
         if (enemyHpManager == null) throw new System.ArgumentNullException(nameof(enemyHpManager));
@@ -60,7 +61,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
         EnsureConfigFromScopeFallback();
 
         // 保険：EnemyHpManager が null なら取得し、必ず初期化する
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
+        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHP>();
         _enemyHpManager.Initialize(Health);
 
         float randPosX = Random.Range(_config.MinRelativeSpawnPosX, _config.MaxRelativeSpawnPosX);
@@ -70,7 +71,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
 
     void Update()
     {
-        if (_enemyHpManager != null && _enemyHpManager.IsDead) return;
+        if (_enemyHpManager != null && _enemyHpManager.IsDeadProp.CurrentValue) return;
         FollowPlayer();
     }
 
@@ -96,7 +97,7 @@ public class BurningGhoulMovement : MonoBehaviour, IAttackable, IHealth
     
     public void TakeDamage(int amount)
     {
-        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHpManager>();
+        if (_enemyHpManager == null) _enemyHpManager = GetComponent<EnemyHP>();
         _enemyHpManager.TakeDamage(amount);
     }
 
