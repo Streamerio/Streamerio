@@ -11,6 +11,7 @@ public class SkillRandomActivator : MonoBehaviour
     [SerializeField] private WeakSkillScriptableObject _weakSkillScriptableObject;
     [SerializeField] private GameObject _parentObject;
     [SerializeField] private PlayerPresenter _playerPresenter;
+    [SerializeField] private HealAmountsScriptableObject _healAmountsScriptableObject;
 
     private IWebSocketManager _webSocketManager;
     private ISkillPanel _skillPanel;
@@ -40,7 +41,7 @@ public class SkillRandomActivator : MonoBehaviour
         _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Thunder, viewerDetails.ViewerName));
         Debug.Log("Strong Skill Spawned");
 
-        _playerPresenter.Heal(15);
+        _playerPresenter.Heal(_healAmountsScriptableObject.StrongHealAmount);
     }
     public void ActivateMiddleSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
@@ -49,7 +50,7 @@ public class SkillRandomActivator : MonoBehaviour
         _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Bullet, viewerDetails.ViewerName));
         Debug.Log("Middle Skill Spawned");
 
-        _playerPresenter.Heal(10);
+        _playerPresenter.Heal(_healAmountsScriptableObject.MiddleHealAmount);
     }
     public void ActivateWeakSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
@@ -58,6 +59,6 @@ public class SkillRandomActivator : MonoBehaviour
         _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Beam, viewerDetails.ViewerName));
         Debug.Log("Weak Skill Spawned");
 
-        _playerPresenter.Heal(5);
+        _playerPresenter.Heal(_healAmountsScriptableObject.WeakHealAmount);
     }
 }
