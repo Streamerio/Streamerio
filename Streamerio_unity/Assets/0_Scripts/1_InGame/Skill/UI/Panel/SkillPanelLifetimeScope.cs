@@ -29,16 +29,14 @@ namespace InGame.Skill.UI.Panel
                 .WithParameter(_skillCellViewPrefab)
                 .WithParameter(_skillCellParent);
 
-            builder.Register<ISkillPanel, SkillPanelPresenter>(Lifetime.Singleton)
+            builder.RegisterEntryPoint<Wiring<ISkillPanel, SkillPanelContext>>()
+                .WithParameter(resolver => resolver.Resolve<ISkillPanel>())
                 .WithParameter(resolver => new SkillPanelContext()
                 {
                     View = resolver.Resolve<ISkillPanelView>(),
                 });
             
-            // builder.RegisterEntryPoint<Wiring<ISkillPanel, SkillPanelContext>>()
-            //     .WithParameter(resolver => resolver.Resolve<ISkillPanelView>());
-            
-            builder.RegisterComponent(GetComponent<SkillPanelTest>());
+            //builder.RegisterComponent(GetComponent<SkillPanelTest>());
         }
     }
 }

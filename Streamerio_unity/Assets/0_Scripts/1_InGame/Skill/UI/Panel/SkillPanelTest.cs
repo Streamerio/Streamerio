@@ -18,38 +18,22 @@ namespace InGame.Skill.UI.Panel
 
         public void ShowBeam()
         {
-            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData()
-            {
-                SkillType = MasterUltType.Beam,
-                UserName = "Player A"
-            });
+            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Beam, "Player A"));
         }
         
         public void ShowBullet()
         {
-            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData()
-            {
-                SkillType = MasterUltType.Bullet,
-                UserName = "Player B"
-            });
+            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Bullet, "Player B"));
         }
         
         public void ShowChargeBeam()
         {
-            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData()
-            {
-                SkillType = MasterUltType.ChargeBeam,
-                UserName = "Player V"
-            });
+            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.ChargeBeam, "Player C"));
         }
         
         public void ShowThunder()
         {
-            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData()
-            {
-                SkillType = MasterUltType.Thunder,
-                UserName = "Player D"
-            });
+            _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Thunder, "Player D"));
         }
     }
 }

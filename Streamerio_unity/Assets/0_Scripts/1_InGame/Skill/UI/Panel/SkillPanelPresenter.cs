@@ -16,13 +16,6 @@ namespace InGame.Skill.UI.Panel
         
         private Subject<SkillCellData> _onActiveSkill = new ();
         public ISubject<SkillCellData> OnActiveSkillSubject => _onActiveSkill;
-
-        public SkillPanelPresenter(SkillPanelContext context)
-        {
-            _view = context.View;
-            
-            Bind();   
-        }
         
         public void Attach(SkillPanelContext context)
         {

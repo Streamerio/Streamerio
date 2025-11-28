@@ -56,5 +56,11 @@ namespace InGame.Skill.UI.Panel
     {
         public MasterUltType SkillType;
         public string UserName;
+        
+        public SkillCellData(MasterUltType skillType, string userName)
+        {
+            SkillType = skillType;
+            UserName = string.IsNullOrEmpty(userName) ? "名無しの視聴者" : userName;
+        }
     }
 }

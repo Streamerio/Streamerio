@@ -77,9 +77,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parentReference:
-    TypeName: 
+    TypeName: InGame.InGameLifetimeScope
   autoRun: 1
   autoInjectGameObjects: []
+  _skillIconData: {fileID: 11400000, guid: 8f798e16c0f724029b27150cf2334285, type: 2}
   _skillCellViewPrefab: {fileID: 4778777850402416022, guid: 8df45c4520e9148d3bb240957b4bbfae, type: 3}
   _skillCellParent: {fileID: 1801089431038078589}
 --- !u!114 &8200063450889203330
