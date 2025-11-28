@@ -170,23 +170,10 @@ func (s *EventService) getActiveViewerCount(roomID string) int {
 	return int(c)
 }
 
-// Stats (simplified, no level)
-// RoomEventStat: 統計表示用の簡易集計構造体
-type RoomEventStat struct {
-	EventType     model.EventType `json:"event_type"`
-	CurrentCount  int             `json:"current_count"`
-	CurrentLevel  int             `json:"current_level"` // always 1
-	RequiredCount int             `json:"required_count"`
-	RemainingCount int       `json:"remaining_count"`
-	Progress       float64   `json:"progress"`
-	NextThreshold int             `json:"next_threshold"`
-	ViewerCount   int             `json:"viewer_count"`
-}
-
 // GetRoomStats: 全イベント種別について現在カウントと閾値をまとめて返却
-func (s *EventService) GetRoomStats(roomID string) ([]RoomEventStat, error) {
+func (s *EventService) GetRoomStats(roomID string) ([]model.RoomEventStat, error) {
 	viewers := s.getActiveViewerCount(roomID)
-	stats := make([]RoomEventStat, 0, len(s.configs))
+	stats := make([]model.RoomEventStat, 0, len(s.configs))
 	for et, cfg := range s.configs {
 		cur, err := s.counter.Get(roomID, string(et))
 		if err != nil {
@@ -207,7 +194,7 @@ func (s *EventService) GetRoomStats(roomID string) ([]RoomEventStat, error) {
 			prog = 0.0
 		}
 
-		stats = append(stats, RoomEventStat{
+		stats = append(stats, model.RoomEventStat{
 			EventType:      et,
 			CurrentCount:   int(cur),
 			CurrentLevel:   1,
