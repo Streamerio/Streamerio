@@ -264,9 +264,16 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
+	// 現在の視聴者数を取得（イベント結果のいずれかから取得）
+	currentViewerCount := 0
+	if len(responses) > 0 {
+		currentViewerCount = responses[0].ViewerCount
+	}
+
 	// 配列として結果を返す
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"event_results": responses,
+		"viewer_count":  currentViewerCount, // フロントエンド向けに視聴者数を追加
 	})
 }
 
