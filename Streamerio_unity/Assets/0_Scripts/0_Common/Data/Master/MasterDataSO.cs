@@ -127,6 +127,7 @@ namespace Common
                         Rarity = (MasterUltRarityType)Enum.Parse(typeof(MasterUltRarityType),
                             (string)ultRows[MasterUltStatus.UltRarityKey][i]),
                         AttackPower = ToFloat(ultRows[MasterUltStatus.AttackPowerKey][i]),
+                        PoolSize = Convert.ToInt32(ultRows[MasterUltStatus.PoolSizeKey][i], CultureInfo.InvariantCulture),
                     });
 
                 // レアリティ辞書の作成
@@ -231,6 +232,7 @@ namespace Common
         MasterGameSetting GameSetting { get; }
         MasterPlayerStatus PlayerStatus { get; }
         IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary { get; }
+        IReadOnlyDictionary<MasterUltRarityType, List<MasterUltType>> UltRarityDictionary { get; }
         IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary { get; }
         IReadOnlyDictionary<MasterEnemyRarityType, List<MasterEnemyType>> EnemyRarityDictionary { get; }
         
@@ -267,11 +269,12 @@ namespace Common
         public const string UltTypeKey = "Type";
         public const string UltRarityKey = "Rarity";
         public const string AttackPowerKey = "AttackPower";
-        
+        public const string PoolSizeKey = "PoolSize";
         
         public MasterUltType UltType;
         public MasterUltRarityType Rarity;
         public float AttackPower;
+        public int PoolSize;
     }
     
     public enum MasterUltType

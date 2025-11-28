@@ -1,11 +1,12 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using Common.Audio;
-using InGame.Enemy.Object;
-using VContainer;
+using R3;
 
-public class UltBeam : MonoBehaviour
+public class UltBeam : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _damage = 80f;
@@ -16,26 +17,23 @@ public class UltBeam : MonoBehaviour
     
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
-    private GameObject _player;
+    private Transform _player;
     
     private IAudioFacade _audioFacade;
+
+    private Action _onRelease;
     
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private CancellationTokenSource _cts;
+    
+    public void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade)
     {
+        _damage = damage;
+        _onRelease = onRelease;
+        _player = player;
         _audioFacade = audioFacade;
     }
 
-    void Awake()
-    {
-        _player = GameObject.FindWithTag("Player");
-        if (_player == null)
-        {
-            Debug.LogError("Player object not found in the scene.");
-        }
-    }
-
-    void Start()
+    public void Initialize()
     {
         if (_player != null)
         {
@@ -45,17 +43,26 @@ public class UltBeam : MonoBehaviour
         // フレームベースでインターバルを計算
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+        _audioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+
+        Bind();
     }
 
-    void Update()
+    private void Bind()
     {
-        Move();
-        if (_lifetime <= 0)
-        {
-            DestroySkill();
-        }
-        _lifetime -= Time.deltaTime;
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        
+        Observable.EveryUpdate()
+            .Subscribe(_ =>
+            {
+                Move();
+                if (_lifetime <= 0)
+                {
+                    DestroySkill();
+                }
+                _lifetime -= Time.deltaTime;
+            })
+            .RegisterTo(_cts.Token);
     }
 
     private void Move()
@@ -66,7 +73,8 @@ public class UltBeam : MonoBehaviour
 
     public void DestroySkill()
     {
-        Destroy(gameObject);
+        _onRelease?.Invoke();
+        _cts.Cancel();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

@@ -1,11 +1,12 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using Common.Audio;
-using InGame.Enemy.Object;
-using VContainer;
+using R3;
 
-public class UltBullet : MonoBehaviour
+public class UltBullet : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 20f;
     [SerializeField] private float _damage = 35f;
@@ -20,26 +21,23 @@ public class UltBullet : MonoBehaviour
     private bool _isMainBullet = true;
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
-    private GameObject _player;
     
+    private Action _onRelease;
+    
+    private Transform _player;
     private IAudioFacade _audioFacade;
     
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private CancellationTokenSource _cts;
+    
+    public void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade)
     {
+        _damage = damage;
+        _onRelease = onRelease;
+        _player = player;
         _audioFacade = audioFacade;
     }
 
-    void Awake()
-    {
-        _player = GameObject.FindWithTag("Player");
-        if (_player == null)
-        {
-            Debug.LogError("Player object not found in the scene.");
-        }
-    }
-
-    void Start()
+    public void Initialize()
     {
         if (_player != null)
         {
@@ -56,17 +54,26 @@ public class UltBullet : MonoBehaviour
             _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         }
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
+        _audioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
+
+        Bind();
     }
 
-    void Update()
+    private void Bind()
     {
-        Move();
-        if (_lifetime <= 0)
-        {
-            DestroySkill();
-        }
-        _lifetime -= Time.deltaTime;
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        
+        Observable.EveryUpdate()
+            .Subscribe(_ =>
+            {
+                Move();
+                if (_lifetime <= 0)
+                {
+                    DestroySkill();
+                }
+                _lifetime -= Time.deltaTime;
+            })
+            .RegisterTo(_cts.Token);
     }
 
     private void CreateBulletSpread()
@@ -100,16 +107,16 @@ public class UltBullet : MonoBehaviour
         }
     }
 
-    public void DestroySkill()
+    private void DestroySkill()
     {
-        Destroy(gameObject);
+        _onRelease?.Invoke();
+        _cts.Cancel();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (collision.gameObject.TryGetComponent<IDamageable>(out var enemy))
         {
-            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 //Debug.Log($"UltBullet hit: {collision.gameObject.name}");

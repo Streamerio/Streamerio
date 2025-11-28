@@ -1,4 +1,5 @@
 using Common;
+using InGame.Skill.Spawner;
 using InGame.Skill.UI.Panel;
 using UnityEngine;
 using R3;
@@ -12,13 +13,17 @@ public class SkillRandomActivator : MonoBehaviour
     [SerializeField] private GameObject _parentObject;
 
     private IWebSocketManager _webSocketManager;
+    private IMasterData _masterData;
     private ISkillPanel _skillPanel;
+    private ISkillSpawner _skillSpawner;
 
     [Inject]
-    public void Construct(IWebSocketManager webSocketManager, ISkillPanel skillPanel)
+    public void Construct(IWebSocketManager webSocketManager, IMasterData masterData, ISkillPanel skillPanel, ISkillSpawner skillSpawner)
     {
         _webSocketManager = webSocketManager;
+        _masterData = masterData;
         _skillPanel = skillPanel;
+        _skillSpawner = skillSpawner;
     }
 
     void Start()
@@ -34,23 +39,29 @@ public class SkillRandomActivator : MonoBehaviour
     }
     public void ActivateStrongSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _strongSkillScriptableObject.Skills.Length);
-        Instantiate(_strongSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Thunder, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Strong];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Strong Skill Spawned");
     }
     public void ActivateMiddleSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _middleSkillScriptableObject.Skills.Length);
-        Instantiate(_middleSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Bullet, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Normal];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Middle Skill Spawned");
     }
     public void ActivateWeakSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _weakSkillScriptableObject.Skills.Length);
-        Instantiate(_weakSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Beam, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Weak];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Weak Skill Spawned");
     }
 }

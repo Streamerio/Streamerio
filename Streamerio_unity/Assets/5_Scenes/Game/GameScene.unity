@@ -1254,6 +1254,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 873724054}
     - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _skillParent
+      value: 
+      objectReference: {fileID: 2017660798}
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
       propertyPath: _playerTransform
       value: 
       objectReference: {fileID: 6583393167888128268}
