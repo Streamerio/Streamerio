@@ -17,9 +17,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/server/m
 # 実行ステージ
 FROM gcr.io/distroless/base-debian12
 
-# distrolessでは65532が非rootユーザーとして推奨されている
-USER 65532
-
 WORKDIR /root/
 
 # ビルドステージからバイナリをコピー
