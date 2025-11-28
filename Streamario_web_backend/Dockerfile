@@ -1,20 +1,31 @@
-# Goの公式イメージを使用
-FROM golang:1.25
+# ビルドステージ
+FROM golang:alpine AS builder
 
 # 作業ディレクトリを設定
 WORKDIR /app
 
-# Goアプリケーションのソースコードをコピー
+# 依存関係のみ先にコピーしてキャッシュを活用
+COPY go.mod go.sum ./
+RUN go mod download
+
+# ソースコードをコピー
 COPY . .
 
-# 依存関係を解決
-RUN go mod tidy
+# アプリケーションをビルド(静的リンク)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/server/main.go 
 
-# アプリケーションをビルド
-RUN go build -o main cmd/server/main.go 
+# 実行ステージ
+FROM gcr.io/distroless/base-debian12
 
-# コンテナが起動時に実行するコマンド
-CMD ["./main"]
+# distrolessでは65532が非rootユーザーとして推奨されている
+USER 65532
+
+WORKDIR /root/
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder /app/main .
 
 # ポート8888を開放
 EXPOSE 8888
+
+CMD ["./main"]
