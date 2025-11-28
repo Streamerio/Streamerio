@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78700bc816ed431ba385ca35da8e7674, type: 3}
   m_Name: SkillCellAnimationSO
   m_EditorClassIdentifier: 
-  DurationSec: 0.15
+  DurationSec: 0.05
   Ease: 1
   ShowPosX: 0
   HidePosX: 400
@@ -20,4 +20,4 @@ MonoBehaviour:
   - 150
   - 40
   - -70
-  DelaySec: 0.05
+  DelaySec: 0
