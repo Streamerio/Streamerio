@@ -7,6 +7,6 @@ public class StrongSkillButton : MonoBehaviour
 
     public void OnClick()
     {
-        _skillRandomActivator.ActivateStrongSkill();
+        _skillRandomActivator.ActivateStrongSkill(new WebSocketManager.ViewerDetails("Debug Player"));
     }
 }
