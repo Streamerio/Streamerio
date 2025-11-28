@@ -20,6 +20,9 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   private ReactiveProperty<bool> _isConnectedProp = new ReactiveProperty<bool>(false);
   public ReadOnlyReactiveProperty<bool> IsConnectedProp => _isConnectedProp;
 
+  private ReactiveProperty<int> _viewerCountProp = new ReactiveProperty<int>(0);
+  public ReadOnlyReactiveProperty<int> ViewerCountProp => _viewerCountProp;
+
   private string _roomId = string.Empty;
 
   private Dictionary<FrontKey, Subject<Unit>> _frontEventDict = Enum.GetValues(typeof(FrontKey))
@@ -274,6 +277,15 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
         Debug.LogError("Failed to parse game_end_summary message.");
         break;
 
+      case MessageType.viewer_count_update:
+        if (TryJsonParse(message, out ViewerCountNotification viewerUpdate))
+        {
+          // ReactivePropertyを更新
+          _viewerCountProp.Value = viewerUpdate.viewer_count;
+          Debug.Log($"Viewer Count Updated: {viewerUpdate.viewer_count}");
+        }
+        break;
+
       default:
         Debug.LogError($"Unhandled JSON payload type: {messageType}");
         break;
@@ -437,13 +449,17 @@ public enum MessageType
   room_created,
   game_event,
   game_end_summary,
+  viewer_count_update,
   unknown,
 }
 
 public interface IWebSocketManager
 {
   ReadOnlyReactiveProperty<bool> IsConnectedProp { get; }
+  ReadOnlyReactiveProperty<int> ViewerCountProp { get; }
   IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> EnemyEventViewerNameDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> UltEventViewerNameDict { get; }
   WebSocketManager.GameEndSummaryNotification GameEndSummary { get; }
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
   void DisconnectWebSocket();
@@ -451,4 +467,11 @@ public interface IWebSocketManager
   UniTask GameStartAsync();
   UniTask GameEndAsync();
   void HealthCheck();
+}
+
+private class ViewerCountNotification
+{
+    public string type;
+    public string room_id;
+    public int viewer_count;
 }

@@ -6,6 +6,7 @@ using Common.UI.Animation;
 using Common.UI.Part.Button;
 using InGame.Goal;
 using InGame.Setting;
+using InGame.Skill.UI.Panel;
 using InGame.UI.Heart;
 using InGame.UI.Timer;
 using UnityEngine;
@@ -82,6 +83,7 @@ namespace InGame
                 .As<IStartable>()
                 .As<ITickable>();
             builder.RegisterComponentInHierarchy<Result>();
+            builder.Register<ISkillPanel, SkillPanelPresenter>(Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<SkillRandomActivator>();
             builder.RegisterComponentInHierarchy<EnemyRandomActivator>();
             builder.RegisterComponentInHierarchy<IHeartGroupView>();

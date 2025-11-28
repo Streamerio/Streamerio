@@ -49,6 +49,24 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 		_ = s.counter.UpdateViewerActivity(roomID, *viewerID)
 	}
 
+	// Active viewer count (ループの外で一度だけ計算し、一貫性を保つ)
+	viewers := s.getActiveViewerCount(roomID)
+
+	// WebSocket 向けに視聴者数更新イベントを送信（閾値到達に関わらず常時更新）
+	{
+		payload := map[string]interface{}{
+			"type":         "viewer_count_update",
+			"room_id":      roomID,
+			"viewer_count": viewers,
+		}
+		// エラーはログ出力のみで、メイン処理は止めない
+		if msg, err := json.Marshal(payload); err == nil {
+			if err := s.pubsub.Publish(context.Background(), pubsub.ChannelGameEvents, msg); err != nil {
+				s.logger.Warn("failed to publish viewer update", slog.String("room_id", roomID), slog.Any("error", err))
+			}
+		}
+	}
+
 	for eventType, count := range PushEventMap {
 		// イベントがない場合はカウントしない
 		if count == 0 {
@@ -62,7 +80,7 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 		}
 
 		// 4. Active viewer count
-		viewers := s.getActiveViewerCount(roomID)
+		//viewers := s.getActiveViewerCount(roomID)
 
 		// 5. Threshold
 		cfg := s.configs[eventType]
