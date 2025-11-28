@@ -12,13 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f7687f522d7b1544a09492ac60cd459, type: 3}
   m_Name: AngelScriptableObject
   m_EditorClassIdentifier: 
-  Speed: 1.5
-  Power: 10
   Health: 30
-  MinRelativeSpawnPosX: 10
-  MaxRelativeSpawnPosX: 15
-  MinRelativeSpawnPosY: 0
-  MaxRelativeSpawnPosY: 0
+  MinRelativeSpawnPosX: 15
+  MaxRelativeSpawnPosX: 20
+  MinRelativeSpawnPosY: 10
+  MaxRelativeSpawnPosY: 15
   verticalSpeed: 2
   horizontalSpeed: 1
   verticalRange: 3

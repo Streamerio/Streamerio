@@ -103,6 +103,8 @@ public class AngelMovement : MonoBehaviour
 
     void Start()
     {
+        var player = GameObject.FindGameObjectWithTag("Player").transform;
+
         EnsureConfigFromScopeFallback();
 
         _startPosition = transform.position;
@@ -111,6 +113,10 @@ public class AngelMovement : MonoBehaviour
         if (_enemyHpManager != null) _enemyHpManager.Initialize(_hp);
 
         _attackTimer = attackInterval;
+
+        float randPosX = Random.Range(_config.MinRelativeSpawnPosX, _config.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_config.MinRelativeSpawnPosY, _config.MaxRelativeSpawnPosY);
+        transform.position += new Vector3(player.position.x + randPosX, player.position.y + randPosY, 0);
     }
 
     void Update()

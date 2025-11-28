@@ -4,15 +4,13 @@ using UnityEngine;
 public class AngelScriptableObject : ScriptableObject
 {
     [Header("Base Parameter")]
-    public float Speed = 1.5f;
-    public float Power = 10;
     public int Health = 30;
 
     [Header("Relative Spawn Position With Player")]
-    public float MinRelativeSpawnPosX = 10;
-    public float MaxRelativeSpawnPosX = 15;
-    public float MinRelativeSpawnPosY = 0;
-    public float MaxRelativeSpawnPosY = 0;
+    public float MinRelativeSpawnPosX = 15;
+    public float MaxRelativeSpawnPosX = 20;
+    public float MinRelativeSpawnPosY = 5;
+    public float MaxRelativeSpawnPosY = 10;
 
     [Header("移動設定")]
     public float verticalSpeed = 2f;
