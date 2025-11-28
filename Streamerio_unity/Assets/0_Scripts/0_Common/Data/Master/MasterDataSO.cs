@@ -325,6 +325,7 @@ namespace Common
         Skelton,
         FireMan,
         Cat,
+        Angel,
     }
     
     public enum MasterEnemyRarityType

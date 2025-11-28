@@ -38,16 +38,20 @@ type EventResult struct {
 	EventType       EventType `json:"event_type"`
 	CurrentCount    int       `json:"current_count"`
 	RequiredCount   int       `json:"required_count"`
+	RemainingCount  int       `json:"remaining_count"`
+	Progress        float64   `json:"progress"`
 	EffectTriggered bool      `json:"effect_triggered"`
 	ViewerCount     int       `json:"viewer_count"`
 	NextThreshold   int       `json:"next_threshold"`
 }
 
 type RoomEventStat struct {
-	EventType     EventType `json:"event_type"`
-	CurrentCount  int       `json:"current_count"`
-	CurrentLevel  int       `json:"current_level"`
-	RequiredCount int       `json:"required_count"`
-	NextThreshold int       `json:"next_threshold"`
-	ViewerCount   int       `json:"viewer_count"`
+	EventType      EventType `json:"event_type"`
+	CurrentCount   int       `json:"current_count"`
+	CurrentLevel   int       `json:"current_level"`
+	RequiredCount  int       `json:"required_count"`
+	RemainingCount int       `json:"remaining_count"`
+	Progress       float64   `json:"progress"`
+	NextThreshold  int       `json:"next_threshold"`
+	ViewerCount    int       `json:"viewer_count"`
 }

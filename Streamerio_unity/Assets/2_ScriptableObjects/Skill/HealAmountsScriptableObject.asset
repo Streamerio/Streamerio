@@ -9,15 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 78700bc816ed431ba385ca35da8e7674, type: 3}
-  m_Name: SkillCellAnimationSO
+  m_Script: {fileID: 11500000, guid: f9c235b04a494474d97837d320ead566, type: 3}
+  m_Name: HealAmountsScriptableObject
   m_EditorClassIdentifier: 
-  DurationSec: 0.05
-  Ease: 1
-  ShowPosX: 0
-  HidePosX: 400
-  MovePosYs:
-  - 150
-  - 40
-  - -70
-  DelaySec: 0
+  StrongHealAmount: 15
+  MiddleHealAmount: 10
+  WeakHealAmount: 5

@@ -1,101 +1,206 @@
-// using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
+using VContainer;
+using InGame.Enemy;
+public class AngelMovement : EnemyMovementBase
+{
+    private AngelScriptableObject _config;
 
-// public class AngelMovement : MonoBehaviour
-// {
-//     [Header("移動設定")]
-//     [SerializeField] private float verticalSpeed = 2f;
-//     [SerializeField] private float horizontalSpeed = 1f;
-//     [SerializeField] private float verticalRange = 3f;
-//     [SerializeField] private float horizontalRange = 4f;
-//     [SerializeField] private float baseLeftSpeed = 0.8f;
+    private float verticalSpeed;
+    private float horizontalSpeed;
+    private float verticalRange;
+    private float horizontalRange;
+    private float baseLeftSpeed;
 
-//     [Header("攻撃設定")]
-//     [SerializeField] private GameObject energyCirclePrefab;
-//     [SerializeField] private float attackInterval = 4f;
-//     [SerializeField] private float circleLifetime = 2f;
-//     [SerializeField, Tooltip("最終(展開後)の半径")] private float circleRadius = 12f;
-//     [SerializeField, Tooltip("同時生成数(円周配置)")] private int circleCount = 8;
-//     [SerializeField, Tooltip("半径へ到達するまでの拡張時間")] private float circleExpandDuration = 0.6f;
-//     [SerializeField, Tooltip("最大半径到達後の角速度(度/秒)")] private float circleOrbitSpeedDeg = 50f;
-//     [SerializeField, Tooltip("角度をランダム化")] private bool randomizeStartAngle = true;
+    private int _hp;
 
-//     private Vector3 _startPosition;
-//     private float _verticalTimer;
-//     private float _horizontalTimer;
-//     private float _attackTimer;
-//     private EnemyAttackManager _attackManager;
+    private GameObject energyCirclePrefab;
+    private float attackInterval;
+    private float circleLifetime;
+    private float circleRadius;
+    private int circleCount;
+    private float circleExpandDuration;
+    private float circleOrbitSpeedDeg;
+    private bool randomizeStartAngle;
 
-//     void Start()
-//     {
-//         _startPosition = transform.position;
-//         _attackManager = GetComponent<EnemyAttackManager>();
-//         _attackTimer = attackInterval;
-//     }
+    private Vector3 _startPosition;
+    private float _verticalTimer;
+    private float _horizontalTimer;
+    private float _attackTimer;
+    private List<AngelEnergyCircle> _circlePool = new List<AngelEnergyCircle>();
+    private bool _poolInitialized = false;
 
-//     void Update()
-//     {
-//         HandleMovement();
-//         HandleAttack();
-//     }
+    void Awake()
+    {
+    }
 
-//     private void HandleMovement()
-//     {
-//         _verticalTimer += Time.deltaTime;
-//         _horizontalTimer += Time.deltaTime * 0.7f;
+    // VContainer による注入メソッド
+    [Inject]
+    private void Construct(AngelScriptableObject config)
+    {
+        if (config == null) throw new System.ArgumentNullException(nameof(config));
 
-//         float verticalOffset = Mathf.Sin(_verticalTimer * verticalSpeed) * 0.8f;
-//         float horizontalOffset = Mathf.Sin(_horizontalTimer * horizontalSpeed) * 1f;
+        _config = config;
 
-//         Vector3 newPosition = new Vector3(
-//             _startPosition.x + horizontalOffset,
-//             _startPosition.y + verticalOffset,
-//             _startPosition.z
-//         );
-//         transform.position = newPosition;
-//     }
+        // SO から各値をコピー
+        verticalSpeed = _config.verticalSpeed;
+        horizontalSpeed = _config.horizontalSpeed;
+        verticalRange = _config.verticalRange;
+        horizontalRange = _config.horizontalRange;
+        baseLeftSpeed = _config.baseLeftSpeed;
 
-//     private void HandleAttack()
-//     {
-//         _attackTimer -= Time.deltaTime;
-//         if (_attackTimer <= 0f)
-//         {
-//             CreateEnergyCircleWave();
-//             _attackTimer = attackInterval;
-//         }
-//     }
+        _hp = _config.Health;
 
-//     private void CreateEnergyCircleWave()
-//     {
-//         if (energyCirclePrefab == null || circleCount <= 0) return;
+        energyCirclePrefab = _config.energyCirclePrefab;
+        attackInterval = _config.attackInterval;
+        circleLifetime = _config.circleLifetime;
+        circleRadius = _config.circleRadius;
+        circleCount = _config.circleCount;
+        circleExpandDuration = _config.circleExpandDuration;
+        circleOrbitSpeedDeg = _config.circleOrbitSpeedDeg;
+        randomizeStartAngle = _config.randomizeStartAngle;
+    }
 
-//         float baseAngleOffset = randomizeStartAngle ? Random.Range(0f, 360f) : 0f;
-//         float angleStep = 360f / circleCount;
+    // Scope から SO を取得するフォールバック（BurningGhoul と同様の保険）
+    private void EnsureConfigFromScopeFallback()
+    {
+        if (_config != null) return;
 
-//         for (int i = 0; i < circleCount; i++)
-//         {
-//             float deg = baseAngleOffset + angleStep * i;
-//             float rad = deg * Mathf.Deg2Rad;
-//             Vector3 dir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
+        var scope = GetComponentInParent<AngelLifeTimeScope>(true);
+        if (scope == null) return;
 
-//             GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity);
-//             var circle = circleObj.GetComponent<AngelEnergyCircle>();
-//             if (circle == null)
-//             {
-//                 circle = circleObj.AddComponent<AngelEnergyCircle>();
-//             }
+        var cfg = scope.Config;
+        if (cfg == null) return;
 
-//             int damage = _attackManager != null ? _attackManager.CurrentDamage : 10;
-//             circle.Initialize(
-//                 damage,
-//                 circleLifetime,
-//                 followTarget: transform,
-//                 direction: dir,
-//                 maxRadius: circleRadius,
-//                 expandDuration: circleExpandDuration,
-//                 orbitSpeedDeg: circleOrbitSpeedDeg
-//             );
-//         }
+        _config = cfg;
+        verticalSpeed = _config.verticalSpeed;
+        horizontalSpeed = _config.horizontalSpeed;
+        verticalRange = _config.verticalRange;
+        horizontalRange = _config.horizontalRange;
+        baseLeftSpeed = _config.baseLeftSpeed;
 
-//         Debug.Log("[AngelMovement] Created energy circle wave");
-//     }
-// }
+        _hp = _config.Health;
+
+        energyCirclePrefab = _config.energyCirclePrefab;
+        attackInterval = _config.attackInterval;
+        circleLifetime = _config.circleLifetime;
+        circleRadius = _config.circleRadius;
+        circleCount = _config.circleCount;
+        circleExpandDuration = _config.circleExpandDuration;
+        circleOrbitSpeedDeg = _config.circleOrbitSpeedDeg;
+        randomizeStartAngle = _config.randomizeStartAngle;
+    }
+
+    void Start()
+    {
+        var player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        EnsureConfigFromScopeFallback();
+
+        _startPosition = transform.position;
+
+        _attackTimer = attackInterval;
+
+        float randPosX = Random.Range(_config.MinRelativeSpawnPosX, _config.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_config.MinRelativeSpawnPosY, _config.MaxRelativeSpawnPosY);
+        transform.position += new Vector3(player.position.x + randPosX, player.position.y + randPosY, 0);
+        _startPosition = transform.position;
+    }
+
+    void Update()
+    {
+        // 死亡判定等は EnemyHpManager 側で行う想定
+        HandleMovement();
+        HandleAttack();
+    }
+
+    private void HandleMovement()
+    {
+        _verticalTimer += Time.deltaTime;
+        _horizontalTimer += Time.deltaTime * 0.7f;
+
+        float verticalOffset = Mathf.Sin(_verticalTimer * verticalSpeed) * verticalRange;
+        float horizontalOffset = Mathf.Sin(_horizontalTimer * horizontalSpeed) * horizontalRange;
+
+        Vector3 newPosition = new Vector3(
+            _startPosition.x + horizontalOffset,
+            _startPosition.y + verticalOffset,
+            _startPosition.z
+        );
+        transform.position = newPosition;
+    }
+
+    private void HandleAttack()
+    {
+        _attackTimer -= Time.deltaTime;
+        if (_attackTimer <= 0f)
+        {
+            CreateEnergyCircleWave();
+            _attackTimer = attackInterval;
+        }
+    }
+
+    private void CreateEnergyCircleWave()
+    {
+        if (energyCirclePrefab == null || circleCount <= 0) return;
+
+        // プール初期化（初回のみ）
+        if (!_poolInitialized)
+        {
+            int maxConcurrentWaves = Mathf.Max(1, Mathf.CeilToInt(circleLifetime / Mathf.Max(0.0001f, attackInterval)));
+            int initialPoolSize = circleCount * maxConcurrentWaves;
+
+            for (int i = 0; i < initialPoolSize; i++)
+            {
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity, this.transform);
+                var circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
+                circleObj.SetActive(false);
+                _circlePool.Add(circle);
+            }
+
+            _poolInitialized = true;
+        }
+
+        float baseAngleOffset = randomizeStartAngle ? Random.Range(0f, 360f) : 0f;
+        float angleStep = 360f / circleCount;
+
+        for (int i = 0; i < circleCount; i++)
+        {
+            float deg = baseAngleOffset + angleStep * i;
+            float rad = deg * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
+
+            // 非アクティブなプール要素を探す
+            AngelEnergyCircle circle = _circlePool.Find(c => !c.gameObject.activeInHierarchy);
+            if (circle == null)
+            {
+                // 足りなければ追加生成してプールに加える
+                GameObject circleObj = Instantiate(energyCirclePrefab, transform.position, Quaternion.identity, this.transform);
+                circle = circleObj.GetComponent<AngelEnergyCircle>() ?? circleObj.AddComponent<AngelEnergyCircle>();
+                circleObj.SetActive(false);
+                _circlePool.Add(circle);
+            }
+
+            int damage = _config.Damage;
+
+            // 再利用: アクティブにして初期化
+            circle.gameObject.SetActive(true);
+            circle.Initialize(
+                damage,
+                circleLifetime,
+                followTarget: transform,
+                direction: dir,
+                maxRadius: circleRadius,
+                expandDuration: circleExpandDuration,
+                orbitSpeedDeg: circleOrbitSpeedDeg
+            );
+        }
+
+        Debug.Log("[AngelMovement] Created energy circle wave (pooled)");
+    }
+
+    protected override Vector2 GetMovePosition()
+    {
+        return transform.position;
+    }
+}

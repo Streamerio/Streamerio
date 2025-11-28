@@ -10,6 +10,7 @@ public class PlayerPresenter : MonoBehaviour
     [SerializeField] private PowerPresenter _power;
     [SerializeField] private SpeedPresenter _speed;
     [SerializeField] private JumpPowerPresenter _jumpPower;
+    public HpPresenter Hp => _hp;
 
     void Awake()
     {
@@ -49,5 +50,10 @@ public class PlayerPresenter : MonoBehaviour
     public void Attack(int num)
     {
         
+    }
+
+    public void Heal(int amount)
+    {
+        _hp.Increase(amount);
     }
 }

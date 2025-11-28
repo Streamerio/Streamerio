@@ -1046,9 +1046,21 @@ PrefabInstance:
       value: GameSetting
       objectReference: {fileID: 0}
     - target: {fileID: 4993176241062417870, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4993176241062417870, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
       propertyPath: _parentObject
       value: 
       objectReference: {fileID: 2017660797}
+    - target: {fileID: 4993176241062417870, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
+      propertyPath: _playerPresenter
+      value: 
+      objectReference: {fileID: 6583393167888128271}
+    - target: {fileID: 4993176241062417870, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
+      propertyPath: _healAmountsScriptableObject
+      value: 
+      objectReference: {fileID: 11400000, guid: 135c0db63dc0c5a4f8cd0277ad839a00, type: 2}
     - target: {fileID: 6087330584052164519, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
       propertyPath: _player
       value: 
