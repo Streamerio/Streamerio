@@ -102,7 +102,7 @@ namespace InGame
             // スキル
             builder.RegisterInstance<ISkillRepository>(_skillRepository);
             builder.Register<ISkillSpawner, SkillSpawner>(Lifetime.Singleton)
-                .WithParameter(_skillParent);
+                .WithParameter("parent", _skillParent);
             builder.Register<ISkillPanel, SkillPanelPresenter>(Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<SkillRandomActivator>();
             

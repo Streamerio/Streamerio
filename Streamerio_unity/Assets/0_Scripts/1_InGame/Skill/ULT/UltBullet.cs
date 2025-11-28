@@ -4,23 +4,30 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using Common.Audio;
+using InGame.Skill.ULT;
 using R3;
 
 public class UltBullet : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 20f;
     [SerializeField] private float _damage = 35f;
-    [SerializeField] private float _lifetime = 4f;
+    [SerializeField] private float _initLifetime = 4f;
     [SerializeField] private int _bulletCount = 5;
     [SerializeField] private float _spreadAngle = 30f;
-    [SerializeField] private GameObject _bulletPrefab;
+    [SerializeField] private UltSubBullet _bulletPrefab;
     [SerializeField] private float _continuousDamageInterval = 0.2f; // 持続ダメージ間隔(秒)
     [SerializeField] private float _continuousDamage = 10f; // 持続ダメージ量
     
     private Vector2 _direction;
-    private bool _isMainBullet = true;
+    
+    private List<UltSubBullet> _subBullets = new List<UltSubBullet>();
+    
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
+    
+    private float _lifetime;
+    
+    private bool _isCreated = false;
     
     private Action _onRelease;
     
@@ -39,19 +46,18 @@ public class UltBullet : MonoBehaviour, IUltSkill
 
     public void Initialize()
     {
-        if (_player != null)
+        //playerのy座標から8マス右側に生成
+        transform.position = new Vector2(_player.transform.position.x + 2f, _player.transform.position.y);
+        
+        gameObject.SetActive(true);
+        if (!_isCreated)
         {
-            //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 2f, _player.transform.position.y);
+            CreateBulletSpread();   
         }
-        if (_isMainBullet)
+        foreach (var subBullet in _subBullets)
         {
-            CreateBulletSpread();
-        }
-        else
-        {
-            // フレームベースでインターバルを計算（子弾のみ）
-            _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
+            subBullet.transform.position = transform.position;
+            subBullet.Initialize();
         }
         
         _audioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
@@ -62,11 +68,11 @@ public class UltBullet : MonoBehaviour, IUltSkill
     private void Bind()
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
         
         Observable.EveryUpdate()
             .Subscribe(_ =>
             {
-                Move();
                 if (_lifetime <= 0)
                 {
                     DestroySkill();
@@ -89,40 +95,23 @@ public class UltBullet : MonoBehaviour, IUltSkill
                 Mathf.Sin(currentAngle * Mathf.Deg2Rad)
             );
 
-            GameObject bullet = Instantiate(gameObject, transform.position, Quaternion.identity);
-            UltBullet bulletScript = bullet.GetComponent<UltBullet>();
-            bulletScript._isMainBullet = false;
-            bulletScript._direction = direction;
+            var subBullet = Instantiate(_bulletPrefab, transform.position, Quaternion.identity, transform.parent)
+                .GetComponent<UltSubBullet>();
+            _subBullets.Add(subBullet);
+            subBullet.OnCreate(direction.normalized);
         }
-
-        // メイン弾は削除
-        Destroy(gameObject);
-    }
-
-    private void Move()
-    {
-        if (!_isMainBullet)
-        {
-            transform.Translate(_direction * _speed * Time.deltaTime);
-        }
+        
+        _isCreated = true;
     }
 
     private void DestroySkill()
     {
         _onRelease?.Invoke();
         _cts.Cancel();
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.TryGetComponent<IDamageable>(out var enemy))
+        foreach (var subBullet in _subBullets)
         {
-            if (enemy != null)
-            {
-                //Debug.Log($"UltBullet hit: {collision.gameObject.name}");
-                enemy.TakeDamage((int)_damage);
-                DestroySkill(); // 弾は敵に当たると消える
-            }
+            subBullet.DestroySkill();
         }
+        gameObject.SetActive(false);
     }
 }

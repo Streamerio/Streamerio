@@ -10,7 +10,7 @@ public class UltBeam : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _damage = 80f;
-    [SerializeField] private float _lifetime = 6f;
+    [SerializeField] private float _initLifetime = 6f;
     [SerializeField] private float _beamWidth = 2f;
     [SerializeField] private float _continuousDamageInterval = 0.5f; // 持続ダメージ間隔(秒)
     [SerializeField] private float _continuousDamage = 20f; // 持続ダメージ量
@@ -18,6 +18,7 @@ public class UltBeam : MonoBehaviour, IUltSkill
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
     private Transform _player;
+    private float _lifetime;
     
     private IAudioFacade _audioFacade;
 
@@ -35,11 +36,10 @@ public class UltBeam : MonoBehaviour, IUltSkill
 
     public void Initialize()
     {
-        if (_player != null)
-        {
-            //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 1f);
-        }
+        //playerのy座標から8マス右側に生成
+        transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 1f);
+        
+        gameObject.SetActive(true);
         // フレームベースでインターバルを計算
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
@@ -51,6 +51,7 @@ public class UltBeam : MonoBehaviour, IUltSkill
     private void Bind()
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
         
         Observable.EveryUpdate()
             .Subscribe(_ =>
@@ -73,8 +74,10 @@ public class UltBeam : MonoBehaviour, IUltSkill
 
     public void DestroySkill()
     {
+        Debug.Log("UltBeam destroyed");
         _onRelease?.Invoke();
         _cts.Cancel();
+        gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

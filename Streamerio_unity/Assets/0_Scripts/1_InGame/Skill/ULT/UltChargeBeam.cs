@@ -10,7 +10,7 @@ public class UltChargeBeam : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 8f;
     [SerializeField] private float _damage = 60f;
-    [SerializeField] private float _lifetime = 8f;
+    [SerializeField] private float _initLifetime = 8f;
     [SerializeField] private float _chargeTime = 4f;
     [SerializeField] private float _accelerationRate = 1.5f;
     [SerializeField] private float _damageIncrease = 20f;
@@ -23,6 +23,8 @@ public class UltChargeBeam : MonoBehaviour, IUltSkill
     private float _chargeTimer = 0f;
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
+    
+    private float _lifetime;
     
     private Action _onRelease;
     
@@ -41,11 +43,8 @@ public class UltChargeBeam : MonoBehaviour, IUltSkill
 
     public void Initialize()
     {
-        if (_player != null)
-        {
-            //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 2, _player.transform.position.y);
-        }
+        //playerのy座標から8マス右側に生成
+        transform.position = new Vector2(_player.transform.position.x + 2, _player.transform.position.y);
         
         gameObject.SetActive(true);
 
@@ -67,6 +66,7 @@ public class UltChargeBeam : MonoBehaviour, IUltSkill
     private void Bind()
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
         
         Observable.EveryUpdate()
             .Subscribe(_ =>
@@ -138,6 +138,7 @@ public class UltChargeBeam : MonoBehaviour, IUltSkill
     {
         _onRelease?.Invoke();
         _cts.Cancel();
+        gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

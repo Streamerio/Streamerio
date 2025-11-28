@@ -14,7 +14,7 @@ public class UltThunder : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 25f;
     [SerializeField] private float _damage = 90f;
-    [SerializeField] private float _lifetime = 3f;
+    [SerializeField] private float _initLifetime = 3f;
     [SerializeField] private int _strikeCount = 3;
     [SerializeField] private float _strikeInterval = 0.5f;
     [SerializeField] private float _continuousDamageInterval = 0.4f;
@@ -31,6 +31,8 @@ public class UltThunder : MonoBehaviour, IUltSkill
     [SerializeField]
     private BoxCollider2D _box;
     private float _damageIntervalFrames;
+    
+    private float _lifetime;
     
     private Action _onRelease;
     
@@ -60,11 +62,9 @@ public class UltThunder : MonoBehaviour, IUltSkill
 
     public void Initialize()
     {
-        if (_player != null)
-        {
-            transform.position = new Vector2(_player.transform.position.x + 6f,
-                                             _player.transform.position.y + 3f);
-        }
+        transform.position = new Vector2(_player.position.x + 6f,
+            _player.position.y + 3f);
+        
         gameObject.SetActive(true);
         
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
@@ -79,6 +79,7 @@ public class UltThunder : MonoBehaviour, IUltSkill
     private void Bind()
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
         
         Observable.EveryUpdate()
             .Subscribe(_ =>
