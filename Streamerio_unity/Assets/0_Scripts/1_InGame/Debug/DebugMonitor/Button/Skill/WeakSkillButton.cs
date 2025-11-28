@@ -7,6 +7,6 @@ public class WeakSkillButton : MonoBehaviour
 
     public void OnClick()
     {
-        _skillRandomActivator.ActivateWeakSkill();
+        _skillRandomActivator.ActivateWeakSkill(new WebSocketManager.ViewerDetails("Debug Player"));
     }
 }

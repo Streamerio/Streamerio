@@ -7,6 +7,6 @@ public class MiddleSkillButton : MonoBehaviour
 
     public void OnClick()
     {
-        _skillRandomActivator.ActivateMiddleSkill();
+        _skillRandomActivator.ActivateMiddleSkill(new WebSocketManager.ViewerDetails("Debug Player"));
     }
 }

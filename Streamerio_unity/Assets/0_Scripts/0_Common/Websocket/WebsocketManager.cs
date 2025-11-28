@@ -444,6 +444,8 @@ public interface IWebSocketManager
 {
   ReadOnlyReactiveProperty<bool> IsConnectedProp { get; }
   IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> EnemyEventViewerNameDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> UltEventViewerNameDict { get; }
   WebSocketManager.GameEndSummaryNotification GameEndSummary { get; }
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
   void DisconnectWebSocket();
