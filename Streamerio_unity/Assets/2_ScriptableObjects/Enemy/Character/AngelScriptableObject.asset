@@ -15,8 +15,8 @@ MonoBehaviour:
   Health: 30
   MinRelativeSpawnPosX: 15
   MaxRelativeSpawnPosX: 20
-  MinRelativeSpawnPosY: 10
-  MaxRelativeSpawnPosY: 15
+  MinRelativeSpawnPosY: 2
+  MaxRelativeSpawnPosY: 5
   verticalSpeed: 2
   horizontalSpeed: 1
   verticalRange: 3
