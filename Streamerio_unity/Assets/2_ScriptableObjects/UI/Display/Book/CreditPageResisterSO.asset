@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9939ea33e0945e9854615c275d5bdc1, type: 3}
+  m_Name: CreditPageResisterSO
+  m_EditorClassIdentifier: 
+  _pagePanelLifetimeScopes:
+  - {fileID: 1796836874738115372, guid: 7c7fdeb0edd8444b5995a269f9eb869f, type: 3}
+  - {fileID: 8650948093299921391, guid: 305f593110ac94a4d8a4f96a4b6b9d80, type: 3}
+  - {fileID: 1928592466644529098, guid: 5e2b9d872b17d4117b56d11429c018de, type: 3}
+  - {fileID: 46351629318795142, guid: 1c5c02f863df94e96801cbf548768e28, type: 3}
+  - {fileID: 3374197980798964295, guid: 252ad18f4d3b04ccfac897eebddbe40f, type: 3}

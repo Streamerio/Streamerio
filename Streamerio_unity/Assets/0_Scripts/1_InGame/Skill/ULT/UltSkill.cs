@@ -1,5 +1,6 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using InGame.Enemy.Object;
 
 public class UltSkill : MonoBehaviour
 {
@@ -30,7 +31,7 @@ public class UltSkill : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<EnemyHpManager>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 Debug.Log($"UltSkill hit: {collision.gameObject.name}");

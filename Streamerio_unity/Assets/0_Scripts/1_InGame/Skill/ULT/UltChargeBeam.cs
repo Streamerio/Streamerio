@@ -2,6 +2,8 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
+using InGame.Enemy.Object;
+using VContainer;
 
 public class UltChargeBeam : MonoBehaviour
 {
@@ -21,6 +23,14 @@ public class UltChargeBeam : MonoBehaviour
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
     private GameObject _player;
+    
+    private IAudioFacade _audioFacade;
+
+    [Inject]
+    public void Construct(IAudioFacade audioFacade)
+    {
+        _audioFacade = audioFacade;
+    }
 
     void Awake()
     {
@@ -47,7 +57,7 @@ public class UltChargeBeam : MonoBehaviour
         // チャージエフェクト（色変化など）
         StartChargingEffect();
         
-        AudioManager.Instance.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
     }
 
     void Update()
@@ -122,7 +132,7 @@ public class UltChargeBeam : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<EnemyHpManager>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 //Debug.Log($"UltChargeBeam entered: {collision.gameObject.name} for {_currentDamage} damage");
@@ -145,7 +155,7 @@ public class UltChargeBeam : MonoBehaviour
             // インターバルに達したら持続ダメージを与える
             if (_enemyDamageCounters[collision.gameObject] >= _damageIntervalFrames)
             {
-                var enemy = collision.gameObject.GetComponent<EnemyHpManager>();
+                var enemy = collision.gameObject.GetComponent<IDamageable>();
                 if (enemy != null)
                 {
                     float continuousDmg = _isCharging ? _continuousDamage : _continuousDamage * 1.5f; // チャージ完了後は持続ダメージも増加

@@ -1,0 +1,74 @@
+[
+  {
+    "Name": "None",
+    "Num": 1
+  },
+  {
+    "Name": "Title",
+    "Num": 2
+  },
+  {
+    "Name": "Menu",
+    "Num": 3
+  },
+  {
+    "Name": "InGame",
+    "Num": 6
+  },
+  {
+    "Name": "GameOver",
+    "Num": 7
+  },
+  {
+    "Name": "Goal",
+    "Num": 8
+  },
+  {
+    "Name": "Result",
+    "Num": 9
+  },
+  {
+    "Name": "TitleStart",
+    "Num": 13
+  },
+  {
+    "Name": "TitleEnd",
+    "Num": 14
+  },
+  {
+    "Name": "InGameStart",
+    "Num": 15
+  },
+  {
+    "Name": "Restart",
+    "Num": 16
+  },
+  {
+    "Name": "ToTitle",
+    "Num": 17
+  },
+  {
+    "Name": "ToGameOver",
+    "Num": 18
+  },
+  {
+    "Name": "ToResult",
+    "Num": 19
+  },
+  {
+    "Name": "FirstPlay",
+    "Num": 20
+  },
+  {
+    "Name": "PlayFromTitle",
+    "Num": 21
+  },
+  {
+    "Name": "ToInGame",
+    "Num": 22
+  },
+  {
+    "Name": "InGameLoading",
+    "Num": 23
+  }
+]

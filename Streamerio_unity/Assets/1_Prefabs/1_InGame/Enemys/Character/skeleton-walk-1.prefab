@@ -14,10 +14,10 @@ GameObject:
   - component: {fileID: 4721090273839344688}
   - component: {fileID: 7895058361806084222}
   - component: {fileID: 8428835190765617457}
-  - component: {fileID: 6706397423188669720}
-  - component: {fileID: 2189544634329675210}
-  - component: {fileID: 8894179854398154658}
-  m_Layer: 0
+  - component: {fileID: 7308890276015827299}
+  - component: {fileID: 1982993810529038778}
+  - component: {fileID: 7708221103137900177}
+  m_Layer: 7
   m_Name: skeleton-walk-1
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -128,7 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eec0e504db7e4678a10793501acf29f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bornDuration: 600
+  _animator: {fileID: 67005030030007672}
+  _bornAnimStateName: Born
 --- !u!50 &7895058361806084222
 Rigidbody2D:
   serializedVersion: 5
@@ -193,7 +194,7 @@ CapsuleCollider2D:
   m_Offset: {x: -0.02, y: -0.05}
   m_Size: {x: 0.28, y: 0.45}
   m_Direction: 0
---- !u!114 &6706397423188669720
+--- !u!114 &7308890276015827299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,12 +203,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 5063151165452527970}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e8564a93fe3e42dd8efa32ebf4d3019, type: 3}
+  m_Script: {fileID: 11500000, guid: f259981e0fbf484c82013e2449b36075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 8
-  speed: 0.5
---- !u!114 &2189544634329675210
+  parentReference:
+    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
+  _movement: {fileID: 7708221103137900177}
+  _enemyPresenter: {fileID: 1982993810529038778}
+--- !u!114 &1982993810529038778
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -216,11 +221,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5063151165452527970}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a29ec3b22b2f440880ec23f142d071f, type: 3}
+  m_Script: {fileID: 11500000, guid: 8615d4256fc2437d8ecc1ccaf1bc6cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 10
---- !u!114 &8894179854398154658
+  _gameObject: {fileID: 5063151165452527970}
+  _height: 2.6
+--- !u!114 &7708221103137900177
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -229,7 +235,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 5063151165452527970}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Script: {fileID: 11500000, guid: c4efdb83e9264604b6f0e7bd87c6d7c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 8
+  _transform: {fileID: 863939078707480637}
+  _animation: {fileID: 4721090273839344688}

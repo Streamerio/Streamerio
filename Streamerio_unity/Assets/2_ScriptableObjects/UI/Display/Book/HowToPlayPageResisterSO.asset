@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9939ea33e0945e9854615c275d5bdc1, type: 3}
+  m_Name: HowToPlayPageResisterSO
+  m_EditorClassIdentifier: 
+  _pagePanelLifetimeScopes:
+  - {fileID: 4032092621937875267, guid: 5362b61e8140e4f62bd2d0b7d6e1d79e, type: 3}
+  - {fileID: 1845007036345310754, guid: 2da09b3bd1eab42d48e709edadda5d04, type: 3}

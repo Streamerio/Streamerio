@@ -1,5 +1,6 @@
 const ultStatusInitRowIndex = 2;
 
 const ultStatusProp = {
-    AttackPower: { column: 1 },
+    Type: { column: 1 },
+    AttackPower: { column: 2 },
 };

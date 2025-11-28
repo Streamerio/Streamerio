@@ -2,6 +2,8 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
+using InGame.Enemy.Object;
+using VContainer;
 
 public class UltBullet : MonoBehaviour
 {
@@ -19,6 +21,14 @@ public class UltBullet : MonoBehaviour
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
     private GameObject _player;
+    
+    private IAudioFacade _audioFacade;
+    
+    [Inject]
+    public void Construct(IAudioFacade audioFacade)
+    {
+        _audioFacade = audioFacade;
+    }
 
     void Awake()
     {
@@ -46,7 +56,7 @@ public class UltBullet : MonoBehaviour
             _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         }
         
-        AudioManager.Instance.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.ThunderBullet, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     void Update()
@@ -99,7 +109,7 @@ public class UltBullet : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<EnemyHpManager>();
+            var enemy = collision.gameObject.GetComponent<IDamageable>();
             if (enemy != null)
             {
                 //Debug.Log($"UltBullet hit: {collision.gameObject.name}");

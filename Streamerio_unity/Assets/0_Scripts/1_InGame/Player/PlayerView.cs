@@ -2,6 +2,9 @@ using Alchemy.Inspector;
 using Cysharp.Text;
 using R3;
 using UnityEngine;
+using Common.Audio;
+using Cysharp.Threading.Tasks;
+using InGame.Enemy.Object;
 
 [RequireComponent(typeof(PlayerAnimation))]
 public class PlayerView : MonoBehaviour
@@ -60,20 +63,11 @@ public class PlayerView : MonoBehaviour
         if (!_groundedCollider.IsGrounded.CurrentValue) return;
         // Debug.Log($"PlayerView Jump with force {force}");
         // ジャンプの実装例（Rigidbody2Dがアタッチされている場合）
-        
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _animation.PlayJump(true);
         _rb2D.AddForce(new Vector2(0, force), ForceMode2D.Impulse);
     }
 
-    /// <summary>
-    /// 地面に接地しているかどうかをチェックするロジックをここに実装
-    /// y軸方向の速度が0に近い場合など
-    /// </summary>
-    // private bool CheckIsGrounded()
-    // {
-    //     return Mathf.Abs(_rb2D.linearVelocity.y) < 0.01f;
-    // }
-    
     public void Attack(int num)
     {
         _animation.PlayAttack(num);
@@ -86,11 +80,11 @@ public class PlayerView : MonoBehaviour
         {
             Debug.Log("敵");
             // EnemyAttackManager 取得（存在しない敵でもエラーにならないよう防御的に）
-            var attackManager = collision.gameObject.GetComponent<EnemyAttackManager>();
+            var attackManager = collision.gameObject.GetComponent<IAttackable>();
             if (attackManager != null)
             {
                 // EnemyAttackManager に CurrentDamage プロパティ（または public int）がある想定
-                TakeDamage(attackManager.CurrentDamage);
+                TakeDamage(attackManager.Power);
             }
             else
             {
@@ -117,7 +111,7 @@ public class PlayerView : MonoBehaviour
         }
     }
 
-    private void TakeDamage(int damage)
+    private void TakeDamage(float damage)
     {
         if (hpPresenter == null) return;
         //if (Time.time - _lastHitTime < hitCooldown) return;

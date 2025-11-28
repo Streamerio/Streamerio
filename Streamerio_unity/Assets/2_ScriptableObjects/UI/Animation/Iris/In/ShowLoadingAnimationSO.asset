@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002d197fbc0f4185bdde0f1f688e8438, type: 3}
+  m_Name: ShowLoadingAnimationSO
+  m_EditorClassIdentifier: 
+  DurationSec: 1.5
+  Ease: 2
+  CenterPropertyName: _CenterUV
+  RadiusPropertyName: _Radius
+  Center: {x: 0.5, y: 0.5}
+  MinRadius: 0
+  MaxRadius: 2

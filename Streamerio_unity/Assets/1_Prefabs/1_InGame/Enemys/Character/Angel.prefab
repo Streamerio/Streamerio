@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -3343573026250612961}
   - component: {fileID: 2196653627995611947}
   - component: {fileID: 834650233351161892}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Angel
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -224,6 +224,9 @@ MonoBehaviour:
   circleLifetime: 2
   circleRadius: 1.5
   circleCount: 8
+  circleExpandDuration: 0.6
+  circleOrbitSpeedDeg: 50
+  randomizeStartAngle: 1
 --- !u!114 &2196653627995611947
 MonoBehaviour:
   m_ObjectHideFlags: 0
