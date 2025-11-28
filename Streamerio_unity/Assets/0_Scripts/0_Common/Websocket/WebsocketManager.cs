@@ -469,7 +469,7 @@ public interface IWebSocketManager
   void HealthCheck();
 }
 
-private class ViewerCountNotification
+public class ViewerCountNotification
 {
     public string type;
     public string room_id;
