@@ -64,97 +64,99 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 		// 4. Active viewer count
 		viewers := s.getActiveViewerCount(roomID)
 
-	// 5. Threshold
-	cfg := s.configs[eventType]
-	threshold := s.calculateDynamicThreshold(cfg, viewers)
+		// 5. Threshold
+		cfg := s.configs[eventType]
+		threshold := s.calculateDynamicThreshold(cfg, viewers)
 
-	// 6. Publish count update (SSE)
-	ctx := context.Background()
-	countUpdatePayload := map[string]interface{}{
-		"type":           "count_update",
-		"room_id":        roomID,
-		"event_type":     string(eventType),
-		"current_count":  int(current),
-		"required_count": threshold,
-		"viewer_count":   viewers,
-	}
-	if countMsg, err := json.Marshal(countUpdatePayload); err == nil {
-		if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, countMsg); err != nil {
-			s.logger.Warn("count update publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
-		} else {
-			s.logger.Debug("count update published", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("current", int(current)))
-		}
-	}
-
-	res := &model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
-
-	res.RemainingCount = res.RequiredCount - res.CurrentCount
-	if res.RemainingCount < 0 {
-		res.RemainingCount = 0
-	}
-	if res.RequiredCount > 0 {
-		res.Progress = float64(res.CurrentCount) / float64(res.RequiredCount)
-		if res.Progress > 1 {
-			res.Progress = 1
-		}
-	}
-
-		if int(current) >= threshold {
-			s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
-
-			// Pub/Sub経由で全WebSocketサーバーにブロードキャスト
-			payload := map[string]interface{}{
-				"type":          "game_event",
-				"room_id":       roomID, // WebSocketサーバー側で配信先を特定するため必須
-				"event_type":    string(eventType),
-				"trigger_count": int(current),
-				"viewer_count":  viewers,
-			}
-
-			message, err := json.Marshal(payload)
-			if err != nil {
-				s.logger.Error("json marshal failed", slog.String("room_id", roomID), slog.Any("error", err))
-			} else {
-				ctx := context.Background()
-				if err := s.pubsub.Publish(ctx, pubsub.ChannelGameEvents, message); err != nil {
-					s.logger.Error("pubsub publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
-				} else {
-					s.logger.Info("event published to pubsub", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
-				}
-			}
-
-		// 閾値超過分をカウントに設定（超過分を捨てない）
-		excess := current - int64(threshold)
-		if err := s.counter.SetExcess(roomID, string(eventType), excess); err != nil {
-			s.logger.Error("set excess failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int64("excess", excess), slog.Any("error", err))
-		}
-		res.EffectTriggered = true
-		res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
-		res.CurrentCount = int(excess)
-
-		// 閾値到達後のカウント更新も配信（リセット後の状態を通知）
-		resetUpdatePayload := map[string]interface{}{
+		// 6. Publish count update (SSE)
+		ctx := context.Background()
+		countUpdatePayload := map[string]interface{}{
 			"type":           "count_update",
 			"room_id":        roomID,
 			"event_type":     string(eventType),
-			"current_count":  int(excess),
-			"required_count": res.NextThreshold,
+			"current_count":  int(current),
+			"required_count": threshold,
 			"viewer_count":   viewers,
 		}
-		if resetMsg, err := json.Marshal(resetUpdatePayload); err == nil {
-			if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, resetMsg); err != nil {
-				s.logger.Warn("reset count update publish failed", slog.String("room_id", roomID), slog.Any("error", err))
+		if countMsg, err := json.Marshal(countUpdatePayload); err == nil {
+			if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, countMsg); err != nil {
+				s.logger.Warn("count update publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
+			} else {
+				s.logger.Debug("count update published", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("current", int(current)))
 			}
 		}
 
-		res.RemainingCount = res.NextThreshold
-		if res.NextThreshold > 0 {
-			res.Progress = 0
-		} else {
-			res.Progress = 1
+		res := model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
+
+		res.RemainingCount = res.RequiredCount - res.CurrentCount
+		if res.RemainingCount < 0 {
+			res.RemainingCount = 0
 		}
+		if res.RequiredCount > 0 {
+			res.Progress = float64(res.CurrentCount) / float64(res.RequiredCount)
+			if res.Progress > 1 {
+				res.Progress = 1
+			}
+		}
+
+			if int(current) >= threshold {
+				s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
+
+				// Pub/Sub経由で全WebSocketサーバーにブロードキャスト
+				payload := map[string]interface{}{
+					"type":          "game_event",
+					"room_id":       roomID, // WebSocketサーバー側で配信先を特定するため必須
+					"event_type":    string(eventType),
+					"trigger_count": int(current),
+					"viewer_count":  viewers,
+				}
+
+				message, err := json.Marshal(payload)
+				if err != nil {
+					s.logger.Error("json marshal failed", slog.String("room_id", roomID), slog.Any("error", err))
+				} else {
+					ctx := context.Background()
+					if err := s.pubsub.Publish(ctx, pubsub.ChannelGameEvents, message); err != nil {
+						s.logger.Error("pubsub publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
+					} else {
+						s.logger.Info("event published to pubsub", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
+					}
+				}
+
+			// 閾値超過分をカウントに設定（超過分を捨てない）
+			excess := current - int64(threshold)
+			if err := s.counter.SetExcess(roomID, string(eventType), excess); err != nil {
+				s.logger.Error("set excess failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int64("excess", excess), slog.Any("error", err))
+			}
+			res.EffectTriggered = true
+			res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
+			res.CurrentCount = int(excess)
+
+			// 閾値到達後のカウント更新も配信（リセット後の状態を通知）
+			resetUpdatePayload := map[string]interface{}{
+				"type":           "count_update",
+				"room_id":        roomID,
+				"event_type":     string(eventType),
+				"current_count":  int(excess),
+				"required_count": res.NextThreshold,
+				"viewer_count":   viewers,
+			}
+			if resetMsg, err := json.Marshal(resetUpdatePayload); err == nil {
+				if err := s.pubsub.Publish(ctx, pubsub.ChannelCountUpdates, resetMsg); err != nil {
+					s.logger.Warn("reset count update publish failed", slog.String("room_id", roomID), slog.Any("error", err))
+				}
+			}
+
+			res.RemainingCount = res.NextThreshold
+			if res.NextThreshold > 0 {
+				res.Progress = 0
+			} else {
+				res.Progress = 1
+			}
+		}
+		responses = append(responses, res)
 	}
-	return res, nil
+	return responses, nil
 }
 
 // calculateDynamicThreshold: 視聴者数に応じた動的閾値を算出し上下限でクランプ
