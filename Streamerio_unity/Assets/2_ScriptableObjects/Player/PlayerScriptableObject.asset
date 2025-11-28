@@ -20,7 +20,7 @@ MonoBehaviour:
   PowerDiff: 2
   SpeedDiff: 2
   JumpPowerDiff: 2
-  MaxHp: 50
+  MaxHp: 100
   MaxPower: 50
   MaxSpeed: 50
   MaxJumpPower: 50
