@@ -122,10 +122,14 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 					return
 				}
 
+				// 受信したメッセージをログに出力
+				c.Logger().Infof("message received id=%s msg=%s", id, msg)
+
 				var incoming struct {
 					Type string `json:"type"`
 				}
 				if err := json.Unmarshal([]byte(msg), &incoming); err != nil {
+					c.Logger().Warnf("json unmarshal failed id=%s msg=%s err=%v", id, msg, err)
 					continue
 				}
 
@@ -142,6 +146,7 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 					c.Logger().Infof("game start を受け取りました\n 具体的な実装はまだです")
 
 				case MessageTypeGameEnd:
+					c.Logger().Infof("game end received id=%s", id)
 					if h.sessionService == nil {
 						c.Logger().Warn("game_end received but sessionService not set")
 						continue
