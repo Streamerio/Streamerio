@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8589261663393382410}
   - component: {fileID: 4295170213590101297}
   - component: {fileID: -2096785617048275008}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltChargeBeam
   m_TagString: ULT
   m_Icon: {fileID: 0}

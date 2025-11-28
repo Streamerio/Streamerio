@@ -7,12 +7,14 @@ namespace InGame.UI.Timer
     /// <summary>
     /// タイマー
     /// </summary>
-    public class TimerModel
+    public class TimerModel: ITimerModel
     {
         private const float _countInterval = 1f;
         
         private ReactiveProperty<float> _valueProp;
         public ReadOnlyReactiveProperty<float> ValueProp => _valueProp;
+        
+        private CancellationTokenSource _cts;
         
         public TimerModel(float initialTime)
         {
@@ -22,10 +24,11 @@ namespace InGame.UI.Timer
         /// <summary>
         /// カウントダウンスタート
         /// </summary>
-        /// <param name="ct">発行された時に、止まる</param>
-        public void StartCountdownTimer(CancellationToken ct)
+        public void StartCountdownTimer()
         {
             float time = 0f;
+            StopCountdownTimer();
+            _cts = new CancellationTokenSource();
             
             Observable.EveryUpdate()
                 .Where(_ => _valueProp.Value > 0)
@@ -38,7 +41,20 @@ namespace InGame.UI.Timer
                         _valueProp.Value -= _countInterval;
                         time -= _countInterval;
                     }
-                }).RegisterTo(ct);
+                }).RegisterTo(_cts.Token);
         }
+        
+        public void StopCountdownTimer()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+        }
+    }
+    
+    public interface ITimerModel
+    {
+        ReadOnlyReactiveProperty<float> ValueProp { get; }
+        void StartCountdownTimer();
+        void StopCountdownTimer();
     }
 }

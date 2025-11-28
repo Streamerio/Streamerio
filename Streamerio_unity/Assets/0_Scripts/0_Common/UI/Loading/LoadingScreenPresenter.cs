@@ -1,98 +1,102 @@
+// ============================================================================
+// モジュール概要: ローディング画面の Presenter 層を定義し、外部 API と View の橋渡しを担う。
+// 外部依存: Cysharp.Threading.Tasks（UniTask）、UnityEngine（Vector3）、IAttachable（依存注入契約）。
+// 使用例: シーン遷移時に ILoadingScreen.OpenAsync 系 API を呼び出し、統一されたローディング演出を再生する。
+// ============================================================================
+
 using System.Threading;
-using Alchemy.Inspector;
-using Common.UI.Animation;
+using Common.UI.Display;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Common.UI.Loading
 {
     /// <summary>
+    /// ローディング画面の公開 API 契約。
+    /// <para>
+    /// 【理由】Presenter への依存を抽象化し、DI 経由でモジュール境界を明確にする。
+    /// </para>
+    /// </summary>
+    public interface ILoadingScreen : IDisplay, IAttachable<LoadingScreenContext>
+    {
+        /// <summary>
+        /// 【目的】任意座標を中心としたイリス演出でローディング画面を表示する。
+        /// </summary>
+        UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct);
+        
+        UniTask HideAsync(Vector3 centerCirclePosition, CancellationToken ct);
+    }
+    
+    /// <summary>
     /// ローディング画面のプレゼンター（シングルトン）。
     /// - 外部コードからの呼び出し窓口
     /// - View の表示/非表示/遷移アニメーションを操作
     /// - 表示中は UI の操作を無効化し、演出が終わると再度制御を戻す
     /// </summary>
-    [RequireComponent(typeof(LoadingScreenView))]
-    public class LoadingScreenPresenter : SingletonBase<LoadingScreenPresenter>
+    public class LoadingScreenPresenter: DisplayPresenterBase<ILoadingScreenView, LoadingScreenContext>, ILoadingScreen
     {
-        [SerializeField, ReadOnly]
-        private LoadingScreenView _view;
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// インスペクタ更新時のチェック。
-        /// - View 参照が未設定なら自動取得
-        /// </summary>
-        private void OnValidate()
-        {
-            _view ??= GetComponent<LoadingScreenView>();
-        }
-#endif
+        private Animator _playerAnimator;
         
-        /// <summary>
-        /// 初期化処理。
-        /// - View を初期化し、アニメーションコンポーネントを準備
-        /// </summary>
-        public void Initialize()
+        protected override void AttachContext(LoadingScreenContext context)
         {
-            _view.Initialize();
-        }
-        
-        /// <summary>
-        /// ローディング画面をアニメーションで表示。
-        /// - 表示中は UI 操作を不可にする
-        /// </summary>
-        public async UniTask ShowAsync()
-        {
-            _view.SetInteractable(true);
-            await _view.ShowAsync(destroyCancellationToken);
-        }
-        
-        /// <summary>
-        /// 任意のワールド座標を中心にして表示（クリック位置などを中心に収束演出）。
-        /// </summary>
-        public async UniTask ShowAsync(Vector3 centerCirclePosition)
-        {
-            _view.SetInteractable(true);
-            await _view.ShowAsync(centerCirclePosition, destroyCancellationToken);
+            View = context.View;
+            _playerAnimator = context.PlayerAnimator;
         }
 
-        /// <summary>
-        /// 即時表示（アニメなしで閉じた状態）。
-        /// </summary>
-        public void Show()
+        public override async UniTask ShowAsync(CancellationToken ct)
         {
-            _view.SetInteractable(true);
-            _view.Show();
+            _playerAnimator.enabled = true;
+            await base.ShowAsync(ct);
+        }
+
+        public async UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct)
+        {
+            View.SetInteractable(true);
+            _isShow = true;
+            _playerAnimator.enabled = true;
+            await View.ShowAsync(centerCirclePosition, ct);
         }
         
-        /// <summary>
-        /// アニメーションで非表示。
-        /// - 非表示後は UI 操作を不可にする
-        /// </summary>
-        public async UniTask HideAsync()
+        public override void Show()
         {
-            await _view.HideAsync(destroyCancellationToken);
-            _view.SetInteractable(false);
+            _playerAnimator.enabled = true;
+            base.Show();
         }
         
-        /// <summary>
-        /// タイトル → ローディング 遷移アニメーション。
-        /// </summary>
-        public async UniTask TitleToLoadingAsync()
+        public override async UniTask HideAsync(CancellationToken ct)
         {
-            _view.SetInteractable(true);
-            await _view.TitleToLoadingAsync(destroyCancellationToken);
+            await base.HideAsync(ct);
+            _playerAnimator.enabled = false;
         }
         
-        /// <summary>
-        /// ローディング → インゲーム 遷移アニメーション。
-        /// - 遷移後は UI 操作を不可にする
-        /// </summary>
-        public async UniTask LoadingToInGameAsync()
+        public async UniTask HideAsync(Vector3 centerCirclePosition, CancellationToken ct)
         {
-            await _view.LoadingToInGameAsync(destroyCancellationToken);
-            _view.SetInteractable(false);
+            await View.HideAsync(centerCirclePosition, ct);
+            View.SetInteractable(false);
+            _playerAnimator.enabled = false;
+            _isShow = false;
         }
+        
+        public override void Hide()
+        {
+            base.Hide();
+            _playerAnimator.enabled = false;
+        }
+    }
+    
+    /// <summary>
+    /// ローディング画面 Presenter へ渡すコンテキスト。
+    /// <para>
+    /// 【理由】DI から渡す依存が増えた際も型安全に拡張できるよう、構造体でまとめておく。
+    /// </para>
+    /// </summary>
+    public class LoadingScreenContext
+    {
+        /// <summary>
+        /// 【目的】Presenter が操作対象とする View 参照を保持する。
+        /// </summary>
+        public ILoadingScreenView View;
+        
+        public Animator PlayerAnimator;
     }
 }

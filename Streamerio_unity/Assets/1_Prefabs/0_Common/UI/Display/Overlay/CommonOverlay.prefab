@@ -29,7 +29,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2879738372367561667}
+  - {fileID: 6343385908781675666}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -45,7 +45,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3460231581399234153}
   m_CullTransparentMesh: 1
---- !u!1001 &7556630389250012347
+--- !u!1001 &1666422467667358698
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -142,8 +142,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bff8377074bb84c508ad7b476786ea05, type: 3}
---- !u!224 &2879738372367561667 stripped
+--- !u!224 &6343385908781675666 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5703924959444502392, guid: bff8377074bb84c508ad7b476786ea05, type: 3}
-  m_PrefabInstance: {fileID: 7556630389250012347}
+  m_PrefabInstance: {fileID: 1666422467667358698}
   m_PrefabAsset: {fileID: 0}

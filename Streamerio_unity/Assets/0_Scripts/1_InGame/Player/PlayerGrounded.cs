@@ -13,17 +13,20 @@ public class PlayerGrounded : MonoBehaviour
     
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!collision.CompareTag("Ground")) return;
         _isGrounded.Value = true;
     }
     
     public void OnTriggerStay2D(Collider2D collision)
     {
+        if (!collision.CompareTag("Ground")) return;
         _isGrounded.Value = true;
     }
     
     public void OnTriggerExit2D(Collider2D collision)
     {
-        AudioManager.Instance.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
+        if (!collision.CompareTag("Ground")) return;
+        AudioManager.Instance.AudioFacade.PlayAsync(SEType.PlayerJump, destroyCancellationToken).Forget();
         _isGrounded.Value = false;
     }
 }

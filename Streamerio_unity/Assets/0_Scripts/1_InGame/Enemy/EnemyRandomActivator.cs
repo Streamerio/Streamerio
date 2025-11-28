@@ -1,6 +1,7 @@
 using Common.Audio;
 using UnityEngine;
 using R3;
+using VContainer;
 
 public class EnemyRandomActivator : MonoBehaviour
 {
@@ -9,6 +10,14 @@ public class EnemyRandomActivator : MonoBehaviour
     [SerializeField] private WeakEnemyScriptableObject _weakEnemyScriptableObject;
     [SerializeField] private GameObject _parentObject;
 
+    private IWebSocketManager _webSocketManager;
+
+    [Inject]
+    public void Construct(IWebSocketManager webSocketManager)
+    {
+        _webSocketManager = webSocketManager;
+    }
+
     void Start()
     {
         Bind();
@@ -16,9 +25,9 @@ public class EnemyRandomActivator : MonoBehaviour
     
     private void Bind()
     {
-        WebsocketManager.Instance.FrontEventDict[FrontKey.enemy3].Subscribe(_ => ActivateStrongEnemy());
-        WebsocketManager.Instance.FrontEventDict[FrontKey.enemy2].Subscribe(_ => ActivateMiddleEnemy());
-        WebsocketManager.Instance.FrontEventDict[FrontKey.enemy1].Subscribe(_ => ActivateWeakEnemy());        
+        _webSocketManager.FrontEventDict[FrontKey.enemy3].Subscribe(_ => ActivateStrongEnemy());
+        _webSocketManager.FrontEventDict[FrontKey.enemy2].Subscribe(_ => ActivateMiddleEnemy());
+        _webSocketManager.FrontEventDict[FrontKey.enemy1].Subscribe(_ => ActivateWeakEnemy());        
     }
     public void ActivateStrongEnemy()
     {

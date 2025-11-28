@@ -1,81 +1,68 @@
+// モジュール概要:
+// UI 背景のフェード演出を担当する View 実装。Presenter から呼び出され、見た目の制御を集約する。
+// 依存関係: FadeAnimationComponentParamSO で演出パラメータを受け取り、CanvasGroup を直接操作する。
+
 using System.Threading;
-using Alchemy.Inspector;
 using Common.UI.Animation;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
-using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace Common.UI.Display.Background
 {
     /// <summary>
-    /// UI 背景の View。
-    /// - CanvasGroup を用いたフェードアニメーションで表示/非表示を制御
-    /// - 即時表示/非表示にも対応
+    /// 【目的】背景 View の専用インターフェースを表すマーカー。
     /// </summary>
-    public class DisplayBackgroundView : DisplayViewBase
+    public interface IDisplayBackgroundView : IDisplayView, IInitializable { }
+    
+    /// <summary>
+    /// 【目的】背景のフェードイン/アウト演出を実装する View。
+    /// 【理由】Presenter 側が演出詳細を意識せず、見た目制御のみを委譲できるようにするため。
+    /// </summary>
+    public class DisplayBackgroundView : DisplayViewBase, IDisplayBackgroundView
     {
-        [Header("アニメーション")]
-        [SerializeField, LabelText("表示アニメーション")]
-        private FadeAnimationComponentParam _showFadeAnimationParam = new ()
-        {
-            Alpha = 1f,
-            DurationSec = 0.1f,
-            Ease = Ease.InSine,
-        };
+        /// <summary>
+        /// 【目的】表示演出を再生するアニメーションコンポーネントをキャッシュする。
+        /// 【理由】毎回インスタンス生成すると GC が発生し、演出開始が遅れるため。
+        /// </summary>
+        private IUIAnimation _showAnimation;
+        /// <summary>
+        /// 【目的】非表示演出を再生するアニメーションコンポーネントをキャッシュする。
+        /// 【理由】演出切り替えが高速に行えるよう、初期化時に生成しておく。
+        /// </summary>
+        private IUIAnimation _hideAnimation;
 
-        [SerializeField, LabelText("非表示アニメーション")]
-        private FadeAnimationComponentParam _hideFadeAnimationParam = new ()
+        [Inject]
+        public void Construct(
+            [Key(AnimationType.Show)] IUIAnimation showAnimation,
+            [Key(AnimationType.Hide)] IUIAnimation hideAnimation)
         {
-            Alpha = 0f,
-            DurationSec = 0.1f,
-            Ease = Ease.OutSine,
-        };
-        
-        private FadeAnimationComponent _showAnimation;
-        private FadeAnimationComponent _hideAnimation;
-        
-        /// <summary>
-        /// 初期化処理。
-        /// - フェードイン/フェードアウト用のアニメーションコンポーネントを生成
-        /// </summary>
-        public override void Initialize()
-        {
-            base.Initialize();
-            
-            _showAnimation = new FadeAnimationComponent(CanvasGroup, _showFadeAnimationParam);
-            _hideAnimation = new FadeAnimationComponent(CanvasGroup, _hideFadeAnimationParam);
+            _showAnimation = showAnimation;
+            _hideAnimation = hideAnimation;
         }
-        
-        /// <summary>
-        /// アニメーション付きで背景を表示。
-        /// </summary>
+
+        /// <inheritdoc />
         public override async UniTask ShowAsync(CancellationToken ct)
         {
             await _showAnimation.PlayAsync(ct);
         }
 
-        /// <summary>
-        /// 即時表示。
-        /// </summary>
+        /// <inheritdoc />
         public override void Show()
         {
-            CanvasGroup.alpha = _showFadeAnimationParam.Alpha;
+            _showAnimation.PlayImmediate();
         }
 
-        /// <summary>
-        /// アニメーション付きで背景を非表示。
-        /// </summary>
+        /// <inheritdoc />
         public override async UniTask HideAsync(CancellationToken ct)
         {
             await _hideAnimation.PlayAsync(ct);
         }
 
-        /// <summary>
-        /// 即時非表示。
-        /// </summary>
+        /// <inheritdoc />
         public override void Hide()
         {
-            CanvasGroup.alpha = _hideFadeAnimationParam.Alpha;
+            _hideAnimation.PlayImmediate();
         }
     }
 }

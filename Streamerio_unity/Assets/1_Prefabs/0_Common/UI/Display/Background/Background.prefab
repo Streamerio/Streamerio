@@ -13,7 +13,8 @@ GameObject:
   - component: {fileID: 4369812536158267800}
   - component: {fileID: 5650579027399127566}
   - component: {fileID: 9005919754493262024}
-  - component: {fileID: 5964050056270031967}
+  - component: {fileID: 8957841177701401010}
+  - component: {fileID: 4648105322662381009}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -102,17 +103,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af9cc557f05343889194d679d4ad1b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameObject: {fileID: 3411413333985420157}
   _rectTransform: {fileID: 5703924959444502392}
   _canvasGroup: {fileID: 5650579027399127566}
-  _showFadeAnimationParam:
-    Duration: 0.1
-    Ease: 2
-    Alpha: 1
-  _hideFadeAnimationParam:
-    Duration: 0.1
-    Ease: 3
-    Alpha: 0
---- !u!114 &5964050056270031967
+--- !u!114 &8957841177701401010
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -121,7 +115,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3411413333985420157}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a07e10c55e324631a16ad3c24e90f01, type: 3}
+  m_Script: {fileID: 11500000, guid: fd253e17d14ec9346b4e8ec0b1ecf277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  View: {fileID: 9005919754493262024}
+--- !u!114 &4648105322662381009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3411413333985420157}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1bc05869394837a4b9349782adc554, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  _clickTrigger: {fileID: 8957841177701401010}
+  _canvasGroup: {fileID: 5650579027399127566}
+  _showAnimationParam: {fileID: 11400000, guid: 6d3828e2e43144ff6bf3c5f9d16d7986, type: 2}
+  _hideAnimationParam: {fileID: 11400000, guid: 926dc35022d8648598b96f89f6b73327, type: 2}
+  _clickSE: 29

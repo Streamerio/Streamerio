@@ -12,10 +12,6 @@
     "Num": 9
   },
   {
-    "Name": "ClearScene",
-    "Num": 10
-  },
-  {
     "Name": "EnemyStatus",
     "Num": 11
   },
@@ -36,6 +32,10 @@
     "Num": 14
   },
   {
+    "Name": "GameTest_Enemy_Create",
+    "Num": 19
+  },
+  {
     "Name": "GameTest_Ult_Create",
     "Num": 15
   },
@@ -48,12 +48,20 @@
     "Num": 16
   },
   {
+    "Name": "ResultScene",
+    "Num": 20
+  },
+  {
     "Name": "SampleScene",
     "Num": 3
   },
   {
     "Name": "SceneCreate",
     "Num": 17
+  },
+  {
+    "Name": "TestGameScene",
+    "Num": 21
   },
   {
     "Name": "Title",

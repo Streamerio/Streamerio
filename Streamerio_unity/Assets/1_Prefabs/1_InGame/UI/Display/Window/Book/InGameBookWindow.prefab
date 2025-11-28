@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5073398754331909636
+--- !u!1001 &1170372309770529842
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -58,15 +58,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2786838231688197781, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2786838231688197781, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2786838231688197781, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2786838231688197781, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -92,102 +92,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: InGameBookWindow
       objectReference: {fileID: 0}
-    - target: {fileID: 4564600478829257381, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _bookRectTransform
-      value: 
-      objectReference: {fileID: 8638785586528192590}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _firstChapterType
-      value: 2
+    - target: {fileID: 5045130469795907022, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
+      propertyPath: _nextStateOnClose
+      value: 21
       objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[0]._key
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[1]._key
+    - target: {fileID: 5045130469795907022, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
+      propertyPath: _initialChapterType
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[2]._key
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[3]._key
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[0]._value
-      value: 
-      objectReference: {fileID: -8277283291479455473, guid: d4a6985df9f21419eb4b54ed89191cfd, type: 3}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[1]._value
-      value: 
-      objectReference: {fileID: 4959720344087918798, guid: 826f1b12d2b724a99a6fedebcbf3c4fe, type: 3}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[2]._value
-      value: 
-      objectReference: {fileID: 230831196380736551, guid: 445c8429211414852876e635254aa455, type: 3}
-    - target: {fileID: 7210522309632558226, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      propertyPath: _chapterDict._keyValuePairs.Array.data[3]._value
-      value: 
-      objectReference: {fileID: 230831196380736551, guid: 445c8429211414852876e635254aa455, type: 3}
-    m_RemovedComponents:
-    - {fileID: 413042351833936962, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4340314849751866102, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5325944291603498503}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
---- !u!114 &2521458929164181406 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7248069436254290330, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-  m_PrefabInstance: {fileID: 5073398754331909636}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8814582501462557938}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31d1e50777fe14b8d826bed0d0301a16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!224 &8638785586528192590 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 3570075708126123594, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-  m_PrefabInstance: {fileID: 5073398754331909636}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8732728970156375201 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4564600478829257381, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-  m_PrefabInstance: {fileID: 5073398754331909636}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8814582501462557938}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e43b50e9782244c8a9080766ab18c0bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!1 &8814582501462557938 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4340314849751866102, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
-  m_PrefabInstance: {fileID: 5073398754331909636}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5325944291603498503
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8814582501462557938}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a56f24219d4640e9a9608dd5abbce4b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CommonView: {fileID: 8732728970156375201}
-  _bookAnimation: {fileID: 2521458929164181406}

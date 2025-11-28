@@ -8,6 +8,7 @@ public class StageCreater : MonoBehaviour
 {
     [Header("ステージPrefab群")]
     [SerializeField] private List<GameObject> stagePrefabs = new();
+    [SerializeField] private GameObject stageParent;
     [SerializeField] private GameObject goalPrefab;
     [SerializeField] private int stageCountToGoal = 10;
 
@@ -78,7 +79,7 @@ public class StageCreater : MonoBehaviour
         bool spawnGoal = !_goalSpawned && goalPrefab && _generatedCount >= stageCountToGoal;
         GameObject prefab = spawnGoal ? goalPrefab : stagePrefabs[Random.Range(0, stagePrefabs.Count)];
 
-        GameObject inst = Instantiate(prefab);
+        GameObject inst = Instantiate(prefab, stageParent.transform);
         var conn = inst.GetComponent<StageConnectionPoint>();
 
         if (conn)

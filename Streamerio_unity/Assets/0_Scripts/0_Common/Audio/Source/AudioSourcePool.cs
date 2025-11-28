@@ -1,26 +1,49 @@
+// モジュール概要:
+// Source プレハブを ObjectPool で管理し、音声再生時に効率的な取得と返却を行う。
+// 依存関係: UnityEngine.Pool.ObjectPool、Source コンポーネント。
+// 使用例: AudioPlayerBase が SoundType ごとにプールを生成し、GetSource() で Source を取得して再生する。
+
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Common.Audio
 {
     /// <summary>
-    /// オーディオソースのプール管理クラス。
-    /// - UnityEngine.Pool.ObjectPool を利用して Source を効率的に再利用する
-    /// - AudioManager 経由で BGM/SE 再生に使われる
-    /// - Source は再生終了時に自動で Release されるため、明示的な返却処理は不要
+    /// <see cref="AudioSourcePool"/> を利用する側のインターフェイス。
     /// </summary>
-    public class AudioSourcePool
+    public interface IAudioSourcePoolUser
     {
-        private readonly Source _prefab;         // 生成元となるプレハブ
-        private readonly Transform _parent;      // 親 Transform（Hierarchy整理用）
+        /// <summary>
+        /// プールから Source を取得します。
+        /// </summary>
+        Source GetSource();
+
+        /// <summary>
+        /// プールをクリアして全インスタンスを破棄します。
+        /// </summary>
+        void Clear();
+    }
+    
+    /// <summary>
+    /// オーディオソース (<see cref="Source"/>) をプールで管理するクラス。  
+    /// <para>
+    /// - <see cref="ObjectPool{T}"/> を利用して Source を効率的に再利用します。<br/>
+    /// - AudioManager 経由で BGM / SE の再生に使用されます。<br/>
+    /// - 再生終了時に Source 側から自動で Release されるため、明示的な返却は不要です。
+    /// </para>
+    /// </summary>
+    public class AudioSourcePool : IAudioSourcePoolUser
+    {
+        private readonly Source _prefab;    // 生成元となるプレハブ
+        private readonly Transform _parent; // 親 Transform（Hierarchy 整理用）
         private readonly ObjectPool<Source> _sourcePool;
 
         /// <summary>
-        /// コンストラクタ。
+        /// プールを初期化します。
         /// </summary>
-        /// <param name="source">生成元となる Source プレハブ</param>
-        /// <param name="parent">生成時の親 Transform</param>
-        /// <param name="capacity">プールの初期容量</param>
+        /// <param name="source">生成元となる Source プレハブ。</param>
+        /// <param name="parent">生成時の親 Transform。</param>
+        /// <param name="capacity">プールの初期容量。</param>
         public AudioSourcePool(Source source, Transform parent, int capacity)
         {
             _prefab = source;
@@ -36,8 +59,8 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// プールからオーディオソースを取得。
-        /// - 利用後は Source 側で自動的に Release される
+        /// プールから Source を取得します。  
+        /// 利用後は Source 側で自動的に Release されます。
         /// </summary>
         public Source GetSource()
         {
@@ -45,7 +68,7 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// プールをクリアして全インスタンスを破棄。
+        /// プールをクリアして全インスタンスを破棄します。
         /// </summary>
         public void Clear()
         {
@@ -57,7 +80,7 @@ namespace Common.Audio
         // =============================
 
         /// <summary>
-        /// 新しいインスタンス生成時の処理。
+        /// 新しい Source インスタンスを生成します。
         /// </summary>
         private Source OnCreateSource()
         {
@@ -65,8 +88,8 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// プールから取得された時の処理。
-        /// - Dispose 時に Release されるようにコールバックを設定
+        /// プールから取得されたときの処理。  
+        /// Release 時にプールへ戻すコールバックを設定します。
         /// </summary>
         private void OnGetSource(Source source)
         {
@@ -74,17 +97,17 @@ namespace Common.Audio
         }
 
         /// <summary>
-        /// プールに返却された時の処理。
-        /// - 今回は特に何もしない（必要なら状態リセット処理を入れる）
+        /// プールに返却されたときの処理。  
+        /// 必要に応じてリセット処理を追加できます。
         /// </summary>
         private void OnReleaseSource(Source source)
         {
-            
+            // 特別な処理はなし
         }
 
         /// <summary>
-        /// プールから削除される時の処理。
-        /// - Dispose を呼んでから GameObject を破棄
+        /// プールから削除されるときの処理。  
+        /// Dispose を呼んでから GameObject を破棄します。
         /// </summary>
         private void OnDestroySource(Source source)
         {

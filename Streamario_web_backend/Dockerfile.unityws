@@ -1,0 +1,29 @@
+# ビルドステージ
+FROM golang:alpine AS builder
+
+WORKDIR /app
+
+# 依存関係のみ先にコピーしてキャッシュを活用
+COPY go.mod go.sum ./
+RUN go mod download
+
+# ソースコードをコピー
+COPY . .
+
+# WebSocket サーバーをビルド(静的リンク)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o unityws cmd/unityws/main.go
+
+# 実行ステージ
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder /app/unityws .
+
+# Cloud Run は 8080 をデフォルトで期待
+EXPOSE 8080
+
+CMD ["./unityws"]

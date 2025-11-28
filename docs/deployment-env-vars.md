@@ -22,6 +22,9 @@ Cloud Runへのデプロイ時に必要な環境変数の設定手順です。
 | `LOG_LEVEL` | ログレベル (debug/info/warn/error) | `info` |
 | `LOG_FORMAT` | ログフォーマット (text/json) | `text` |
 | `LOG_ADD_SOURCE` | ログに呼び出し元を付与 (true/false) | `false` |
+| `UNITY_WS_PORT` | Unity WebSocket サーバーの待受ポート（Cloud Run では `8080` を指定） | `8890` |
+
+> **備考**: Cloud Run 上ではプラットフォームが `PORT` を 8080 に固定するため、Unity WebSocket サービスでは `UNITY_WS_PORT=8080` を設定してアプリが同じポートでリッスンするようにしてください。
 
 ## GitHub Secretsの設定手順
 
@@ -131,6 +134,15 @@ LOG_ADD_SOURCE=true
 
 GitHub Actionsのワークフロー (`.github/workflows/deploy.yml`) で、設定したSecretが自動的にCloud Runの環境変数として設定されます。
 
+### Cloud Run サービス構成（2025-11-09以降）
+
+- `streamario-web-backend`: REST API 用。Dockerfile = `Streamario_web_backend/Dockerfile`。
+  - GitHub Actions で `FRONTEND_URL`, `DATABASE_URL`, `REDIS_URL` を注入。
+- `streamario-unityws`: Unity 向け WebSocket 用。Dockerfile = `Streamario_web_backend/Dockerfile.unityws`。
+  - `DATABASE_URL`, `REDIS_URL`, `UNITY_WS_PORT`（Cloud Run では 8080）を注入。
+
+2 サービスは同じ Artifact Registry (`asia-northeast1-docker.pkg.dev/streamerio-472706/streamario`) に別名で保存され、`main` への push で同一バージョンタグがデプロイされます。
+
 手動でCloud Runの環境変数を確認/変更する場合：
 
 ```bash
@@ -162,4 +174,3 @@ gcloud run services update streamario-web-backend \
 - `REDIS_URL` の形式が正しいか確認
 - Upstash使用時はTLS設定を確認
 - Redisサーバーへのアクセス権限を確認
-
