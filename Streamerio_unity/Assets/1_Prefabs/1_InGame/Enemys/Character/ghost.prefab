@@ -14,10 +14,10 @@ GameObject:
   - component: {fileID: 2158413155615681619}
   - component: {fileID: 772017510138912508}
   - component: {fileID: 2312235774241086707}
-  - component: {fileID: 3767311315840937753}
-  - component: {fileID: 694738629139940420}
-  - component: {fileID: -4869362180162950133}
-  m_Layer: 7
+  - component: {fileID: 8952481581066940685}
+  - component: {fileID: 6652914231786361052}
+  - component: {fileID: 8726632623083953002}
+  m_Layer: 16
   m_Name: ghost
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -202,7 +202,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3767311315840937753
+--- !u!114 &8952481581066940685
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -211,11 +211,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 9058503593094887591}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57d919bda2bc48d180214defa98387c, type: 3}
+  m_Script: {fileID: 11500000, guid: 8615d4256fc2437d8ecc1ccaf1bc6cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
---- !u!114 &694738629139940420
+  _gameObject: {fileID: 9058503593094887591}
+  _height: 3.25
+--- !u!114 &6652914231786361052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9058503593094887591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f259981e0fbf484c82013e2449b36075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
+  _movement: {fileID: 8726632623083953002}
+  _enemyPresenter: {fileID: 8952481581066940685}
+--- !u!114 &8726632623083953002
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -228,22 +247,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _transform: {fileID: 5087740827375689516}
-  _player: {fileID: 0}
-  _movementSpeed: 1
---- !u!114 &-4869362180162950133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9058503593094887591}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71720ccbd36d04cedb183cf76d2e6534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parentReference:
-    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
-  autoRun: 1
-  autoInjectGameObjects: []
-  config: {fileID: 11400000, guid: 6aea2deac869457448f129750f61af7e, type: 2}

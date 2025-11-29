@@ -1,19 +1,16 @@
-using InGame.Enemy.Common;
 using UnityEngine;
+using VContainer;
 
 namespace InGame.Enemy.Ghost
 {
-    public class GhostMovement : CommonEnemyMovement
+    public class GhostMovement : EnemyMovementBase
     {
-        private GameObject _player;
-        [SerializeField] private float _movementSpeed;
+        private Transform _player;
 
-        void Start()
+        [Inject]
+        public void Construct([Key("Player")]Transform player)
         {
-            if (_player == null)
-            {
-                _player = GameObject.FindWithTag("Player");
-            }
+            _player = player;
         }
 
         protected override Vector2 GetMovePosition()
@@ -27,7 +24,7 @@ namespace InGame.Enemy.Ghost
             Vector2 direction = (_player.transform.position - transform.position).normalized;
 
             // プレイヤーに向かって移動
-            transform.position += (Vector3)(direction * _movementSpeed * Time.deltaTime);
+            transform.position += (Vector3)(direction * MoveSpeed * Time.deltaTime);
 
             // スプライトの向きを調整
             if (direction.x < 0)
