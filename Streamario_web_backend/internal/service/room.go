@@ -86,6 +86,11 @@ func (s *RoomService) MarkEnded(id string, endedAt time.Time) error {
 	return s.repo.MarkEnded(id, endedAt)
 }
 
+// MarkInGame: ルームをゲーム開始状態へ更新
+func (s *RoomService) MarkInGame(id string) error {
+	return s.repo.MarkInGame(id)
+}
+
 // UpdateRoom: ルームを更新
 func (s *RoomService) UpdateRoom(id string, room *model.Room) error {
 	return s.repo.Update(id, room)

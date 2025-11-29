@@ -138,12 +138,16 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 
 				switch messageType {
 				case MessageTypeGameStart:
-					if h.sessionService == nil {
-						c.Logger().Warn("game_start received but sessionService not set")
+					c.Logger().Infof("game start received id=%s", id)
+					if h.roomService == nil {
+						c.Logger().Warn("game_start received but roomService not set")
 						continue
 					}
-					c.Logger().Infof("game start received id=%s", id)
-					c.Logger().Infof("game start を受け取りました\n 具体的な実装はまだです")
+					if err := h.roomService.MarkInGame(id); err != nil {
+						c.Logger().Errorf("mark in_game failed id=%s err=%v", id, err)
+					} else {
+						c.Logger().Infof("room marked as in_game id=%s", id)
+					}
 
 				case MessageTypeGameEnd:
 					c.Logger().Infof("game end received id=%s", id)

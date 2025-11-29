@@ -1,3 +1,34 @@
+## 2025-01-XX ゲーム開始前のイベント転送制御実装
+
+### 目的
+- Unityから`MessageTypeGameStart`が送られてくるまでは、フロントエンドからのボタンイベントをUnity側に転送しないようにする。
+- デプロイ先でスケーリングされる可能性があるため、DBで状態を管理し、どのインスタンスからでも状態を確認できるようにする。
+
+### 実装概要
+- `room_status` ENUMに`in_game`を追加し、ゲーム開始状態をDBで管理。
+- `MessageTypeGameStart`受信時に`RoomService.MarkInGame`を呼び出してルームの状態を`in_game`に更新。
+- `RelayActionToUnity`でルームを取得し、`Status`が`in_game`でない場合は`400 Bad Request`を返してイベント転送を拒否。
+
+### 変更ファイル
+- `db/migrations/005_game_start.sql`: `room_status` ENUMに`in_game`を追加
+- `internal/repository/queries.go`: `queryMarkInGameRoom`クエリを追加
+- `internal/repository/room.go`: `MarkInGame`メソッドを追加（インターフェースと実装）
+- `internal/service/room.go`: `MarkInGame`メソッドを追加
+- `internal/handler/websocket.go`: 
+  - `MessageTypeGameStart`ハンドラで`MarkInGame`を呼び出し
+  - `RelayActionToUnity`でゲーム開始状態をチェック
+
+### 意図・設計上の判断
+- **DBアクセスなしで判断**: 当初は`started_at`カラムを追加する案もあったが、ユーザーの提案通り`Status`フィールドで判断することで、既存の`Room`構造体をそのまま活用できる。
+- **スケーリング対応**: 状態をDBで管理することで、複数のインスタンス間で状態を共有できる。各インスタンスが`RelayActionToUnity`を呼び出す際に、DBから最新の状態を取得して判断する。
+- **高凝集**: ゲーム開始状態の管理は`RoomService`に集約し、ハンドラ層はサービス層のメソッドを呼び出すだけに。
+- **低結合**: 既存の`Room`モデルと`RoomRepository`のインターフェースを拡張する形で実装し、他の部分への影響を最小化。
+- **エラーハンドリング**: ルームが見つからない場合やゲームが開始されていない場合は適切なHTTPステータスコードを返す。
+
+### 今後の課題
+- ゲーム終了時に`Status`を`active`に戻す処理が必要かもしれない（現状は`ended`に遷移するのみ）。
+- パフォーマンス: `RelayActionToUnity`で毎回DBアクセスが発生するため、キャッシュを検討する余地があるが、現状はスケーリング対応を優先。
+
 ## 2025-11-14 Viewer向け操作ガイドモーダル実装
 
 ### 目的
