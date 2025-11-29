@@ -114,7 +114,6 @@ func main() {
 	}
 	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService, logTokenService).WithLogger(appLogger.With(slog.String("component", "handler")))
 
-
 	// 10. Echo フレームワーク初期化 & ミドルウェア
 	e := echo.New()
 	e.Logger.SetLevel(elog.DEBUG)
@@ -144,6 +143,7 @@ func main() {
 	// REST API
 	api := e.Group("/api")
 	api.GET("/rooms/:id", apiHandler.GetRoom)
+	api.POST("/rooms/:id/join", apiHandler.JoinRoom)
 	api.POST("/rooms/:id/events", apiHandler.SendEvent)
 	api.GET("/rooms/:id/stats", apiHandler.GetRoomStats)
 	api.GET("/rooms/:id/results", apiHandler.GetRoomResult)
@@ -155,7 +155,7 @@ func main() {
 	// サーバ起動を別goroutineで実行し、致命的でない終了はログのみに留める
 	go func() {
 		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
-		log.Error("server start failed", slog.Any("error", err))
+			log.Error("server start failed", slog.Any("error", err))
 		}
 	}()
 

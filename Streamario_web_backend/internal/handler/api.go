@@ -13,10 +13,10 @@ import (
 
 // APIHandler: REST エンドポイント集約 (ルーム取得 / イベント送信 / 統計取得)
 type APIHandler struct {
-	roomService    *service.RoomService
-	eventService   *service.EventService
-	sessionService *service.GameSessionService
-	viewerService  *service.ViewerService
+	roomService     *service.RoomService
+	eventService    *service.EventService
+	sessionService  *service.GameSessionService
+	viewerService   *service.ViewerService
 	logTokenService *service.LogTokenService
 	logger          *slog.Logger
 }
@@ -164,6 +164,31 @@ func (h *APIHandler) IssueLogToken(c echo.Context) error {
 	})
 }
 
+// JoinRoom: 視聴者がルームに参加したことを通知 (QRスキャン時など)
+func (h *APIHandler) JoinRoom(c echo.Context) error {
+	roomID := c.Param("id")
+	var req struct {
+		ViewerID string `json:"viewer_id"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
+	}
+	if req.ViewerID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "viewer_id is required"})
+	}
+
+	if _, err := h.roomService.GetRoom(roomID); err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
+	}
+
+	if err := h.eventService.JoinRoom(roomID, req.ViewerID); err != nil {
+		h.logger.Error("join_room_failed", slog.String("room_id", roomID), slog.String("viewer_id", req.ViewerID), slog.Any("error", err))
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"status": "joined"})
+}
+
 // GetRoom: ルーム情報取得 (存在しない場合 404)
 func (h *APIHandler) GetRoom(c echo.Context) error {
 	id := c.Param("id")
@@ -220,7 +245,7 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"viewer_summary": summary,
 		})
 	}
-	
+
 	// PushCount合計
 	totalPushCount := int64(0)
 	// PushEventMap: ボタン名とPushCountのマップ
@@ -259,12 +284,6 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	// 現在の視聴者数を取得（イベント結果のいずれかから取得）
-	currentViewerCount := 0
-	if len(responses) > 0 {
-		currentViewerCount = responses[0].ViewerCount
-	}
-
 	// 最新の統計情報を取得
 	stats, err := h.eventService.GetRoomStats(roomID)
 	if err != nil {
@@ -272,6 +291,14 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 		// ここではフロントエンドが stats 依存になったため、不整合を防ぐためエラーログを出して stats は空にするか、500にする
 		h.logger.Error("failed to get room stats after event", slog.String("room_id", roomID), slog.Any("error", err))
 		// 必要であれば return c.JSON(...) でエラーを返してください
+	}
+
+	// 現在の視聴者数を取得（イベント結果のいずれかから取得）
+	currentViewerCount := 0
+	if len(responses) > 0 {
+		currentViewerCount = responses[0].ViewerCount
+	} else if len(stats) > 0 {
+		currentViewerCount = stats[0].ViewerCount
 	}
 
 	// 配列として結果を返す
