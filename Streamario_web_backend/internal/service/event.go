@@ -35,6 +35,17 @@ func NewEventService(counter counter.Counter, eventRepo repository.EventReposito
 	return &EventService{counter: counter, eventRepo: eventRepo, pubsub: ps, configs: getDefaultEventConfigs(), logger: logger}
 }
 
+// JoinRoom: 視聴者がルームに参加したことを記録 (アクティブ視聴者としてカウント)
+func (s *EventService) JoinRoom(roomID, viewerID string) error {
+	if err := s.counter.UpdateViewerActivity(roomID, viewerID); err != nil {
+		return fmt.Errorf("update viewer activity failed: %w", err)
+	}
+	// 参加直後の視聴者数をブロードキャストしても良いが、
+	// 頻度が高くなる可能性があるため、ここではアクティビティ更新のみとする。
+	// 必要であれば viewer_count_update を送る。
+	return nil
+}
+
 // ProcessEvent: 1イベント処理の本流 (DB保存→視聴者アクティビティ更新→カウント加算→閾値判定→発動通知/リセット)
 func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventType]int64, viewerID *string, viewerName *string) ([]model.EventResult, error) {
 	responses := []model.EventResult{}
@@ -45,7 +56,17 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 	}
 
 	// 2. Update viewer activity (backend-agnostic)
-	if viewerID != nil {
+	// 2. Update viewer activity (backend-agnostic)
+	// NOTE: ハートビート(空のイベント)ではアクティビティを更新しない
+	// ボタン押下がある場合のみ更新する
+	hasPushEvents := false
+	for _, count := range PushEventMap {
+		if count > 0 {
+			hasPushEvents = true
+			break
+		}
+	}
+	if viewerID != nil && hasPushEvents {
 		_ = s.counter.UpdateViewerActivity(roomID, *viewerID)
 	}
 
