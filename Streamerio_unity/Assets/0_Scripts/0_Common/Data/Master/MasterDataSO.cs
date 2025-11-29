@@ -326,6 +326,7 @@ namespace Common
         FireMan,
         Cat,
         Angel,
+        Ghost,
     }
     
     public enum MasterEnemyRarityType
