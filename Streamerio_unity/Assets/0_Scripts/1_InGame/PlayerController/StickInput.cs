@@ -7,6 +7,7 @@ using R3;
 using VContainer;
 using VContainer.Unity;
 using System;
+using InGame.Setting;
 
 public class StickInput : MonoBehaviour, IController, IStartable, ITickable
 {
@@ -19,26 +20,33 @@ public class StickInput : MonoBehaviour, IController, IStartable, ITickable
     private IAudioFacade _audioFacade;
     private int _lastJumpFrame = -1;
     
+    private IInGameSetting _inGameSetting;
+    
     [Inject]
     public void Construct([Key(ButtonType.Jump)] ICommonButton jumpButton,
                           [Key(ButtonType.Attack)] ICommonButton attackButton,
-                          IAudioFacade audioFacade)
+                          IAudioFacade audioFacade,
+                          IInGameSetting inGameSetting)
     {
         _jumpButton = jumpButton;
         _attackButton = attackButton;
         
         _audioFacade = audioFacade;
+        
+        _inGameSetting = inGameSetting;
     }
     
     public void Start()
     {
         _jumpButton.OnClickAsObservable
+            .Where(_ => _inGameSetting.IsGame)
             .Subscribe(_ =>
             {
                 Jump();
             }).RegisterTo(destroyCancellationToken);
         
         _attackButton.OnClickAsObservable
+            .Where(_ => _inGameSetting.IsGame)
             .Subscribe(_ =>
             {
                 Attack();
@@ -47,6 +55,11 @@ public class StickInput : MonoBehaviour, IController, IStartable, ITickable
 
     public void Tick()
     {
+        if (!_inGameSetting.IsGame)
+        {
+            return;
+        }
+        
         float moveX = _joystick.Horizontal;
         Move(new Vector2(moveX, 0));
     }
