@@ -100,7 +100,8 @@ PrefabInstance:
       propertyPath: _initialChapterType
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2784480414958435557, guid: f75c55f6646a340a4a081b00eee07114, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

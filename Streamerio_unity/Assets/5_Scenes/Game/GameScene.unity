@@ -27570,6 +27570,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2112435766677166679, guid: 3d6ca0b122c66496a8a81fc15421a0c8, type: 3}
+      propertyPath: parentReference.TypeName
+      value: InGame.InGameLifetimeScope
+      objectReference: {fileID: 0}
+    - target: {fileID: 2112435766677166679, guid: 3d6ca0b122c66496a8a81fc15421a0c8, type: 3}
+      propertyPath: _windowServiceData.Repository
+      value: 
+      objectReference: {fileID: 11400000, guid: ffe72b94dae71473587d97904ffb505f, type: 2}
     - target: {fileID: 5322969805992405721, guid: 3d6ca0b122c66496a8a81fc15421a0c8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
