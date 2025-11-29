@@ -1,6 +1,14 @@
+// モジュール概要:
+// 効果音(SE) の種類を列挙し、ScriptableObject やプレイヤーで辞書キーとして利用する。
+// 使用例: SEScriptableObject が AudioClip を割り当て、SEPlayer が再生対象を特定する。
+
 namespace Common.Audio
 {
     
+    /// <summary>
+    /// 【目的】効果音の識別子を定義する。
+    /// 【理由】Enum を通じて SE を型安全に指定し、辞書やファサードで扱いやすくするため。
+    /// </summary>
     public enum SEType
     {
 		None = 0,

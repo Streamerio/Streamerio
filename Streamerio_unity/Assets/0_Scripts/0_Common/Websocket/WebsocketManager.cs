@@ -1,59 +1,65 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
 using Common;
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using NativeWebSocket;
 using R3;
 using UnityEngine.Networking;
-public class WebsocketManager : SingletonBase<WebsocketManager>
+using VContainer.Unity;
+
+public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
 {
-  private bool _isConnected = false;
   private WebSocket _websocket;
+
+  private ReactiveProperty<bool> _isConnectedProp = new ReactiveProperty<bool>(false);
+  public ReadOnlyReactiveProperty<bool> IsConnectedProp => _isConnectedProp;
+
+  private ReactiveProperty<int> _viewerCountProp = new ReactiveProperty<int>(0);
+  public ReadOnlyReactiveProperty<int> ViewerCountProp => _viewerCountProp;
 
   private string _roomId = string.Empty;
 
-  private Dictionary<FrontKey, Subject<Unit>> _frontEventDict = new Dictionary<FrontKey, Subject<Unit>>();
-  public IDictionary<FrontKey, Subject<Unit>> FrontEventDict => _frontEventDict;
-
-  // アプリケーション終了中フラグ
-  private bool _isShuttingDown = false;
+  private Dictionary<FrontKey, Subject<Unit>> _frontEventDict = Enum.GetValues(typeof(FrontKey))
+    .Cast<FrontKey>()
+    .ToDictionary(key => key, key => new Subject<Unit>());
   
-  [SerializeField]
-  private ApiConfigSO _apiConfigSO;
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _enemyEventViewerNameDict = new (){
+    { FrontKey.enemy1, new Subject<ViewerDetails>() },
+    { FrontKey.enemy2, new Subject<ViewerDetails>() },
+    { FrontKey.enemy3, new Subject<ViewerDetails>() },
+  };
+  private Dictionary<FrontKey, Subject<ViewerDetails>> _ultEventViewerNameDict = new (){
+    { FrontKey.skill1, new Subject<ViewerDetails>() },
+    { FrontKey.skill2, new Subject<ViewerDetails>() },
+    { FrontKey.skill3, new Subject<ViewerDetails>() },
+  };
+  public IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict => _frontEventDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> EnemyEventViewerNameDict => _enemyEventViewerNameDict;
+  public IReadOnlyDictionary<FrontKey, Subject<ViewerDetails>> UltEventViewerNameDict => _ultEventViewerNameDict;
+  
+  private GameEndSummaryNotification _gameEndSummary = null;
+  public GameEndSummaryNotification GameEndSummary => _gameEndSummary;
+
+  private readonly IMasterData _masterData;
   
   private string _qrCodeURL = string.Empty;
 
-  private string _frontendUrlFormat = null; 
+  private float _connectionTimeout = 10f;
 
-  private string _backendHttpUrl = null;
-
-  private string _backendWsBaseUrl = null;
-
-  protected override void Awake()
+  public WebSocketManager(IMasterData masterData)
   {
-    base.Awake();
-    
-    if (_apiConfigSO != null)
-    {
-      _frontendUrlFormat = _apiConfigSO.frontendUrlFormat;
-      _backendHttpUrl = _apiConfigSO.backendHttpUrl;
-      _backendWsBaseUrl = _apiConfigSO.backendWsUrl;
-    }
-    else
-    {
-      Debug.LogError("ApiConfigSO is not assigned. Please assign an ApiConfigSO asset in the Inspector.");
-    }
-    
-    foreach (FrontKey key in Enum.GetValues(typeof(FrontKey)))
-    {
-      _frontEventDict[key] = new Subject<Unit>();
-    }
+    _masterData = masterData;
   }
-  private void Update()
+  
+  void ITickable.Tick()
   {
-    if (_isConnected)
+    if (_isConnectedProp.Value && _websocket != null)
     {
     #if !UNITY_WEBGL || UNITY_EDITOR
       _websocket.DispatchMessageQueue();
@@ -62,9 +68,9 @@ public class WebsocketManager : SingletonBase<WebsocketManager>
   }
 
   // websocketのコネクションを確立する
-  public async UniTask ConnectWebSocket(string websocketId)
+  public async UniTask ConnectWebSocketAsync([CanBeNull] string websocketId = null, CancellationToken cancellationToken = default)
   {
-    if (_isConnected)
+    if (_isConnectedProp.Value)
     {
       Debug.Log("WebSocket is already connected!");
       return;
@@ -74,11 +80,11 @@ public class WebsocketManager : SingletonBase<WebsocketManager>
     string websocketUrl;
     if (string.IsNullOrEmpty(websocketId))
     {
-      websocketUrl = _backendWsBaseUrl;
+      websocketUrl = _masterData.BackendSettings.BackendWebSocketURL;
     }
     else
     {
-      websocketUrl = ZString.Format("{0}?room_id={1}", _backendWsBaseUrl, websocketId);
+      websocketUrl = ZString.Format(_masterData.BackendSettings.FrontendQueryParamFormat, _masterData.BackendSettings.BackendWebSocketURL, websocketId);
     }
     
     _websocket = new WebSocket(websocketUrl);
@@ -96,31 +102,63 @@ public class WebsocketManager : SingletonBase<WebsocketManager>
     _websocket.OnOpen += () =>
     {
       Debug.Log("Connection open!");
-      _isConnected = true;
+      _isConnectedProp.Value = true;
     };
 
     _websocket.OnError += (e) =>
     {
-      Debug.Log("Error! " + e);
+      Debug.LogError($"Error! {e}");
+      _isConnectedProp.Value = false;
     };
 
-    _websocket.OnClose += async (e) =>
+    _websocket.OnClose += (e) =>
     {
       Debug.Log("Connection closed!");
-      _isConnected = false;
-      
-      // アプリケーション終了中は再接続しない
-      if (_isShuttingDown) return;
-      
-      // 再接続を試行
-      // 現在のwebsocketIdが空の場合は新しくwebsocketIdを生成して接続
-      await ConnectWebSocket(_roomId ?? string.Empty);
+      _isConnectedProp.Value = false;
     };
 
-    _websocket.OnMessage += (bytes) => ReceiveWebSocketMessage(bytes);
+    _websocket.OnMessage += (bytes) =>
+    {
+      ReceiveWebSocketMessage(bytes);
+    };
 
-    await _websocket.Connect();
+    _ = _websocket.Connect(); 
+    Debug.Log("WebSocket connecting...");
+    // _roomIdが設定されるまで待機
+    await UniTask.WhenAny(
+      UniTask.WaitWhile(() => _roomId == string.Empty, cancellationToken: cancellationToken),
+      UniTask.WaitForSeconds(_connectionTimeout, cancellationToken: cancellationToken)
+    );
+    Debug.Log("WebSocket connected!");
     return;
+  }
+
+  ///<summary>
+  /// JSON文字列を指定された型に安全にパースする
+  /// </summary>
+  /// <typeparam name="T">パース対象の型</typeparam>
+  /// <param name="json">JSON文字列</param>
+  /// <param name="data">パース結果（成功時）</param>
+  /// <returns>パースが成功した場合true、失敗した場合false</returns>
+  private bool TryJsonParse<T>(string json, out T data)
+  {
+    data = default(T);
+    
+    if (string.IsNullOrEmpty(json))
+    {
+      return false;
+    }
+    
+    try
+    {
+      data = JsonUtility.FromJson<T>(json);
+      return data != null;
+    }
+    catch (Exception ex)
+    {
+      Debug.LogError($"JSON parse error for type {typeof(T).Name}: {ex.Message}");
+      return false;
+    }
   }
 
   ///<summary>
@@ -128,111 +166,178 @@ public class WebsocketManager : SingletonBase<WebsocketManager>
   ///</summary>
   private void ReceiveWebSocketMessage(byte[] bytes)
   {
+    if (bytes == null || bytes.Length == 0)
+    {
+      Debug.LogWarning("[WebSocket] Received empty or null message");
+      return;
+    }
+    
     var message = System.Text.Encoding.UTF8.GetString(bytes);
     Debug.Log($"Received: {message}");
 
     BaseMessage baseMessage = null;
-    try
-    {
-      baseMessage = JsonUtility.FromJson<BaseMessage>(message);
-    }
-    catch (Exception ex)
-    {
-      Debug.Log($"JSON base parse error: {ex.Message}");
-    }
-
-    if (baseMessage == null || string.IsNullOrEmpty(baseMessage.type))
+    MessageType messageType = MessageType.unknown;
+    
+    if (!TryJsonParse(message, out baseMessage))
     {
       Debug.Log("No type field in JSON message.");
       return;
     }
 
-    if (baseMessage.type == "room_created")
+    if (string.IsNullOrEmpty(baseMessage.type))
     {
-      try
-      {
-        var room = JsonUtility.FromJson<RoomCreatedNotification>(message);
-        if (room != null)
+      Debug.Log("No type field in JSON message.");
+      return;
+    }
+    
+    if (!Enum.TryParse<MessageType>(baseMessage.type, out messageType))
+    {
+      Debug.LogError($"MessageType parse error: Unknown message type '{baseMessage.type}'");
+      return;
+    }
+
+    switch (messageType)
+    {
+      case MessageType.room_created:
+        Debug.Log("room_createdを受け取った");
+        if (TryJsonParse(message, out RoomCreatedNotification room))
         {
           _roomId = room.room_id;
-          return;
         }
-      }
-      catch (Exception ex)
-      {
-        Debug.Log($"room_created parse error: {ex.Message}");
-      }
-      Debug.Log("Failed to parse room_created message.");
-      return;
-    }
-
-    if (baseMessage.type == "game_event")
-    {
-      try
-      {
-        var gameEvent = JsonUtility.FromJson<GameEventNotification>(message);
-        if (gameEvent != null)
+        else
         {
-          var keyType = (FrontKey)System.Enum.Parse(typeof(FrontKey), gameEvent.event_type, true);
-          _frontEventDict[keyType]?.OnNext(Unit.Default);
+          Debug.LogError("Failed to parse room_created message.");
         }
+        break;
         
-        return;
-      }
-      catch (Exception ex)
-      {
-        Debug.Log($"game_event parse error: {ex.Message}");
-      }
-      Debug.Log("Failed to parse game_event message.");
-      return;
+      case MessageType.game_event:
+        if (TryJsonParse(message, out GameEventNotification gameEvent))
+        {
+          if (Enum.TryParse<FrontKey>(gameEvent.event_type, true, out var keyType))
+          {
+            _frontEventDict[keyType]?.OnNext(Unit.Default);
+
+            if (_enemyEventViewerNameDict.TryGetValue(keyType, out var enemyEventViewerNameSubject))
+            {
+              enemyEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
+            else if (_ultEventViewerNameDict.TryGetValue(keyType, out var ultEventViewerNameSubject))
+            {
+              ultEventViewerNameSubject.OnNext(new ViewerDetails(gameEvent.viewer_name));
+            }
+          }
+          else
+          {
+            Debug.LogError($"FrontKey parse error: Unknown event type '{gameEvent.event_type}'");
+          }
+        }
+        else
+        {
+          Debug.LogError("Failed to parse game_event message.");
+        }
+        break;
+
+      case MessageType.game_end_summary:
+        try
+        {
+          var root = MiniJSON.Json.Deserialize(message) as Dictionary<string, object>;
+          if (root == null) throw new Exception("root is null");
+
+          _gameEndSummary = new GameEndSummaryNotification();
+
+          // --- team_tops の分解 ---
+          if (root.TryGetValue("team_tops", out var teamObj) &&
+              teamObj is Dictionary<string, object> teamDict)
+          {
+            foreach (var kv in teamDict)
+            {
+              if (kv.Value is Dictionary<string, object> val)
+              {
+                var detail = new GameEndSummaryNotification.SummaryDetail
+                {
+                  count       = val.TryGetValue("count", out var c)
+                    ? Convert.ToInt32(c, CultureInfo.InvariantCulture)
+                    : 0
+                  ,
+                  viewer_id   = val.TryGetValue("viewer_id", out var vid) ? vid?.ToString() : null,
+                  viewer_name = val.TryGetValue("viewer_name", out var vname) ? vname?.ToString() : null,
+                };
+                _gameEndSummary.SummaryDetails[kv.Key] = detail; // "all" / "enemy" / "skill"
+              }
+            }
+          }
+          
+          break;
+        }
+        catch (Exception ex)
+        {
+          Debug.LogError($"game_end_summary parse error: {ex.Message}");
+        }
+          
+        Debug.LogError("Failed to parse game_end_summary message.");
+        break;
+
+      case MessageType.viewer_count_update:
+        if (TryJsonParse(message, out ViewerCountNotification viewerUpdate))
+        {
+          // ReactivePropertyを更新
+          _viewerCountProp.Value = viewerUpdate.viewer_count;
+          Debug.Log($"Viewer Count Updated: {viewerUpdate.viewer_count}");
+        }
+        break;
+
+      default:
+        Debug.LogError($"Unhandled JSON payload type: {messageType}");
+        break;
     }
 
-    Debug.Log($"Unhandled JSON payload type: {baseMessage.type}");
     return;
   }
 
   ///<summary>
   /// WebSocketを切断する
   ///</summary>
-  private async UniTask DisconnectWebSocket()
+  public void DisconnectWebSocket()
   {
-    if (!_isConnected)
+    if (!_isConnectedProp.Value)
     {
-      Debug.Log("WebSocket is not connected!");
+      Debug.LogError("WebSocket is not connected!");
       return;
     }
-
-    if (_websocket.State == WebSocketState.Closed)
-    {
-      Debug.Log("WebSocket is already closed!");
-      return;
-    }
-
-    await _websocket.Close();
+    _websocket.CancelConnection();
+    _isConnectedProp.Value = false;
   }
   
   ///<summary>
   /// フロントエンドのURLを取得する
   ///</summary>
-  public async UniTask<string> GetFrontUrlAsync()
+  public string GetFrontUrl()
   {
-    if (_qrCodeURL != string.Empty)
+    if (_roomId == string.Empty)
     {
-      return _qrCodeURL;
+      Debug.LogError("Room ID is not set!");
+      return string.Empty;
     }
-    
-    await UniTask.WaitWhile(() => _roomId == string.Empty);
-    _qrCodeURL = ZString.Format(_frontendUrlFormat, _roomId);
+    _qrCodeURL = ZString.Format(_masterData.BackendSettings.FrontendURLFormat, _roomId);
     
     return _qrCodeURL;
   }
 
   ///<summary>
+  /// ゲーム開始通知
+  ///</summary>
+  public async UniTask GameStartAsync()
+  {
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameStartResponse );
+  }
+
+  ///<summary>
   /// ゲーム終了通知
   ///</summary>
-  public async UniTask GameEnd()
+  public async UniTask GameEndAsync()
   {
-    await SendWebSocketMessage("{\"type\": \"game_end\" }");
+    await SendWebSocketMessageAsync( _masterData.BackendSettings.GameEndResponse );
+
   }
 
   ///<summary>
@@ -274,7 +379,7 @@ public async UniTask RestartGame()
   ///<summary>
   /// UnityからWebSocketにメッセージを送信する
   ///</summary>
-  private async UniTask SendWebSocketMessage(string message)
+  private async UniTask SendWebSocketMessageAsync(string message)
   {
     if (_websocket.State == WebSocketState.Closed)
     {
@@ -290,20 +395,19 @@ public async UniTask RestartGame()
   ///</summary>
   public void HealthCheck()
   {
-    UnityWebRequest.Get(_backendHttpUrl).SendWebRequest();
+    UnityWebRequest.Get(_masterData.BackendSettings.BackHttpURL).SendWebRequest();
     Debug.Log("HealthCheck");
   }
 
 
   ///<summary>
-  /// アプリケーションが終了したときにwebsocketを閉じる
+  /// リソースを解放する
   ///</summary>
-  private async void OnApplicationQuit()
+  public void Dispose()
   {
-    _isShuttingDown = true;
     try
     {
-      await DisconnectWebSocket();
+      DisconnectWebSocket();
     }
     catch (Exception ex)
     {
@@ -329,9 +433,43 @@ public async UniTask RestartGame()
   private class GameEventNotification
   {
     public string type;
+    public string room_id;
     public string event_type;
     public int trigger_count;
+    public int viewer_count;
+    public string viewer_name;
+  }
+
+  public  class GameEndSummaryNotification
+  {
+    public const string AllKey = "all";
+    public const string EnemyKey = "enemy";
+    public const string SkillKey = "skill";
     
+    public Dictionary<string, SummaryDetail> SummaryDetails = new Dictionary<string, SummaryDetail>();
+    
+    public class SummaryDetail
+    {
+      public int count;
+      public string viewer_id;
+      public string viewer_name;
+    }
+  }
+
+  public class ViewerDetails
+  {
+    public string ViewerName;
+
+    public ViewerDetails(string viewerName)
+    {
+      ViewerName = viewerName;
+    }
+  }
+  private class ViewerCountNotification
+  {
+    public string type;
+    public string room_id;
+    public int viewer_count;
   }
 }
 
@@ -340,7 +478,35 @@ public enum FrontKey
   skill1,
   skill2,
   skill3,
-  enemy1,
+  enemy1, 
   enemy2,
   enemy3,
+}
+
+///<summary>
+/// WebSocketメッセージのタイプを表すEnum
+///</summary>
+public enum MessageType
+{
+  room_created,
+  game_event,
+  game_end_summary,
+  viewer_count_update,
+  unknown,
+}
+
+public interface IWebSocketManager
+{
+  ReadOnlyReactiveProperty<bool> IsConnectedProp { get; }
+  ReadOnlyReactiveProperty<int> ViewerCountProp { get; }
+  IReadOnlyDictionary<FrontKey, Subject<Unit>> FrontEventDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> EnemyEventViewerNameDict { get; }
+  IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> UltEventViewerNameDict { get; }
+  WebSocketManager.GameEndSummaryNotification GameEndSummary { get; }
+  UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
+  void DisconnectWebSocket();
+  string GetFrontUrl();
+  UniTask GameStartAsync();
+  UniTask GameEndAsync();
+  void HealthCheck();
 }

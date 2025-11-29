@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5538736949691636388}
   - component: {fileID: 4851563998055108399}
   - component: {fileID: 6901543366996110794}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltBullet
   m_TagString: ULT
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 20
-  _damage: 35
+  _damage: 10
   _lifetime: 4
   _bulletCount: 3
   _spreadAngle: 30

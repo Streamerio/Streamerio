@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2779366d964794c14a30d14767174ba0, type: 3}
+  m_Name: MasterDataSO
+  m_EditorClassIdentifier: 
+  _isLoad: 1
+  _timeOutTime: 10
+  _gameSetting:
+    TimeLimit: 300
+  _playerStatus:
+    HP: 100
+    AttackPower: 10
+    Speed: 10
+    JumpPower: 50
+  _ultStatusDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value:
+        AttackPower: 10
+    - _key: 1
+      _value:
+        AttackPower: 20
+    - _key: 2
+      _value:
+        AttackPower: 30
+    - _key: 3
+      _value:
+        AttackPower: 50
+  _enemyStatusDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value:
+        EnemyType: 0
+        Rarity: 0
+        HP: 20
+        AttackPower: 5
+        Speed: 10
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 0
+        PoolSize: 100
+    - _key: 1
+      _value:
+        EnemyType: 1
+        Rarity: 1
+        HP: 10
+        AttackPower: 5
+        Speed: 20
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 0
+        PoolSize: 100
+    - _key: 2
+      _value:
+        EnemyType: 2
+        Rarity: 2
+        HP: 10
+        AttackPower: 10
+        Speed: 10
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 5
+        MaxSpawnPositionX: 20
+        MinSpawnPositionY: 0
+        MaxSpawnPositionY: 10
+        PoolSize: 100
+  _enemyRarityDictionary:
+    _keyValuePairs:
+    - _key: 0
+      _value: 00000000
+    - _key: 1
+      _value: 01000000
+    - _key: 2
+      _value: 02000000
+  _backendSettings:
+    FrontendURLFormat: https://streamerio.vercel.app/?streamer_id={0}
+    FrontendQueryParamFormat: '{0}?room_id={1}'
+    BackendWebSocketURL: wss://streamario-unityws-282618030957.asia-northeast1.run.app/ws-unity
+    BackHttpURL: https://streamario-web-backend-282618030957.asia-northeast1.run.app/
+    GameStartResponse: '{\"type\": \"game_start\" }'
+    GameEndResponse: '{\"type\": \"game_end\" }'

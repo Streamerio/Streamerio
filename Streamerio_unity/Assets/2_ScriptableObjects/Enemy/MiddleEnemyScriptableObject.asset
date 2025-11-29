@@ -13,5 +13,4 @@ MonoBehaviour:
   m_Name: MiddleEnemyScriptableObject
   m_EditorClassIdentifier: 
   Enemys:
-  - {fileID: 1384593174560067801, guid: 12650eb0882a148bd8ceb7f5191aa280, type: 3}
-  - {fileID: 8152044908033867595, guid: 5f06c005143da400784d1ecaba9838d5, type: 3}
+  - {fileID: 9058503593094887591, guid: 252cbc97f8d494ab88b84ade47f1d9ea, type: 3}

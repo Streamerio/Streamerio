@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7297035569871632621}
   - component: {fileID: 3612613897381698526}
   - component: {fileID: 7038179332553123644}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltBeam
   m_TagString: ULT
   m_Icon: {fileID: 0}
@@ -126,8 +126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 0
-  _damage: 80
-  _lifetime: 6
+  _damage: 10
+  _lifetime: 0.5
   _beamWidth: 2
   _continuousDamageInterval: 0.5
   _continuousDamage: 20

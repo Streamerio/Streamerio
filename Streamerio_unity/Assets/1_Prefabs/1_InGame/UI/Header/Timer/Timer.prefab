@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5726294978237562250}
   - component: {fileID: 7933055537761902700}
   - component: {fileID: 2164637075706477835}
-  - component: {fileID: 5559422561149173141}
+  - component: {fileID: 307468939195490360}
   m_Layer: 5
   m_Name: Timer
   m_TagString: Untagged
@@ -64,10 +64,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcbd759abbe74806b6e611de8de06bd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameObject: {fileID: 4304764844237489426}
   _rectTransform: {fileID: 5726294978237562250}
   _canvasGroup: {fileID: 7933055537761902700}
   _timerText: {fileID: 2945299445737357761}
---- !u!114 &5559422561149173141
+--- !u!114 &307468939195490360
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -76,10 +77,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 4304764844237489426}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d851329e63a40739c03a26b0c241c4a, type: 3}
+  m_Script: {fileID: 11500000, guid: b49dfc2951c14f41b15ea284ea48adc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _view: {fileID: 2164637075706477835}
+  parentReference:
+    TypeName: InGame.InGameLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
 --- !u!1 &6908389153712438441
 GameObject:
   m_ObjectHideFlags: 0

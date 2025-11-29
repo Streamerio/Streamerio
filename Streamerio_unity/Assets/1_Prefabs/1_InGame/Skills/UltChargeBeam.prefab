@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8589261663393382410}
   - component: {fileID: 4295170213590101297}
   - component: {fileID: -2096785617048275008}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: UltChargeBeam
   m_TagString: ULT
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 8
-  _damage: 60
+  _damage: 10
   _lifetime: 8
   _chargeTime: 1.5
   _accelerationRate: 1.5

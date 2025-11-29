@@ -1,94 +1,62 @@
-using Common.Audio;
-using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
+using InGame.Enemy;
+using R3;
 using UnityEngine;
 
-public class GatoWalkMovement : MonoBehaviour
+namespace InGame.Enemy.GotoWalk
 {
-    [Header("移動設定")]
-    [SerializeField] private float speed = 4f; // 高速移動
-    [SerializeField] private float jumpForce = 8f;
-    [SerializeField] private float jumpInterval = 2f;
-    [SerializeField] private float attackCooldown = 0.6f;
+    /// <summary>
+    /// 猫の動作
+    /// </summary>
+    public class GatoWalkMovement : EnemyMovementBase
+    {
+        [SerializeField] 
+        private Rigidbody2D _rb;
     
-    private Rigidbody2D _rigidbody;
-    private bool _isGrounded = true;
-    private float _jumpTimer = 0f;
-    private EnemyAttackManager _attackManager;
-    private float _lastAttackTime = -999f;
-    private Transform _player;
+        [SerializeField, Tooltip("ジャンプ力")]
+        private float _jumpForce;
+        [SerializeField, Tooltip("ジャンプ間隔(秒)")]
+        private float _jumpInterval;
+    
+        [SerializeField, Tooltip("重力")]
+        private float _gravityScale;
 
-    void Start()
-    {
-        _rigidbody = GetComponent<Rigidbody2D>();
-        if (_rigidbody == null)
+#if UNITY_EDITOR
+        protected override void OnValidate()
         {
-            _rigidbody = gameObject.AddComponent<Rigidbody2D>();
-        }
-
-        // プレイヤーを探す
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            _player = playerObj.transform;
-        }
-
-        // 物理設定
-            _rigidbody.gravityScale = 2f;
-        _rigidbody.freezeRotation = true;
-
-        _attackManager = GetComponent<EnemyAttackManager>();
-        _jumpTimer = jumpInterval;
-        
-        transform.position += new Vector3(_player.position.x + 10, _player.position.y + 1, 0); // 少し上にずらして生成
-        AudioManager.Instance.PlayAsync(SEType.Monster012, destroyCancellationToken).Forget();
-    }
-    
-    void Update()
-    {
-        HandleMovement();
-        HandleJump();
-    }
-    
-    private void HandleMovement()
-    {
-        // 常に左方向に高速移動
-        Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.x = -speed;
-        _rigidbody.linearVelocity = velocity;
-    }
-    
-    private void HandleJump()
-    {
-        _jumpTimer -= Time.deltaTime;
-        
-        // 接地時かつジャンプタイマーが0以下の場合ジャンプ
-        if (_isGrounded && _jumpTimer <= 0f)
-        {
-            Jump();
-            _jumpTimer = jumpInterval;
-        }
-    }
-    
-    private void Jump()
-    {
-        Vector2 velocity = _rigidbody.linearVelocity;
-        velocity.y = jumpForce;
-        _rigidbody.linearVelocity = velocity;
-        _isGrounded = false;
-        
-        Debug.Log("GatoWalk jumped!");
-    }
-    
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // 地面判定（下方向の接触）
-        if (collision.contacts.Length > 0)
-        {
-            Vector2 normal = collision.contacts[0].normal;
-            if (normal.y > 0.7f) // 上向きの法線 = 地面
+            base.OnValidate();
+            _rb ??= GetComponent<Rigidbody2D>();
+            // Rigidbody2D の設定
+            if (_rb != null)
             {
-                _isGrounded = true;
+                _rb.gravityScale = _gravityScale;
+                _rb.freezeRotation = true;
             }
+        }
+#endif
+        
+        protected override Vector2 GetMovePosition()
+        {
+            // 左方向に直進する
+            return Transform.position - new Vector3(MoveSpeed, 0, 0) * Time.deltaTime;
+        }
+
+        protected override void Bind(CancellationToken ct)
+        {
+            base.Bind(ct);
+        
+            // 一定間隔でジャンプ
+            Observable.Interval(TimeSpan.FromSeconds(_jumpInterval))
+                .Subscribe(_ => Jump())
+                .RegisterTo(ct);
+        }
+
+        private void Jump()
+        {
+            var vel = _rb.linearVelocity;
+            vel.y = _jumpForce;
+            _rb.linearVelocity = vel;
         }
     }
 }

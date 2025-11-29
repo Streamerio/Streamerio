@@ -7,10 +7,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"streamerrio-backend/internal/config"
 	"streamerrio-backend/internal/handler"
+	httpmiddleware "streamerrio-backend/internal/middleware"
 	"streamerrio-backend/internal/repository"
 	"streamerrio-backend/internal/service"
 	"streamerrio-backend/pkg/counter"
@@ -39,7 +43,7 @@ func main() {
 	}
 
 	// 3. ロガー初期化
-	logCfg := logger.Config{Level: cfg.LogLevel, Format: cfg.LogFormat, AddSource: cfg.LogAddSource}
+	logCfg := logger.Config{Level: cfg.LogLevel, Format: cfg.LogFormat, AddSource: cfg.LogAddSource, Service: "streamerio-api", Component: "api"}
 	appLogger, err := logger.Init(logCfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to init logger: %v\n", err)
@@ -57,6 +61,9 @@ func main() {
 		log.Error("failed to connect to database", slog.Any("error", err))
 		os.Exit(1)
 	}
+	db.SetMaxOpenConns(cfg.DBMaxOpenConns)
+	db.SetMaxIdleConns(cfg.DBMaxIdleConns)
+	db.SetConnMaxLifetime(cfg.DBConnMaxLifetime)
 	defer db.Close()
 
 	// 5. Redis 初期化 & カウンタ (イベント数 / 視聴者アクティビティ)
@@ -71,6 +78,7 @@ func main() {
 	} else {
 		rdb = redis.NewClient(&redis.Options{Addr: cfg.RedisURL})
 	}
+	defer rdb.Close()
 	redisCounter := counter.NewRedisCounter(rdb, appLogger.With(slog.String("component", "redis_counter")))
 
 	// 6. Pub/Sub 初期化 (REST API → WebSocket サーバーへのイベント配信)
@@ -82,33 +90,35 @@ func main() {
 	roomRepo := repository.NewRoomRepository(db, repoLogger.With(slog.String("repository", "room")))
 	viewerRepo := repository.NewViewerRepository(db, repoLogger.With(slog.String("repository", "viewer")))
 
+	// リポジトリのリソース解放（Prepared Statement）
+	defer eventRepo.Close()
+	defer roomRepo.Close()
+	defer viewerRepo.Close()
+
 	// 8. サービス層生成
 	roomService := service.NewRoomService(roomRepo, cfg)
-	wsHandlerLogger := appLogger.With(slog.String("component", "websocket_handler"))
-	wsHandler := handler.NewWebSocketHandler(ps, wsHandlerLogger)
-	wsHandler.SetRoomService(roomService)
-	sender := webSocketAdapter{ws: wsHandler}
 	eventLogger := appLogger.With(slog.String("component", "event_service"))
 	sessionLogger := appLogger.With(slog.String("component", "session_service"))
 	eventService := service.NewEventService(redisCounter, eventRepo, ps, eventLogger)
-	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, sender, sessionLogger)
+	sessionService := service.NewGameSessionService(roomService, eventRepo, viewerRepo, redisCounter, nil, sessionLogger)
 	viewerService := service.NewViewerService(viewerRepo)
-	wsHandler.SetGameSessionService(sessionService)
-	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService)
+	logTokenService, err := service.NewLogTokenService(
+		cfg.LogRelayTokenSecret,
+		cfg.LogRelayTokenTTL,
+		cfg.LogRelayDefaultScopes,
+		cfg.LogRelayAllowedScopes,
+	)
+	if err != nil {
+		log.Error("failed to init log token service", slog.Any("error", err))
+		os.Exit(1)
+	}
+	apiHandler := handler.NewAPIHandler(roomService, eventService, sessionService, viewerService, logTokenService).WithLogger(appLogger.With(slog.String("component", "handler")))
 
-	// 9. Pub/Sub 購読開始 (別goroutine)
-	// REST APIからのイベントをWebSocketで受信してUnityに配信
-	go func() {
-		ctx := context.Background()
-		if err := wsHandler.StartPubSubSubscription(ctx); err != nil {
-			log.Error("pubsub subscription terminated", slog.Any("error", err))
-		}
-	}()
 
 	// 10. Echo フレームワーク初期化 & ミドルウェア
 	e := echo.New()
 	e.Logger.SetLevel(elog.DEBUG)
-	e.Use(middleware.Logger())  // アクセスログ
+	e.Use(httpmiddleware.StructuredLogger(appLogger.With(slog.String("component", "http"))))
 	e.Use(middleware.Recover()) // パニック回復
 
 	// 11. CORS 設定
@@ -131,9 +141,6 @@ func main() {
 	// 12. ルーティング定義
 	e.GET("/", healthCheck)
 	e.GET("/get_viewer_id", apiHandler.GetOrCreateViewerID)
-	// WebSocket
-	e.GET("/ws-unity", wsHandler.HandleUnityConnection)
-	e.GET("/clients", wsHandler.ListClients)
 	// REST API
 	api := e.Group("/api")
 	api.GET("/rooms/:id", apiHandler.GetRoom)
@@ -143,13 +150,29 @@ func main() {
 	api.POST("/viewers/set_name", apiHandler.SetViewerName)
 	api.POST("/rooms/:id/restart", apiHandler.RestartRoom)
 	api.POST("/rooms/:id/end", apiHandler.EndGame)
+	api.POST("/log-token", apiHandler.IssueLogToken)
 
 	// 13. サーバ起動
 	log.Info("starting http server", slog.String("port", cfg.Port))
-	if err := e.Start(":" + cfg.Port); err != nil {
-		log.Error("server stopped", slog.Any("error", err))
-		os.Exit(1)
+	// サーバ起動を別goroutineで実行し、致命的でない終了はログのみに留める
+	go func() {
+		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
+		log.Error("server start failed", slog.Any("error", err))
+		}
+	}()
+
+	// シグナル待ち（Ctrl+C / SIGTERM でグレースフルシャットダウン）
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+	log.Info("shutting down http server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		log.Error("server shutdown error", slog.Any("error", err))
 	}
+	// ここで main が return し、上部の defer Close() が必ず実行される
 }
 
 func healthCheck(c echo.Context) error {
@@ -158,13 +181,6 @@ func healthCheck(c echo.Context) error {
 		"service": "streamerrio",
 		"version": "1.0.0",
 	})
-}
-
-// webSocketAdapter: 既存 WebSocketHandler をサービス側インタフェースに適合させる薄いアダプタ
-type webSocketAdapter struct{ ws *handler.WebSocketHandler }
-
-func (a webSocketAdapter) SendEventToUnity(roomID string, payload map[string]interface{}) error {
-	return a.ws.SendEventToUnity(roomID, payload)
 }
 
 // extractConnInfo: DSN/URL から host/port/dbname/sslmode を抽出（ログ用途）

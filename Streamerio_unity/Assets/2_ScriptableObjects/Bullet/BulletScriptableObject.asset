@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18a6d678237f7424988f9b4e28d5b5aa, type: 3}
   m_Name: BulletScriptableObject
   m_EditorClassIdentifier: 
-  BulletPrefab: {fileID: 0}
+  BulletPrefab: {fileID: 1842067330562375268, guid: 0f0a599e2b9794e7d9816e73a5d5fdd6, type: 3}
   PoolSize: 10
   Speed: 15
-  Damage: 10
+  Damage: 5
   SizeRate: 0.5
   Lifetime: 5
   Span: 3

@@ -1,28 +1,28 @@
 services:
-  app:
+  restapi-server:
     build:
       context: Streamario_web_backend
+      dockerfile: Dockerfile
     ports:
       - "8888:8888"
-    container_name: go_app
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: password
-      DB_NAME: streamario
-      DB_SSLMODE: disable
-      PORT: 8888
-      # Upstashなど外部Redisを使用する場合は、実行時にREDIS_URLを指定してください
-      # 例: rediss://:password@us1-tough-mole-12345.upstash.io:6379
-      # REDIS_URL: ""
-    # depends_on:
-    #   db:
-    #     condition: service_healthy
+    container_name: restapi-server
+    env_file:
+      - Streamario_web_backend/.env
+
+  unityws-server:
+    build:
+      context: Streamario_web_backend
+      dockerfile: Dockerfile.unityws
+    ports:
+      - "8890:8890"
+    container_name: unityws-server
+    env_file:
+      - Streamario_web_backend/.env
+
 
   # ローカルdbを使いたい場合は以下を復活させてください
   # db:
-  #   image: postgres:latest
+  #   image: postgres:16-alpine
   #   ports:
   #     - "5432:5432"
   #   container_name: postgres

@@ -1,10 +1,18 @@
+// ============================================================================
+// モジュール概要: ローディング画面の View 実装として、Iris 系アニメーションの初期化と演出再生を担う。
+// 外部依存: Cysharp.Threading.Tasks、DG.Tweening、UnityEngine.UI、VContainer。
+// 使用例: LoadingScreenPresenter が ILoadingScreenView を介して ShowAsync/HideAsync を呼び出し、画面遷移演出を統一する。
+// ============================================================================
+
 using System.Threading;
 using Alchemy.Inspector;
 using Common.UI.Animation;
+using Common.UI.Display;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
+using VContainer.Unity;
 
 namespace Common.UI.Loading
 {
@@ -12,45 +20,30 @@ namespace Common.UI.Loading
     /// ローディング画面の View。
     /// - Image に専用マテリアルを割り当て、シェーダプロパティを書き換えてイリス演出を実現
     /// - IrisIn/IrisOut コンポーネントを用いて表示/非表示/シーン遷移をアニメーション制御
+    /// <para>
+    /// 【理由】Presenter 側のロジックを軽量に保ち、演出関連の責務を View へ切り出すため。
+    /// </para>
     /// </summary>
-    public class LoadingScreenView : UIBehaviourBase
+    public class LoadingScreenView : DisplayViewBase, ILoadingScreenView
     {
+        /// <summary>
+        /// 【目的】シェーダーマテリアルを適用するターゲット Image を保持する。
+        /// </summary>
         [SerializeField, ReadOnly]
+        [Tooltip("イリス演出用マテリアルを適用する Image コンポーネント。")]
         private Image _image;
 
         /// <summary>
         /// 実行時に複製して利用するマテリアル。
         /// （共有マテリアルを直接操作すると他オブジェクトへ影響するため注意）
         /// </summary>
-        private Material _irisOutMaterial;
+        private Material _irisAnimationMaterial;
 
-        [Header("アニメーションパラメータ")]
-        [SerializeField, LabelText("ローディング入りのアニメーション (外→内)")]
-        private IrisAnimationComponentParam _loadingInAnimationParam;
-
-        [SerializeField, LabelText("ローディング出のアニメーション (内→外)")]
-        private IrisAnimationComponentParam _loadingOutAnimationParam;
-
-        [SerializeField, LabelText("タイトル→ローディング (外→内)")]
-        private IrisAnimationComponentParam _titleToLoadingAnimationParam;
-
-        [SerializeField, LabelText("ローディング→インゲーム (内→外)")]
-        private IrisAnimationComponentParam _loadingToInGameAnimationParam;
-
-        [SerializeField, LabelText("任意中心 (クリック位置など) からのアニメーション (外→内)")]
-        private IrisAnimationComponentParam _cheiceIrisAnimationParam = new()
-        {
-            DurationSec = 1.5f,
-            Ease = Ease.Linear,
-            MinRadius = 0f,
-            MaxRadius = 2f,
-        };
-
-        // 実際のアニメーション制御用コンポーネント
-        private IrisInAnimationComponent _loadingInAnimation;
-        private IrisOutAnimationComponent _loadingOutAnimation;
-        private IrisInAnimationComponent _titleToLoadingAnimation;
-        private IrisOutAnimationComponent _loadingToInGameAnimation;
+        private IIrisAnimation _showAnimation;
+        private IIrisAnimation _hideAnimation;
+        
+        private IUIAnimation _panelShowAnimation;
+        private IUIAnimation _panelHideAnimation;
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -60,32 +53,31 @@ namespace Common.UI.Loading
         }
 #endif
 
-        /// <summary>
-        /// 初期化。
-        /// - Image.material を複製して専用マテリアルを生成
-        /// - 各種アニメーションコンポーネントを作成
-        /// </summary>
-        public override void Initialize()
+        [Inject]
+        public void Construct(
+            Material irisOutMaterial,
+            [Key(AnimationType.Show)] IIrisAnimation showAnimation,
+            [Key(AnimationType.Hide)] IIrisAnimation hideAnimation,
+            [Key(AnimationType.Show)] IUIAnimation panelShowAnimation,
+            [Key(AnimationType.Hide)] IUIAnimation panelHideAnimation)
         {
-            base.Initialize();
+            _image.material = irisOutMaterial;
 
-            // 実行時に専用マテリアルを複製
-            _irisOutMaterial = new Material(_image.material);
-            _image.material = _irisOutMaterial;
-
-            // 各種 Iris コンポーネントを作成
-            _loadingInAnimation       = new IrisInAnimationComponent(_irisOutMaterial, _loadingInAnimationParam);
-            _loadingOutAnimation      = new IrisOutAnimationComponent(_irisOutMaterial, _loadingOutAnimationParam);
-            _titleToLoadingAnimation  = new IrisInAnimationComponent(_irisOutMaterial, _titleToLoadingAnimationParam);
-            _loadingToInGameAnimation = new IrisOutAnimationComponent(_irisOutMaterial, _loadingToInGameAnimationParam);
+            _showAnimation = showAnimation;
+            _hideAnimation = hideAnimation;
+            
+            _panelShowAnimation = panelShowAnimation;
+            _panelHideAnimation = panelHideAnimation;
         }
 
         /// <summary>
         /// アニメーションで表示（外→内へ収束）。
         /// </summary>
-        public async UniTask ShowAsync(CancellationToken ct)
+        public override async UniTask ShowAsync(CancellationToken ct)
         {
-            await _loadingInAnimation.PlayAsync(ct);
+            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
+            await _showAnimation.PlayAsync(ct);
+            await _panelShowAnimation.PlayAsync(ct);
         }
 
         /// <summary>
@@ -94,47 +86,59 @@ namespace Common.UI.Loading
         /// </summary>
         public async UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct)
         {
-            var centerCircle = Camera.main.WorldToViewportPoint(centerCirclePosition);
-            _cheiceIrisAnimationParam.Center = centerCircle;
-
-            var irisInAnimation = new IrisInAnimationComponent(_irisOutMaterial, _cheiceIrisAnimationParam);
-            await irisInAnimation.PlayAsync(ct);
-
-            // アニメーション再生後は UI を操作不可にする
-            SetInteractable(false);
+            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
+            await _showAnimation.PlayAsync(WorldToViewportPoint(centerCirclePosition), ct);
+            await _panelShowAnimation.PlayAsync(ct);
         }
 
         /// <summary>
         /// 即時表示。
         /// - 半径を最小値に設定（閉じた状態）
         /// </summary>
-        public void Show()
+        public override void Show()
         {
-            _irisOutMaterial.SetFloat(_loadingInAnimationParam.RadiusPropertyName, _loadingInAnimationParam.MinRadius);
+            CanvasGroup.alpha = UIUtil.DEFAULT_SHOW_ALPHA;
+            _showAnimation.PlayImmediate();
+            _panelShowAnimation.PlayImmediate();
         }
 
-        /// <summary>
-        /// アニメーションで非表示（内→外へ拡散）。
-        /// </summary>
-        public async UniTask HideAsync(CancellationToken ct)
+        public override async UniTask HideAsync(CancellationToken ct)
         {
-            await _loadingOutAnimation.PlayAsync(ct);
+            await _panelHideAnimation.PlayAsync(ct);
+            await _hideAnimation.PlayAsync(ct);
+        }
+        
+        public async UniTask HideAsync(Vector3 centerCirclePosition, CancellationToken ct)
+        {
+            await _panelHideAnimation.PlayAsync(ct);
+            await _hideAnimation.PlayAsync(WorldToViewportPoint(centerCirclePosition), ct);
         }
 
-        /// <summary>
-        /// タイトル → ローディング遷移（外→内）。
-        /// </summary>
-        public async UniTask TitleToLoadingAsync(CancellationToken ct)
+        public override void Hide()
         {
-            await _titleToLoadingAnimation.PlayAsync(ct);
+            _panelHideAnimation.PlayImmediate();
+            _hideAnimation.PlayImmediate();
         }
-
-        /// <summary>
-        /// ローディング → インゲーム遷移（内→外）。
-        /// </summary>
-        public async UniTask LoadingToInGameAsync(CancellationToken ct)
+        
+        private Vector2 WorldToViewportPoint(Vector3 worldPosition)
         {
-            await _loadingToInGameAnimation.PlayAsync(ct);
+            return UnityEngine.Camera.main.WorldToViewportPoint(worldPosition);
         }
+    }
+    
+    /// <summary>
+    /// ローディング画面の View 契約。
+    /// <para>
+    /// 【理由】Presenter から View 操作を抽象化し、テストや差し替えを容易にするため。
+    /// </para>
+    /// </summary>
+    public interface ILoadingScreenView: IDisplayView
+    {
+        /// <summary>
+        /// 【目的】任意中心座標を指定して表示する。
+        /// </summary>
+        UniTask ShowAsync(Vector3 centerCirclePosition, CancellationToken ct);
+        
+        UniTask HideAsync(Vector3 centerCirclePosition, CancellationToken ct);
     }
 }

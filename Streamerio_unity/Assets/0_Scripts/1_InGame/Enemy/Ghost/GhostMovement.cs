@@ -1,14 +1,22 @@
 using UnityEngine;
 
-public class GhostMovement : MonoBehaviour
+public class GhostMovement : MonoBehaviour, IAttackable
 {
-    [Header("移動設定")]
-    [SerializeField] private float speed = 1.5f;
-    [SerializeField] private float attackCooldown = 0.7f;
+    [SerializeField] private GhostScriptableObject _ghostScriptableObject;
+
+    private float _speed;
+    private float _attackCoolTime;
     
     private Transform _player;
-    private EnemyAttackManager _attackManager;
     private float _lastAttackTime = -999f;
+
+    public float Power => _ghostScriptableObject.Power;
+
+    void Awake()
+    {
+        _speed = _ghostScriptableObject.Speed;
+        _attackCoolTime = _ghostScriptableObject.AttackCoolTime;
+    }
     
     void Start()
     {
@@ -19,20 +27,18 @@ public class GhostMovement : MonoBehaviour
             _player = playerObj.transform;
         }
         
-        _attackManager = GetComponent<EnemyAttackManager>();
-        
         // 重力を無効化
         var rb = GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.gravityScale = 0f;
-        }
+        rb.gravityScale = 0f;
+
+        float randPosX = Random.Range(_ghostScriptableObject.MinRelativeSpawnPosX, _ghostScriptableObject.MaxRelativeSpawnPosX);
+        float randPosY = Random.Range(_ghostScriptableObject.MinRelativeSpawnPosY, _ghostScriptableObject.MaxRelativeSpawnPosY);
+        transform.position += new Vector3(_player.position.x + randPosX, _player.position.y + randPosY, 0);
     }
     
     void Update()
     {
         if (_player == null) return;
-        
         MoveTowardsPlayer();
     }
     
@@ -42,7 +48,7 @@ public class GhostMovement : MonoBehaviour
         Vector2 direction = (_player.position - transform.position).normalized;
         
         // プレイヤーに向かって移動
-        transform.position += (Vector3)(direction * speed * Time.deltaTime);
+        transform.position += (Vector3)(direction * _speed * Time.deltaTime);
         
         // スプライトの向きを調整
         if (direction.x < 0)
@@ -73,10 +79,9 @@ public class GhostMovement : MonoBehaviour
     
     private void AttackPlayer()
     {
-        if (Time.time - _lastAttackTime < attackCooldown) return;
-        if (_attackManager == null) return;
+        if (Time.time - _lastAttackTime < _attackCoolTime) return;
         
-        Debug.Log($"Ghost attacked player for {_attackManager.CurrentDamage} damage!");
+        //Debug.Log($"Ghost attacked player for {_attackManager.CurrentDamage} damage!");
         _lastAttackTime = Time.time;
     }
 }

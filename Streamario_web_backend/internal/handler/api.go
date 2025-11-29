@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -16,11 +17,34 @@ type APIHandler struct {
 	eventService   *service.EventService
 	sessionService *service.GameSessionService
 	viewerService  *service.ViewerService
+	logTokenService *service.LogTokenService
+	logger          *slog.Logger
 }
 
 // NewAPIHandler: 依存するサービスを束ねて構築
-func NewAPIHandler(roomService *service.RoomService, eventService *service.EventService, sessionService *service.GameSessionService, viewerService *service.ViewerService) *APIHandler {
-	return &APIHandler{roomService: roomService, eventService: eventService, sessionService: sessionService, viewerService: viewerService}
+func NewAPIHandler(
+	roomService *service.RoomService,
+	eventService *service.EventService,
+	sessionService *service.GameSessionService,
+	viewerService *service.ViewerService,
+	logTokenService *service.LogTokenService,
+) *APIHandler {
+	return &APIHandler{
+		roomService:     roomService,
+		eventService:    eventService,
+		sessionService:  sessionService,
+		viewerService:   viewerService,
+		logTokenService: logTokenService,
+		logger:          slog.Default(),
+	}
+}
+
+func (h *APIHandler) WithLogger(logger *slog.Logger) *APIHandler {
+	if logger == nil {
+		return h
+	}
+	h.logger = logger
+	return h
 }
 
 // GetOrCreateViewerID: 視聴者端末識別用の ID を払い出す
@@ -31,10 +55,12 @@ func (h *APIHandler) GetOrCreateViewerID(c echo.Context) error {
 	}
 	viewerID, err := h.viewerService.EnsureViewerID(existing)
 	if err != nil {
+		h.logger.Error("ensure_viewer_id_failed", slog.Any("error", err))
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	viewer, err := h.viewerService.GetViewer(viewerID)
 	if err != nil {
+		h.logger.Error("get_viewer_failed", slog.String("viewer_id", viewerID), slog.Any("error", err))
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	// クロスサイト（フロント: vercel.app, バックエンド: Cloud Run）で
@@ -71,6 +97,7 @@ func (h *APIHandler) SetViewerName(c echo.Context) error {
 	}
 	viewer, err := h.viewerService.SetViewerName(req.ViewerID, req.Name)
 	if err != nil {
+		h.logger.Error("set_viewer_name_failed", slog.String("viewer_id", req.ViewerID), slog.Any("error", err))
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 	var name interface{}
@@ -80,6 +107,60 @@ func (h *APIHandler) SetViewerName(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"viewer_id": viewer.ID,
 		"name":      name,
+	})
+}
+
+// IssueLogToken: Cloudflare Worker 向けのログトークンを発行
+func (h *APIHandler) IssueLogToken(c echo.Context) error {
+	var req struct {
+		ClientID string   `json:"client_id"`
+		ViewerID string   `json:"viewer_id"`
+		RoomID   string   `json:"room_id"`
+		Platform string   `json:"platform"`
+		Scopes   []string `json:"scopes"`
+	}
+	if err := c.Bind(&req); err != nil {
+		h.logger.Warn("invalid_log_token_body", slog.Any("error", err))
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
+	}
+
+	clientID := req.ClientID
+	if clientID == "" {
+		clientID = req.ViewerID
+	}
+	if clientID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "client_id or viewer_id is required"})
+	}
+	if req.RoomID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "room_id is required"})
+	}
+	if _, err := h.roomService.GetRoom(req.RoomID); err != nil {
+		h.logger.Warn("log_token_room_not_found", slog.String("room_id", req.RoomID), slog.Any("error", err))
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
+	}
+
+	result, err := h.logTokenService.IssueToken(service.LogTokenIssueInput{
+		ClientID: clientID,
+		ViewerID: req.ViewerID,
+		RoomID:   req.RoomID,
+		Platform: req.Platform,
+		Scopes:   req.Scopes,
+	})
+	if err != nil {
+		h.logger.Error("issue_log_token_failed", slog.String("room_id", req.RoomID), slog.Any("error", err))
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"token":       result.Token,
+		"issued_at":   result.IssuedAt,
+		"expires_at":  result.ExpiresAt,
+		"scopes":      result.Scopes,
+		"client_id":   clientID,
+		"viewer_id":   req.ViewerID,
+		"room_id":     req.RoomID,
+		"platform":    req.Platform,
+		"ttl_seconds": int(result.ExpiresAt.Sub(result.IssuedAt).Seconds()),
 	})
 }
 
@@ -100,33 +181,38 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "room not found"})
 	}
-	var req struct {
-		EventType  string `json:"event_type"`
+
+	type PushEvent struct {
 		ButtonName string `json:"button_name"`
-		ViewerID   string `json:"viewer_id"`
+		PushCount  int64  `json:"push_count"`
 	}
+
+	var req struct {
+		EventType  string      `json:"event_type"`
+		ViewerID   string      `json:"viewer_id"`
+		ViewerName string      `json:"viewer_name"`
+		PushEvents []PushEvent `json:"push_events"`
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
 	}
-	evTypeStr := req.EventType
-	if evTypeStr == "" {
-		evTypeStr = req.ButtonName
-	}
-	if evTypeStr == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "event_type is required"})
-	}
-	evType := model.EventType(evTypeStr)
+
 	var viewerID *string
+	var viewerName *string
 	if req.ViewerID != "" {
 		viewerID = &req.ViewerID
 	}
-
+	if req.ViewerName != "" {
+		viewerName = &req.ViewerName
+	}
 	if room.Status == "ended" {
 		if viewerID == nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "viewer_id is required after game end"})
 		}
 		summary, err := h.sessionService.GetViewerSummary(roomID, *viewerID)
 		if err != nil {
+			h.logger.Error("viewer_summary_failed", slog.String("room_id", roomID), slog.String("viewer_id", *viewerID), slog.Any("error", err))
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 		return c.JSON(http.StatusOK, map[string]interface{}{
@@ -134,11 +220,66 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"viewer_summary": summary,
 		})
 	}
-	res, err := h.eventService.ProcessEvent(roomID, evType, viewerID)
+	
+	// PushCount合計
+	totalPushCount := int64(0)
+	// PushEventMap: ボタン名とPushCountのマップ
+	PushEventMap := map[model.EventType]int64{
+		model.SKILL1: 0,
+		model.SKILL2: 0,
+		model.SKILL3: 0,
+		model.ENEMY1: 0,
+		model.ENEMY2: 0,
+		model.ENEMY3: 0,
+	}
+
+	// PushEventsのバリデーション
+	// PushEventMapへの登録もここで行う
+	for _, event := range req.PushEvents {
+		eventType := model.EventType(event.ButtonName)
+		// EventTypeが未定義の場合はエラー
+		if _, ok := PushEventMap[eventType]; !ok {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid event type"})
+		}
+		pushCount := event.PushCount
+		if pushCount <= 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "push count must be greater than 0"})
+		}
+		// 連打攻撃防止
+		// 1つのボタンごとに20回までしか押せないようにする
+		if pushCount > 20 {
+			pushCount = 20
+		}
+		totalPushCount += pushCount
+		PushEventMap[eventType] = pushCount
+	}
+
+	responses, err := h.eventService.ProcessEvent(roomID, PushEventMap, viewerID, viewerName)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, res)
+
+	// 現在の視聴者数を取得（イベント結果のいずれかから取得）
+	currentViewerCount := 0
+	if len(responses) > 0 {
+		currentViewerCount = responses[0].ViewerCount
+	}
+
+	// 最新の統計情報を取得
+	stats, err := h.eventService.GetRoomStats(roomID)
+	if err != nil {
+		// 統計取得失敗はログに出すが、イベント送信自体は成功しているので続行するか、エラーにするか
+		// ここではフロントエンドが stats 依存になったため、不整合を防ぐためエラーログを出して stats は空にするか、500にする
+		h.logger.Error("failed to get room stats after event", slog.String("room_id", roomID), slog.Any("error", err))
+		// 必要であれば return c.JSON(...) でエラーを返してください
+	}
+
+	// 配列として結果を返す
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"event_results": responses,
+		"viewer_count":  currentViewerCount, // フロントエンド向けに視聴者数を追加
+		"stats":         stats,
+	})
 }
 
 // GetRoomStats: 現在のイベント種別ごとのカウントと閾値を返す
@@ -149,6 +290,7 @@ func (h *APIHandler) GetRoomStats(c echo.Context) error {
 	}
 	stats, err := h.eventService.GetRoomStats(roomID)
 	if err != nil {
+		h.logger.Error("get_room_stats_failed", slog.String("room_id", roomID), slog.Any("error", err))
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -170,6 +312,7 @@ func (h *APIHandler) GetRoomResult(c echo.Context) error {
 	}
 	summary, err := h.sessionService.GetRoomResult(roomID)
 	if err != nil {
+		h.logger.Error("get_room_result_failed", slog.String("room_id", roomID), slog.Any("error", err))
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	var viewerSummary *model.ViewerSummary

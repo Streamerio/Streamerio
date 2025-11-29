@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "None",
+    "Num": 1
+  },
+  {
+    "Name": "Menu",
+    "Num": 2
+  },
+  {
+    "Name": "HowToPlay",
+    "Num": 3
+  },
+  {
+    "Name": "Option",
+    "Num": 4
+  },
+  {
+    "Name": "Credit",
+    "Num": 5
+  }
+]

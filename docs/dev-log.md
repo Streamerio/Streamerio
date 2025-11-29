@@ -1,3 +1,20 @@
+## 2025-11-14 Viewer向け操作ガイドモーダル実装
+
+### 目的
+- 視聴者ページ入場時に必ず操作説明と名前入力を完了してもらい、匿名状態でのボタン送信を防ぐ。
+- 操作手順を後から見返せるようにし、GIF 等のリッチメディアを差し替えやすい土台を整える。
+
+### 実装概要
+- `front/src/components/OnboardingModal.tsx` を新設し、ステップ配列＋任意メディアを受け取って汎用モーダルとして描画。前後移動とカスタム完了アクションをサポート。
+- 視聴者ページ (`front/src/app/page.tsx`) でモーダル状態を管理。ページ入場時は必ず表示し、最終ステップで表示名を保存するまで閉じられないよう制御。
+- `ButtonGrid` への入力はガイド完了前は無効化し、ヘッダーの `?` ボタンからいつでも再オープンできるようにした。
+- 表示名保存処理を `saveName` に集約し、空文字送信を防止。ヘッダーの保存ボタンやモーダルの完了ボタンは viewerId 取得後のみ有効化。
+
+### 意図・補足
+- GIF を差し替えられるよう、モーダルは `media` スロットを設けダミー表示を配置。将来のアセット差込を UI 変更なしで行える。
+- 高凝集: ガイド関連 state を `ViewerContent` に閉じ、他コンポーネントへ副作用を漏らさない。低結合: `OnboardingModal` は props 駆動で他ページでも再利用可能。
+- 完了情報は `sessionStorage` に持ちつつ、サーバーに保存済みの viewer 名があれば即完了扱いとしてユーザビリティを確保。
+
 ## 2025-10-03 WebSocket再接続（roomId維持）対応
 
 ### 目的
@@ -163,3 +180,213 @@
 ### 移行メモ
 - 以前の `ServerConfig.json` は不要（Git からも削除済み）。
 - `ApiConfigSO` の未割当時は URL が空になり得るため、必ず参照を設定すること。
+
+## 2025-01-27 イベントカウンターの閾値超過分保持機能実装
+
+### 目的
+- イベントの閾値到達時にカウントをリセット（0に戻す）するのではなく、閾値を超過した分を保持するように変更
+- 視聴者のアクションが無駄にならないよう、超過分を次回の閾値計算に活用する
+- より公平で継続的なゲーム体験を提供する
+
+### 実装概要
+- `Counter` インターフェースに `SetExcess` メソッドを追加
+- Redisカウンターとメモリカウンターの両方に `SetExcess` メソッドを実装
+- `EventService.ProcessEvent` で閾値到達時に `Reset` の代わりに `SetExcess` を使用
+- 超過分の計算: `excess = current - threshold`
+
+### 変更ファイル
+- `pkg/counter/interface.go` - `SetExcess` メソッドをインターフェースに追加
+- `pkg/counter/redis.go` - Redis実装に `SetExcess` メソッドを追加
+- `pkg/counter/memory.go` - メモリ実装に `SetExcess` メソッドを追加
+- `internal/service/event.go` - 閾値到達時の処理を `Reset` から `SetExcess` に変更
+
+### 意図・設計上の判断
+- 高凝集: カウンターの責務を `Counter` インターフェース内に集約し、超過分設定も含める
+- 低結合: 既存の `Reset` メソッドは残し、新しい `SetExcess` メソッドを追加することで後方互換性を維持
+- 公平性: 視聴者のアクションが無駄にならないよう、超過分を次回の閾値計算に活用
+- ログ: エラー発生時は詳細なログを出力し、デバッグを容易にする
+
+### 動作例
+- 閾値が10で、現在のカウントが15の場合
+- 従来: カウントを0にリセット → 次回は0から開始
+- 新実装: カウントを5（15-10）に設定 → 次回は5から開始
+
+### 今後の課題
+- 超過分が非常に大きくなった場合の上限設定を検討
+- 長時間プレイ時のバランス調整の必要性を検討
+
+## 2025-11-05 WebSocket サーバー切り出し前段対応
+
+### 目的
+- REST API と Unity 向け WebSocket を別プロセスでスケールさせられるよう起動系を分離
+- Pub/Sub を介した配信を前提に、API サーバーから WebSocket 依存を取り除き役割を明確化
+
+### 実装概要
+- `cmd/server/main.go` から WebSocket ハンドラ初期化と購読処理を削除し、REST API 専用の起動構成に変更
+- 新エントリポイント `cmd/unityws/main.go` を追加し、Redis Pub/Sub 購読と `/ws-unity` エンドポイントを担当させた
+- 設定値に `UNITY_WS_PORT` を追加して WebSocket サーバーの待受ポートを独立管理
+- API サーバー側の `GameSessionService` には WebSocket 送信者を注入せず、終了集計と REST レスポンスに専念させた
+- Cloud Run 用のイメージ切り分け準備として `Dockerfile.unityws` を新設し、WebSocket サーバー専用バイナリをビルドできるようにした
+- WebSocket イベント確認を容易にする `docs/ws-debug.html` を追加し、ブラウザから `/ws-unity` に接続して Pub/Sub 経由の通知を可視化できるようにした
+
+### 意図・設計上の判断
+- **高凝集**: API サーバーは REST, WebSocket サーバーは Unity 通信という単一責務になるよう依存を整理
+- **低結合**: 共通インフラ（DB, Redis, Pub/Sub）は共有しつつ、起動単位で切り替え可能にするためインタフェース実装（`WebSocketSender`）はそのまま利用
+- **スケーリング性**: 負荷に応じて WebSocket サーバーだけを水平スケールしやすくするため、設定とブートストラップを分離
+- **互換性**: 既存の Pub/Sub チャネルやハンドラ構成は維持し、Unity 側の接続先はポート変更のみで動作するよう配慮
+
+### 今後の課題
+- Docker やデプロイ定義で新しい WebSocket サーバーの起動フローを明記（別コンテナ化）
+- 監視・ヘルスチェックエンドポイントを整備し、両サーバーの死活監視を行えるようにする
+
+## 2025-11-10 Cloudflare Worker 中継サーバ検討
+
+### 目的
+- GCP ログエクスプローラで集約しているログに Unity/フロントエンドのクライアントログも安全に取り込み、鍵の配布を防ぐ。
+- Cloudflare Workers + Hono で軽量な中継サーバを構築できるかを仕様として整理し、今後の PoC を円滑にする。
+
+### 検討内容概要
+- クライアント -> Cloudflare Worker -> GCP Logging という三層構成を整理し、入力スキーマ/認証/信頼境界を定義。
+- Workers 側でサービスアカウント鍵を `Secret` 管理し、短命アクセストークンを発行して Cloud Logging Ingestion API を叩く方針を確認。
+- クライアント認証は backend 署名の `client_log_token` を用いた MAC 認証方式とし、Frontend/Unity から鍵が漏れないようにする案をまとめた。
+- バースト時のバックプレッシャとログ欠損防止のため、Cloudflare Queues + R2 を併用するフォールトトレランス案を提示。
+
+### 意図・設計上の判断
+- 高凝集: ログ加工・転送ロジックを Workers(Hono) 単体に集約し、各クライアントからは同一 API で扱えるようにする。
+- 低結合: 既存 Go backend とはトークン発行と設定共有のみに限定し、本番稼働前でも既存システムへの影響を最小限に抑える。
+- セキュリティ: GCP 資格情報を Workers Secret に閉じ込め、クライアントとは署名付きペイロードのみで連携することで鍵拡散を防止。
+
+### 今後の TODO
+- PoC 実装で Cloudflare Worker から Cloud Logging Write API への実送信を確認。
+- Backend にトークン発行 API を追加し、Frontend/Unity SDK の利用方法をドキュメント化。
+- 運用観点（レート制御、DLQ 監視、メトリクス連携）の詳細設計を詰める。
+
+## 2025-11-10 Cloudflare Worker 実装着手
+
+### 目的
+- 設計メモで固めた要件をコード化し、Cloudflare Workers 上で動作する Hono アプリを `log_system/` 配下に構築する。
+- Unity/Frontend からのログ受信、Queue 経由によるバッファ、Cloud Logging への直接書き込み、DLQ 再送の責務を高凝集にまとめる。
+
+### 実装概要
+- `log_system/` に Hono + TypeScript の骨格と `wrangler.toml` を作成。Queue/R2 バインディングや閾値設定を `vars` で管理。
+- ルーティングは `src/routes` に分離し、`/v1/ingest`, `/v1/replay`, `/healthz` を追加。共通前処理で requestId を生成し、Logging/監査用に利用。
+- `security/token.ts` で HMAC ベアラートークン検証を実装。秘密鍵は Cloudflare Secret から取得し、`log:write` / `log:replay` scope を判定。
+- `services/log-normalizer.ts` で input スキーマ整形、`log-router.ts` で Queue or Cloud Logging or DLQ への振り分けを担当。GCP 書き込みは `services/gcp.ts` に集約し、Service Account JWT→Access Token キャッシュを内包。
+- 失敗時は `services/dead-letter.ts` 経由で R2 へ JSON バッチを保存し、`/v1/replay` からキー指定で再送できるようにした。
+- `npm run build` で wrangler の dry-run デプロイを実行できるよう `package.json` にビルドコマンドを追加し、CI でビルドエラー検知しやすくした。
+
+### 意図・設計上の判断
+- **高凝集**: トークン検証・正規化・ルーティング・GCP 書き込みをフォルダ単位で分離し、1 コンポーネント=1責務を徹底。
+- **低結合**: `LogRouter` は Queue/Writer/DeadLetter を内部注入に留め、外部は `dispatch` のみ呼べば良い API に整理。
+- **拡張性**: GCP サービスアカウント情報を JSON 文字列のまま env 受取にし、Workload Identity など別方式に差し替えやすいよう設計。
+
+### 追記 (Queue コンシューマ)
+- Cloudflare Queues からのログバッチを処理する `queue.batch` を同 Worker 内に実装。Cloud Logging への書き込み失敗時は R2 へ DLQ 退避し、DLQ 未設定時のみリトライさせる。
+- `wrangler.toml` に `queues.consumers` を追加し、最大 50 件・5 秒バッチで処理するように設定。Miniflare や本番で一貫した挙動となるよう README も更新。
+
+## 2025-11-10 Log Token API 実装
+
+### 目的
+- Cloudflare Worker で利用する `client_log_token` を Go backend で払い出し、Unity/Frontend から安全に取得できるようにする。
+
+### 実装概要
+- `internal/service/log_token.go` を追加し、HMAC-SHA256 署名・Base64URL エンコードで `payload.signature` 形式のトークンを生成。TTL, allow/default scopes を環境変数で制御可能にした。
+- `internal/config/config.go` に `LOG_RELAY_*` 系の設定（シークレット・TTL・スコープ）を追加し、`cmd/server/main.go` でサービスを初期化。
+- `POST /api/log-token` を新設し、ルーム存在チェック後に `client_id`/`viewer_id`/`platform` を含めたトークンを返却。レスポンスには `expires_at`, `ttl_seconds`, `scopes` を含めクライアントが再発行タイミングを判断できるようにした。
+- 基本スコープは `log:write`、将来的な運用用に `LOG_RELAY_ALLOWED_SCOPES` で `log:replay` などを許可できるようにした。
+
+### テスト
+- `internal/service/log_token_test.go` を追加し、トークン生成時の署名形式・TTL・scope フィルタリングを検証。
+
+## 2025-11-10 Queue 依存撤廃 (無料プラン対応)
+
+### 背景
+- Cloudflare Workers の無料プランでは Queues が利用できず、`wrangler` デプロイが 100129 エラーで失敗するため、Queue 経路を一旦外す。
+
+### 変更
+- `wrangler.toml` から Queue バインディング/コンシューマ設定を削除。Worker エントリ (`src/index.ts`) も `fetch` のみ export。
+- `services/log-router.ts` をシンプル化し、Cloud Logging 直接書き込み＋失敗時の R2 (DLQ) 退避のみを実施する実装へ変更。`routes/health.ts` から `queueBound` を削除。
+- README を更新し、無料枠では Queue を使わず運用する点・`DLQ_BUCKET` のみ必須である点を明記。
+
+### 今後
+- Queue の有無で挙動を切り替えられるよう feature flag 化する案を検討（有料プラン移行時に再導入）。
+
+## 2025-11-10 Log Worker 利用手順ドキュメント化
+
+- 外部クライアント向けに `log_system/README.md` に利用手順を追記。`/api/log-token` → `/v1/ingest` → `/v1/replay` の呼び方とリトライ推奨方針を明文化し、Unity/Frontend 実装者が自力で組み込めるようにした。
+
+## 2025-11-10 Backend ログ構造化対応
+
+- `pkg/logger` に Cloud Logging 互換の `slog` ハンドラを実装し、JSON で `severity`/`timestamp`/`message`/`fields` を出力するよう変更。サービス名などのメタも出せるよう `Config.Service` 等を追加し、デフォルトの `LOG_LEVEL` は `error` に落として INFO ログを抑制。
+- API サーバ起動時 (`cmd/server/main.go`) に新ロガーを利用し、Echo のアクセスログを `middlewarex.StructuredLogger` に置き換え。Cloud Run → Logging でもレベルフィルタ可能になった。
+- REST ハンドラ (`internal/handler/api.go`) に `*slog.Logger` を注入し、500 系など致命的ケースのみ `logger.Error` を吐くよう整理（4xx はロギングせず）。これでエラー原因がログに残りつつ、不要なレベルは出力しない。
+- 付随して `pkg/logger/logger_test.go` を追加し、JSON フォーマットと severity マッピングを検証。
+
+### 今後の TODO
+- Backend のトークン発行 API と SDK 実装を接続し、エンドツーエンドで疎通確認を行う。
+- Miniflare を用いた自動テスト、Queue コンシューマ Worker の雛形追加、Metrics エクスポートを整備。
+#### 2025-11-09 GitHub Actions / Cloud Run デュアルサービス対応
+- GitHub Actions (`.github/workflows/deploy.yml`) を更新し、REST API（`cmd/server`）と Unity WebSocket（`cmd/unityws`）の 2 イメージをビルドして Artifact Registry にプッシュ。
+- Cloud Run も `streamario-web-backend` と `streamario-unityws` の 2 サービスを自動デプロイするようにし、後者には `UNITY_WS_PORT=8080` を明示設定して $PORT と整合させた。
+- 既存 Secret（`DATABASE_URL`, `REDIS_URL`, `FRONTEND_URL`）を使い回しつつ、WebSocket サービス側では DB/Redis のみ注入することで高凝集（専門の役割）と低結合（共通依存のみ共有）を維持。
+
+
+## 2025-11-18 処理フローのシーケンス図追加（docs/flow.md）
+
+### 目的
+- 仕様が口頭・メモで散在していたため、配信者サイド/視聴者側の処理を時系列で可視化し、合意形成と保守性を向上させる。
+
+### 変更点
+- `docs/flow.md` を新規整備し、Mermaid による2本のシーケンス図（配信者サイド、視聴者側）を追加。
+- 図内では REST(API)/WebSocket/Redis/PubSub/Postgres の役割を分離して表現し、`1.2秒` の集計ウィンドウと `しきい値判定→Pub/Sub→WS→Unity` の伝搬を明示。
+
+### 意図・設計上の判断
+- 高凝集: API は集計・永続化・サマリ取得、WS は Unity 通信に専念。図もこの責務分離に沿って構成。
+- 低結合: API と WS は Pub/Sub 経由で疎結合に連携し、水平スケール/独立デプロイを前提化。
+- 整合性: `docs/game_end_plan.md` の終了処理に合わせ、ゲーム終了時のサマリ取得と配信者/視聴者への返却ルートを明示。
+
+### 今後
+- ハンドラ/エンドポイント命名やイベント型が変わった場合は、本図を同ブランチで都度更新する運用にする（PR テンプレへチェック項目追加予定）。
+
+#### 追記（挙動訂正）
+- 1.2秒の周期は「視聴者Webサイト側の集計と送信タイミング」を指し、閾値判定は「HTTPサーバがイベント受信のたびに」実施するため、`docs/flow.md` のシーケンス図を受信毎判定の表現へ修正（配信者図のAPI内部タイマー表現を削除、視聴者図に判定行を追加）。
+
+
+## 2025-01-27 CreateEventsBatch()でprepared statementを使用
+
+### 目的
+- `CreateEventsBatch()` メソッドでも prepared statement を使用し、パフォーマンスとセキュリティを向上させる
+- 動的クエリ構築から prepared statement への移行により、SQLインジェクション対策とクエリ実行効率を改善
+
+### 実装概要
+- バッチサイズごとに prepared statement をキャッシュする仕組みを実装
+- `eventRepository` 構造体に `batchStmts map[int]*sqlx.Stmt` と `batchMutex sync.RWMutex` を追加
+- `getOrCreateBatchStmt()` メソッドで、バッチサイズに応じた prepared statement を取得または作成
+- スレッドセーフを考慮し、RWMutex を使用して並行アクセスを制御
+- `Close()` メソッドで、すべてのバッチ用 prepared statement を適切にクローズ
+
+### 変更ファイル
+- `Streamario_web_backend/internal/repository/event.go`
+  - `sync` パッケージをインポートに追加
+  - `eventRepository` 構造体に `batchStmts` と `batchMutex` を追加
+  - `CreateEventsBatch()` を prepared statement を使用する実装に変更
+  - `getOrCreateBatchStmt()` メソッドを新規追加（バッチサイズごとの prepared statement 管理）
+  - `Close()` メソッドでバッチ用 prepared statement のクローズ処理を追加
+
+### 意図・設計上の判断
+- 高凝集: バッチ挿入の責務を `eventRepository` 内に集約し、prepared statement の管理も含める
+- 低結合: 既存の `CreateEvent()` メソッドには影響を与えず、バッチ処理のみを改善
+- パフォーマンス: prepared statement の再利用により、クエリ解析コストを削減
+- セキュリティ: 動的クエリ構築を廃止し、SQLインジェクション対策を強化
+- スレッドセーフ: RWMutex を使用して並行アクセス時の安全性を確保
+- リソース管理: `Close()` で適切にリソースを解放し、メモリリークを防止
+
+### 実装の詳細
+- バッチサイズごとに prepared statement をキャッシュすることで、同じサイズのバッチを繰り返し実行する場合の効率を最大化
+- ダブルチェックロッキングパターンを使用して、並行アクセス時の不要な prepared statement 作成を防止
+- エラーハンドリングを適切に行い、prepared statement 作成失敗時は詳細なログを出力
+
+### 今後の課題
+- バッチサイズが非常に多様な場合のメモリ使用量を監視
+- 使用頻度の低いバッチサイズの prepared statement を定期的にクリーンアップする仕組みの検討
+- 長時間プレイ

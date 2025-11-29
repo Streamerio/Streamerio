@@ -36,16 +36,12 @@ func NewEventService(counter counter.Counter, eventRepo repository.EventReposito
 }
 
 // ProcessEvent: 1イベント処理の本流 (DB保存→視聴者アクティビティ更新→カウント加算→閾値判定→発動通知/リセット)
-func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, viewerID *string) (*model.EventResult, error) {
-	// eventType が有効かチェック
-	if _, ok := s.configs[eventType]; !ok {
-		return nil, fmt.Errorf("invalid event type: %s", eventType)
-	}
+func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventType]int64, viewerID *string, viewerName *string) ([]model.EventResult, error) {
+	responses := []model.EventResult{}
 
-	// 1. Record event
-	ev := &model.Event{RoomID: roomID, EventType: eventType, ViewerID: viewerID, Metadata: "{}"}
-	if err := s.eventRepo.CreateEvent(ev); err != nil {
-		return nil, fmt.Errorf("record event failed: %w", err)
+	// 1. Record events
+	if err := s.eventRepo.CreateEvent(roomID, PushEventMap, viewerID); err != nil {
+		return nil, fmt.Errorf("record events failed: %w", err)
 	}
 
 	// 2. Update viewer activity (backend-agnostic)
@@ -53,51 +49,101 @@ func (s *EventService) ProcessEvent(roomID string, eventType model.EventType, vi
 		_ = s.counter.UpdateViewerActivity(roomID, *viewerID)
 	}
 
-	// 3. Increment counter
-	current, err := s.counter.Increment(roomID, string(eventType))
-	if err != nil {
-		return nil, fmt.Errorf("increment failed: %w", err)
-	}
-
-	// 4. Active viewer count
+	// Active viewer count (ループの外で一度だけ計算し、一貫性を保つ)
 	viewers := s.getActiveViewerCount(roomID)
 
-	// 5. Threshold
-	cfg := s.configs[eventType]
-	threshold := s.calculateDynamicThreshold(cfg, viewers)
-
-	res := &model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
-
-	if int(current) >= threshold {
-		s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
-
-		// Pub/Sub経由で全WebSocketサーバーにブロードキャスト
+	// WebSocket 向けに視聴者数更新イベントを送信（閾値到達に関わらず常時更新）
+	{
 		payload := map[string]interface{}{
-			"type":          "game_event",
-			"room_id":       roomID, // WebSocketサーバー側で配信先を特定するため必須
-			"event_type":    string(eventType),
-			"trigger_count": int(current),
-			"viewer_count":  viewers,
+			"type":         "viewer_count_update",
+			"room_id":      roomID,
+			"viewer_count": viewers,
 		}
-
-		message, err := json.Marshal(payload)
-		if err != nil {
-			s.logger.Error("json marshal failed", slog.String("room_id", roomID), slog.Any("error", err))
-		} else {
-			ctx := context.Background()
-			if err := s.pubsub.Publish(ctx, pubsub.ChannelGameEvents, message); err != nil {
-				s.logger.Error("pubsub publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
-			} else {
-				s.logger.Info("event published to pubsub", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
+		// エラーはログ出力のみで、メイン処理は止めない
+		if msg, err := json.Marshal(payload); err == nil {
+			if err := s.pubsub.Publish(context.Background(), pubsub.ChannelGameEvents, msg); err != nil {
+				s.logger.Warn("failed to publish viewer update", slog.String("room_id", roomID), slog.Any("error", err))
 			}
 		}
-
-		_ = s.counter.Reset(roomID, string(eventType))
-		res.EffectTriggered = true
-		res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
-		res.CurrentCount = 0
 	}
-	return res, nil
+
+	for eventType, count := range PushEventMap {
+		// イベントがない場合はカウントしない
+		if count == 0 {
+			continue
+		}
+
+		// 3. Increment counter
+		current, err := s.counter.Increment(roomID, string(eventType), count)
+		if err != nil {
+			return nil, fmt.Errorf("increment failed: %w", err)
+		}
+
+		// 4. Active viewer count
+		//viewers := s.getActiveViewerCount(roomID)
+
+		// 5. Threshold
+		cfg := s.configs[eventType]
+		threshold := s.calculateDynamicThreshold(cfg, viewers)
+
+		res := model.EventResult{EventType: eventType, CurrentCount: int(current), RequiredCount: threshold, ViewerCount: viewers, EffectTriggered: false, NextThreshold: threshold}
+
+		if int(current) >= threshold {
+			s.logger.Info("event triggered", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int("count", int(current)), slog.Int("threshold", threshold), slog.Int("active_viewers", viewers))
+
+			// Pub/Sub経由で全WebSocketサーバーにブロードキャスト
+			payload := map[string]interface{}{
+				"type":          "game_event",
+				"room_id":       roomID, // WebSocketサーバー側で配信先を特定するため必須
+				"event_type":    string(eventType),
+				"trigger_count": int(current),
+				"viewer_count":  viewers,
+				"viewer_name":   viewerName,
+			}
+
+			message, err := json.Marshal(payload)
+			if err != nil {
+				s.logger.Error("json marshal failed", slog.String("room_id", roomID), slog.Any("error", err))
+			} else {
+				ctx := context.Background()
+				if err := s.pubsub.Publish(ctx, pubsub.ChannelGameEvents, message); err != nil {
+					s.logger.Error("pubsub publish failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Any("error", err))
+				} else {
+					s.logger.Info("event published to pubsub", slog.String("room_id", roomID), slog.String("event_type", string(eventType)))
+				}
+			}
+
+			// 閾値超過分をカウントに設定（超過分を捨てない）
+			excess := current - int64(threshold)
+			if err := s.counter.SetExcess(roomID, string(eventType), excess); err != nil {
+				s.logger.Error("set excess failed", slog.String("room_id", roomID), slog.String("event_type", string(eventType)), slog.Int64("excess", excess), slog.Any("error", err))
+			}
+			res.EffectTriggered = true
+			res.NextThreshold = s.calculateDynamicThreshold(cfg, s.getActiveViewerCount(roomID))
+			res.CurrentCount = int(excess)
+
+			// 閾値到達時は、リセット後の次のサイクルに向けた残り回数と進捗率を計算
+			res.RemainingCount = res.NextThreshold - res.CurrentCount
+			res.Progress = float64(res.CurrentCount) / float64(res.NextThreshold)
+		} else {
+			// 通常時
+			res.RemainingCount = threshold - int(current)
+			res.Progress = float64(current) / float64(threshold)
+		}
+
+		// 安全策: マイナスや1.0超過をクランプ
+		if res.RemainingCount < 0 {
+			res.RemainingCount = 0
+		}
+		if res.Progress < 0.0 {
+			res.Progress = 0.0
+		}
+		if res.Progress > 1.0 {
+			res.Progress = 1.0
+		}
+		responses = append(responses, res)
+	}
+	return responses, nil
 }
 
 // calculateDynamicThreshold: 視聴者数に応じた動的閾値を算出し上下限でクランプ
@@ -142,28 +188,40 @@ func (s *EventService) getActiveViewerCount(roomID string) int {
 	return int(c)
 }
 
-// Stats (simplified, no level)
-// RoomEventStat: 統計表示用の簡易集計構造体
-type RoomEventStat struct {
-	EventType     model.EventType `json:"event_type"`
-	CurrentCount  int             `json:"current_count"`
-	CurrentLevel  int             `json:"current_level"` // always 1
-	RequiredCount int             `json:"required_count"`
-	NextThreshold int             `json:"next_threshold"`
-	ViewerCount   int             `json:"viewer_count"`
-}
-
 // GetRoomStats: 全イベント種別について現在カウントと閾値をまとめて返却
-func (s *EventService) GetRoomStats(roomID string) ([]RoomEventStat, error) {
+func (s *EventService) GetRoomStats(roomID string) ([]model.RoomEventStat, error) {
 	viewers := s.getActiveViewerCount(roomID)
-	stats := make([]RoomEventStat, 0, len(s.configs))
+	stats := make([]model.RoomEventStat, 0, len(s.configs))
 	for et, cfg := range s.configs {
 		cur, err := s.counter.Get(roomID, string(et))
 		if err != nil {
 			return nil, fmt.Errorf("get counter failed: %w", err)
 		}
 		th := s.calculateDynamicThreshold(cfg, viewers)
-		stats = append(stats, RoomEventStat{EventType: et, CurrentCount: int(cur), CurrentLevel: 1, RequiredCount: th, NextThreshold: th, ViewerCount: viewers})
+
+		// 残り回数と進捗率の計算
+		rem := th - int(cur)
+		if rem < 0 {
+			rem = 0
+		}
+		prog := float64(cur) / float64(th)
+		if prog > 1.0 {
+			prog = 1.0
+		}
+		if prog < 0.0 {
+			prog = 0.0
+		}
+
+		stats = append(stats, model.RoomEventStat{
+			EventType:      et,
+			CurrentCount:   int(cur),
+			CurrentLevel:   1,
+			RequiredCount:  th,
+			RemainingCount: rem,
+			Progress:       prog,
+			NextThreshold:  th,
+			ViewerCount:    viewers,
+		})
 	}
 	return stats, nil
 }
