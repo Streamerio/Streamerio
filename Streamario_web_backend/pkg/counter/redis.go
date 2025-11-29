@@ -22,7 +22,7 @@ func NewRedisCounter(rdb *redis.Client, logger *slog.Logger) Counter {
 	if logger == nil {
 		logger = slog.Default()
 	}
-	return &redisCounter{rdb: rdb, window: 5 * time.Minute, logger: logger}
+	return &redisCounter{rdb: rdb, window: 30 * time.Second, logger: logger}
 }
 
 func (rc *redisCounter) keyCount(roomID, eventType string) string {
