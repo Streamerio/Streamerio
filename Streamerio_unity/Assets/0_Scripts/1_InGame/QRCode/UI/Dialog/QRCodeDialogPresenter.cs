@@ -4,7 +4,6 @@
 // 使用例: QRCodeDialogLifetimeScope が本 Presenter を登録し、表示時に UpdateSprite を呼び出して UI に QR コードを表示する。
 
 using Common;
-using Common.ClipBoard;
 using Common.QRCode;
 using Common.UI.Dialog;
 using Common.UI.Dialog.Common;
