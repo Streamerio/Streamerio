@@ -341,39 +341,39 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   }
 
   ///<summary>
-/// ゲームリスタート（既存ルームを再利用）
-/// バックエンドに再開通知を送り、ルームを active に戻す
-///</summary>
-public async UniTask RestartGame()
-{
-    if (string.IsNullOrEmpty(_roomId))
-    {
-        Debug.LogError("Cannot restart: room_id is empty");
-        return;
-    }
-    
-    string url = ZString.Format("{0}api/rooms/{1}/restart", _backendHttpUrl, _roomId);
-    
-    Debug.Log($"Restarting game for room: {_roomId}");
-    
-    using (var request = UnityWebRequest.Post(url, ""))
-    {
-        request.SetRequestHeader("Content-Type", "application/json");
-        
-        await request.SendWebRequest();
-        
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError($"Restart failed: {request.error}");
-            return;
-        }
-        
-        var responseText = request.downloadHandler.text;
-        Debug.Log($"Restart response: {responseText}");
-    }
-    
-    Debug.Log($"Game restarted successfully. Room {_roomId} is now active.");
-}
+  /// ゲームリスタート（既存ルームを再利用）
+  /// バックエンドに再開通知を送り、ルームを active に戻す
+  ///</summary>
+  public async UniTask RestartGameAsync(CancellationToken ct)
+  {
+      if (string.IsNullOrEmpty(_roomId))
+      {
+          Debug.LogError("Cannot restart: room_id is empty");
+          return;
+      }
+      
+      string url = ZString.Format("{0}api/rooms/{1}/restart", _masterData.BackendSettings.BackHttpURL, _roomId);
+      
+      Debug.Log($"Restarting game for room: {_roomId}");
+      
+      using (var request = UnityWebRequest.PostWwwForm(url, ""))
+      {
+          request.SetRequestHeader("Content-Type", "application/json");
+          
+          await request.SendWebRequest().ToUniTask(cancellationToken: ct);
+          
+          if (request.result != UnityWebRequest.Result.Success)
+          {
+              Debug.LogError($"Restart failed: {request.error}");
+              return;
+          }
+          
+          var responseText = request.downloadHandler.text;
+          Debug.Log($"Restart response: {responseText}");
+      }
+      
+      Debug.Log($"Game restarted successfully. Room {_roomId} is now active.");
+  }
 
 
   ///<summary>
@@ -508,5 +508,6 @@ public interface IWebSocketManager
   string GetFrontUrl();
   UniTask GameStartAsync();
   UniTask GameEndAsync();
+  UniTask RestartGameAsync(CancellationToken ct);
   void HealthCheck();
 }

@@ -31,7 +31,7 @@ namespace Common.State
         
         public async UniTask ExitAsync(CancellationToken ct)
         {
-            await UniTask.WaitForEndOfFrame(cancellationToken: ct);
+            await _webSocketManager.RestartGameAsync(ct);
         }
     }
 }
