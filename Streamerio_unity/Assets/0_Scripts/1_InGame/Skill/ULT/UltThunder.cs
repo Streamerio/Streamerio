@@ -1,17 +1,20 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Common.Audio;
 using System.Linq;
+using System.Threading;
 using InGame.Enemy.Object;
+using R3;
 using VContainer;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class UltThunder : MonoBehaviour
+public class UltThunder : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 25f;
     [SerializeField] private float _damage = 90f;
-    [SerializeField] private float _lifetime = 3f;
+    [SerializeField] private float _initLifetime = 3f;
     [SerializeField] private int _strikeCount = 3;
     [SerializeField] private float _strikeInterval = 0.5f;
     [SerializeField] private float _continuousDamageInterval = 0.4f;
@@ -25,59 +28,68 @@ public class UltThunder : MonoBehaviour
     private readonly HashSet<GameObject> _hitEnemies = new HashSet<GameObject>();
     private readonly Dictionary<GameObject, float> _enemyTimers = new Dictionary<GameObject, float>();
 
-    private GameObject _player;
+    [SerializeField]
     private BoxCollider2D _box;
     private float _damageIntervalFrames;
     
+    private float _lifetime;
+    
+    private Action _onRelease;
+    
+    private Transform _player;
     private IAudioFacade _audioFacade;
     
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private CancellationTokenSource _cts;
+
+#if UNITY_EDITOR
+    private void OnValidate()
     {
+        _box ??= GetComponent<BoxCollider2D>();
+        if (_box != null)
+        {
+            _box.isTrigger = true;   
+        }
+    }
+#endif
+
+    public void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade)
+    {
+        _damage = damage;
+        _onRelease = onRelease;
+        _player = player;
         _audioFacade = audioFacade;
     }
 
-    void Awake()
+    public void Initialize()
     {
-        _player = GameObject.FindWithTag("Player");
-        if (_player == null)
-        {
-            Debug.LogError("Player object not found in the scene.");
-        }
-
-        _box = GetComponent<BoxCollider2D>();
-        _box.isTrigger = true;
-    }
-
-    void OnValidate()
-    {
-        if (_box == null) _box = GetComponent<BoxCollider2D>();
-        if (_box != null)
-        {
-            _box.isTrigger = true;
-        }
-    }
-
-    void Start()
-    {
-        if (_player != null)
-        {
-            transform.position = new Vector2(_player.transform.position.x + 6f,
-                                             _player.transform.position.y + 3f);
-        }
+        transform.position = new Vector2(_player.position.x + 6f,
+            _player.position.y + 3f);
+        
+        gameObject.SetActive(true);
+        
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
         StartThunderStrike();
 
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
-    }
+        _audioFacade.PlayAsync(SEType.UltThunder, destroyCancellationToken).Forget();
 
-    void Update()
+        Bind();
+    }
+    
+    private void Bind()
     {
-        BlinkEffect();
-        HandleContinuousDamage();
-        _lifetime -= Time.deltaTime;
-        if (_lifetime <= 0f) DestroySkill();
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
+        
+        Observable.EveryUpdate()
+            .Subscribe(_ =>
+            {
+                BlinkEffect();
+                HandleContinuousDamage();
+                _lifetime -= Time.deltaTime;
+                if (_lifetime <= 0f) DestroySkill();
+            })
+            .RegisterTo(_cts.Token);
     }
 
 
@@ -161,7 +173,9 @@ public class UltThunder : MonoBehaviour
 
     public void DestroySkill()
     {
-        Destroy(gameObject);
+        _onRelease?.Invoke();
+        _cts.Cancel();
+        gameObject.SetActive(false);
     }
 
     // Trigger 侵入

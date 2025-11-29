@@ -57,9 +57,14 @@ namespace Common
         [SerializeField, Tooltip("プレイヤーステータス")]
         private MasterPlayerStatus _playerStatus; 
         public MasterPlayerStatus PlayerStatus => _playerStatus;
+        
         [SerializeField, Tooltip("スキルステータス辞書")]
         private SerializeDictionary<MasterUltType, MasterUltStatus> _ultStatusDictionary;
         public IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary => _ultStatusDictionary.ToDictionary();
+        [SerializeField, Tooltip("スキルステータスレアリティ辞書")]
+        private SerializeDictionary<MasterUltRarityType, List<MasterUltType>> _ultRarityDictionary;
+        public IReadOnlyDictionary<MasterUltRarityType, List<MasterUltType>> UltRarityDictionary => _ultRarityDictionary.ToDictionary();
+        
         [SerializeField, Tooltip("敵ステータス辞書")]
         private SerializeDictionary<MasterEnemyType, MasterEnemyStatus> _enemyStatusDictionary;
         public IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary => _enemyStatusDictionary.ToDictionary();
@@ -109,7 +114,7 @@ namespace Common
                     JumpPower = ToFloat(playerRows[MasterPlayerStatus.JumpPowerKey][0]),
                 };   
             }
-            
+
             if (IsValidDataRow(ultRows))
             {
                 _ultStatusDictionary = CreateDictionary<MasterUltType, MasterUltStatus>(
@@ -117,8 +122,26 @@ namespace Common
                     MasterUltStatus.UltTypeKey,
                     i => new MasterUltStatus()
                     {
+                        UltType = (MasterUltType)Enum.Parse(typeof(MasterUltType),
+                            (string)ultRows[MasterUltStatus.UltTypeKey][i]),
+                        Rarity = (MasterUltRarityType)Enum.Parse(typeof(MasterUltRarityType),
+                            (string)ultRows[MasterUltStatus.UltRarityKey][i]),
                         AttackPower = ToFloat(ultRows[MasterUltStatus.AttackPowerKey][i]),
-                    });   
+                        PoolSize = Convert.ToInt32(ultRows[MasterUltStatus.PoolSizeKey][i], CultureInfo.InvariantCulture),
+                    });
+
+                // レアリティ辞書の作成
+                _ultRarityDictionary = new SerializeDictionary<MasterUltRarityType, List<MasterUltType>>();
+                foreach (var ultStatus in UltStatusDictionary.Keys)
+                {
+                    var rarity = _ultStatusDictionary[ultStatus].Rarity;
+                    if (!_ultRarityDictionary.ContainsKey(rarity))
+                    {
+                        _ultRarityDictionary[rarity] = new List<MasterUltType>();
+                    }
+
+                    _ultRarityDictionary[rarity].Add(ultStatus);
+                }
             }
 
             if (IsValidDataRow(enemyRows))
@@ -209,6 +232,7 @@ namespace Common
         MasterGameSetting GameSetting { get; }
         MasterPlayerStatus PlayerStatus { get; }
         IReadOnlyDictionary<MasterUltType, MasterUltStatus> UltStatusDictionary { get; }
+        IReadOnlyDictionary<MasterUltRarityType, List<MasterUltType>> UltRarityDictionary { get; }
         IReadOnlyDictionary<MasterEnemyType, MasterEnemyStatus> EnemyStatusDictionary { get; }
         IReadOnlyDictionary<MasterEnemyRarityType, List<MasterEnemyType>> EnemyRarityDictionary { get; }
         
@@ -243,9 +267,14 @@ namespace Common
     public class MasterUltStatus
     {
         public const string UltTypeKey = "Type";
+        public const string UltRarityKey = "Rarity";
         public const string AttackPowerKey = "AttackPower";
+        public const string PoolSizeKey = "PoolSize";
         
+        public MasterUltType UltType;
+        public MasterUltRarityType Rarity;
         public float AttackPower;
+        public int PoolSize;
     }
     
     public enum MasterUltType
@@ -254,6 +283,13 @@ namespace Common
         Bullet,
         ChargeBeam,
         Thunder,
+    }
+    
+    public enum MasterUltRarityType
+    {
+        Weak,
+        Normal,
+        Strong,
     }
 
     [Serializable]
