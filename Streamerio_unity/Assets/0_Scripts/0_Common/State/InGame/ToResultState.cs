@@ -5,7 +5,7 @@ using VContainer;
 
 namespace Common.State
 {
-    public class ToResultState: ChangeSceneState
+    public class ToResultState: InGameChangeSceneState
     {
         private IWebSocketManager _webSocketManager;
 

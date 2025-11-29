@@ -78,7 +78,7 @@ namespace InGame
                 .Keyed(StateType.PlayFromTitle);
             builder.Register<IState, InGameState>(Lifetime.Singleton)
                 .Keyed(StateType.InGame);
-            builder.Register<IState, ChangeSceneState>(Lifetime.Singleton)
+            builder.Register<IState, InGameChangeSceneState>(Lifetime.Singleton)
                 .WithParameter(_ => SceneType.GameOverScene)
                 .Keyed(StateType.ToGameOver);
             builder.Register<IState, ToResultState>(Lifetime.Singleton)

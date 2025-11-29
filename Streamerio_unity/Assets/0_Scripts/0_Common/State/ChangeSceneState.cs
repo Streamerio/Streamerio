@@ -8,27 +8,27 @@ namespace Common.State
 {
     public class ChangeSceneState: IState
     {
-        private readonly SceneType _changeSceneType;
+        protected readonly SceneType ChangeSceneType;
 
-        private ILoadingScreen _loadingScreen;
+        protected ILoadingScreen LoadingScreen;
         protected ISceneManager SceneManager;
 
         public ChangeSceneState(SceneType changeSceneType)
         {
-            _changeSceneType = changeSceneType;
+            ChangeSceneType = changeSceneType;
         }
         
         [Inject]
         public void Construct(ILoadingScreen loadingScreen, ISceneManager sceneManager)
         {
-            _loadingScreen = loadingScreen;
+            LoadingScreen = loadingScreen;
             SceneManager = sceneManager;
         }
         
         public virtual async UniTask EnterAsync(CancellationToken ct)
         {
-            await _loadingScreen.ShowAsync(ct);
-            await SceneManager.LoadSceneAsync(_changeSceneType);
+            await LoadingScreen.ShowAsync(ct);
+            await SceneManager.LoadSceneAsync(ChangeSceneType);
         }
         
         public virtual async UniTask ExitAsync(CancellationToken ct)
