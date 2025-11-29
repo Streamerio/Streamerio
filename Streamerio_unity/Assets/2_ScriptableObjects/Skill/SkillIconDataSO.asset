@@ -33,7 +33,7 @@ MonoBehaviour:
     - _key: 2
       _value:
         Icon: {fileID: 21300000, guid: 4d79ef79b5a264cfd9b4195c5a9760d9, type: 3}
-        Color: {r: 1, g: 1, b: 1, a: 1}
+        Color: {r: 1, g: 1, b: 0, a: 1}
         IsInversionVertical: 0
         IsInversionHorizontal: 0
         Rotation: 0

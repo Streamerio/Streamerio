@@ -231,6 +231,8 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 	if req.ViewerName != "" {
 		viewerName = &req.ViewerName
 	}
+
+	// ゲーム終了済みの場合はサマリーを返す（既存の処理）
 	if room.Status == "ended" {
 		if viewerID == nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "viewer_id is required after game end"})
@@ -244,6 +246,12 @@ func (h *APIHandler) SendEvent(c echo.Context) error {
 			"game_over":      true,
 			"viewer_summary": summary,
 		})
+	}
+
+	// ゲームが開始されていない場合はイベントを処理しない
+	if room.Status != "in_game" {
+		h.logger.Info("game not started yet, rejecting event", slog.String("room_id", roomID), slog.String("status", room.Status))
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "game not started"})
 	}
 
 	// PushCount合計

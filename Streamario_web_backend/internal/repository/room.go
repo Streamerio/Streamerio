@@ -18,6 +18,7 @@ type RoomRepository interface {
 	Delete(id string) error                       // ID削除
 	Update(id string, room *model.Room) error     // ID更新
 	MarkEnded(id string, endedAt time.Time) error // 終了状態に遷移
+	MarkInGame(id string) error                   // ゲーム開始状態に遷移
 	Close() error
 }
 
@@ -26,11 +27,12 @@ type roomRepository struct {
 	logger *slog.Logger
 
 	// 準備済みステートメント
-	createStmt    *sqlx.Stmt
-	getStmt       *sqlx.Stmt
-	updateStmt    *sqlx.Stmt
-	deleteStmt    *sqlx.Stmt
-	markEndedStmt *sqlx.Stmt
+	createStmt     *sqlx.Stmt
+	getStmt        *sqlx.Stmt
+	updateStmt     *sqlx.Stmt
+	deleteStmt     *sqlx.Stmt
+	markEndedStmt  *sqlx.Stmt
+	markInGameStmt *sqlx.Stmt
 }
 
 // NewRoomRepository: 実装生成
@@ -40,13 +42,14 @@ func NewRoomRepository(db *sqlx.DB, logger *slog.Logger) RoomRepository {
 	}
 
 	return &roomRepository{
-		db:            db,
-		logger:        logger,
-		createStmt:    mustPrepare(db, logger, queryCreateRoom),
-		getStmt:       mustPrepare(db, logger, queryGetRoom),
-		updateStmt:    mustPrepare(db, logger, queryUpdateRoom),
-		deleteStmt:    mustPrepare(db, logger, queryDeleteRoom),
-		markEndedStmt: mustPrepare(db, logger, queryMarkEndedRoom),
+		db:             db,
+		logger:         logger,
+		createStmt:     mustPrepare(db, logger, queryCreateRoom),
+		getStmt:        mustPrepare(db, logger, queryGetRoom),
+		updateStmt:     mustPrepare(db, logger, queryUpdateRoom),
+		deleteStmt:     mustPrepare(db, logger, queryDeleteRoom),
+		markEndedStmt:  mustPrepare(db, logger, queryMarkEndedRoom),
+		markInGameStmt: mustPrepare(db, logger, queryMarkInGameRoom),
 	}
 }
 
@@ -145,22 +148,40 @@ func (r *roomRepository) MarkEnded(id string, endedAt time.Time) error {
 	return nil
 }
 
-func (r *roomRepository) Close() error {
-    var firstErr error
-    closeStmt := func(s *sqlx.Stmt) {
-        if s == nil {
-            return
-        }
-        if err := s.Close(); err != nil && firstErr == nil {
-            firstErr = err
-        }
-    }
+func (r *roomRepository) MarkInGame(id string) error {
+	logger := r.logger.With(
+		slog.String("repo", "room"),
+		slog.String("op", "mark_in_game"),
+		slog.String("room_id", id),
+	)
+	start := time.Now()
+	res, err := r.markInGameStmt.Exec("in_game", id)
+	if err != nil {
+		logger.Error("db.exec (prepared) failed", slog.Any("error", err))
+		return err
+	}
+	rows, _ := res.RowsAffected()
+	logger.Debug("db.exec", slog.Int64("rows_affected", rows), slog.Duration("elapsed", time.Since(start)))
+	return nil
+}
 
-    closeStmt(r.createStmt)
+func (r *roomRepository) Close() error {
+	var firstErr error
+	closeStmt := func(s *sqlx.Stmt) {
+		if s == nil {
+			return
+		}
+		if err := s.Close(); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+
+	closeStmt(r.createStmt)
 	closeStmt(r.getStmt)
 	closeStmt(r.updateStmt)
 	closeStmt(r.deleteStmt)
 	closeStmt(r.markEndedStmt)
+	closeStmt(r.markInGameStmt)
 
-    return firstErr
+	return firstErr
 }

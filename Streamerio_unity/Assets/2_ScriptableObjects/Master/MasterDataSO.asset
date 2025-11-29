@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2779366d964794c14a30d14767174ba0, type: 3}
   m_Name: MasterDataSO
   m_EditorClassIdentifier: 
-  _isLoad: 1
+  _isLoad: 0
   _timeOutTime: 10
   _gameSetting:
-    TimeLimit: 300
+    TimeLimit: 60
   _playerStatus:
     HP: 100
     AttackPower: 10
@@ -25,69 +25,115 @@ MonoBehaviour:
     _keyValuePairs:
     - _key: 0
       _value:
-        AttackPower: 10
+        UltType: 0
+        Rarity: 1
+        AttackPower: 30
+        PoolSize: 100
     - _key: 1
       _value:
+        UltType: 1
+        Rarity: 0
         AttackPower: 20
+        PoolSize: 100
     - _key: 2
       _value:
-        AttackPower: 30
+        UltType: 2
+        Rarity: 0
+        AttackPower: 10
+        PoolSize: 100
     - _key: 3
       _value:
-        AttackPower: 50
+        UltType: 3
+        Rarity: 2
+        AttackPower: 30
+        PoolSize: 100
+  _ultRarityDictionary:
+    _keyValuePairs:
+    - _key: 1
+      _value: 00000000
+    - _key: 0
+      _value: 0100000002000000
+    - _key: 2
+      _value: 03000000
   _enemyStatusDictionary:
     _keyValuePairs:
     - _key: 0
       _value:
         EnemyType: 0
         Rarity: 0
-        HP: 20
-        AttackPower: 5
-        Speed: 10
+        HP: 30
+        AttackPower: 10
+        Speed: 1
         AblePlayerDistance: 100
-        MinSpawnPositionX: 5
-        MaxSpawnPositionX: 15
+        MinSpawnPositionX: 8
+        MaxSpawnPositionX: 10
         MinSpawnPositionY: 0
-        MaxSpawnPositionY: 0
+        MaxSpawnPositionY: 4
         PoolSize: 100
     - _key: 1
       _value:
         EnemyType: 1
-        Rarity: 1
-        HP: 10
-        AttackPower: 5
-        Speed: 20
+        Rarity: 0
+        HP: 60
+        AttackPower: 15
+        Speed: 2
         AblePlayerDistance: 100
-        MinSpawnPositionX: 5
-        MaxSpawnPositionX: 15
+        MinSpawnPositionX: 8
+        MaxSpawnPositionX: 13
         MinSpawnPositionY: 0
-        MaxSpawnPositionY: 0
+        MaxSpawnPositionY: 4
         PoolSize: 100
     - _key: 2
       _value:
         EnemyType: 2
-        Rarity: 2
-        HP: 10
-        AttackPower: 10
-        Speed: 10
+        Rarity: 1
+        HP: 90
+        AttackPower: 25
+        Speed: 5
         AblePlayerDistance: 100
-        MinSpawnPositionX: 5
+        MinSpawnPositionX: 15
         MaxSpawnPositionX: 20
         MinSpawnPositionY: 0
-        MaxSpawnPositionY: 10
+        MaxSpawnPositionY: 4
+        PoolSize: 100
+    - _key: 3
+      _value:
+        EnemyType: 3
+        Rarity: 2
+        HP: 100
+        AttackPower: 15
+        Speed: 1
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 10
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 1
+        MaxSpawnPositionY: 5
+        PoolSize: 100
+    - _key: 4
+      _value:
+        EnemyType: 4
+        Rarity: 1
+        HP: 100
+        AttackPower: 15
+        Speed: 1
+        AblePlayerDistance: 100
+        MinSpawnPositionX: 10
+        MaxSpawnPositionX: 15
+        MinSpawnPositionY: 1
+        MaxSpawnPositionY: 5
         PoolSize: 100
   _enemyRarityDictionary:
     _keyValuePairs:
     - _key: 0
-      _value: 00000000
+      _value: 0000000001000000
     - _key: 1
-      _value: 01000000
+      _value: 0200000004000000
     - _key: 2
-      _value: 02000000
+      _value: 03000000
   _backendSettings:
     FrontendURLFormat: https://streamerio.vercel.app/?streamer_id={0}
     FrontendQueryParamFormat: '{0}?room_id={1}'
     BackendWebSocketURL: wss://streamario-unityws-282618030957.asia-northeast1.run.app/ws-unity
     BackHttpURL: https://streamario-web-backend-282618030957.asia-northeast1.run.app/
-    GameStartResponse: '{\"type\": \"game_start\" }'
-    GameEndResponse: '{\"type\": \"game_end\" }'
+    GameStartResponse: '{"type": "game_start" }'
+    GameEndResponse: '{"type": "game_end" }'

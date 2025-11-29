@@ -146,6 +146,8 @@ const (
 	queryDeleteRoom = `DELETE FROM rooms WHERE id=$1`
 
 	queryMarkEndedRoom = `UPDATE rooms SET status=$1, ended_at=$2 WHERE id=$3`
+
+	queryMarkInGameRoom = `UPDATE rooms SET status=$1 WHERE id=$2`
 )
 
 // --- Viewer Repository Queries ---

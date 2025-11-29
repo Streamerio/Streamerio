@@ -1,15 +1,16 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using Common.Audio;
-using InGame.Enemy.Object;
-using VContainer;
+using R3;
 
-public class UltChargeBeam : MonoBehaviour
+public class UltChargeBeam : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 8f;
     [SerializeField] private float _damage = 60f;
-    [SerializeField] private float _lifetime = 8f;
+    [SerializeField] private float _initLifetime = 8f;
     [SerializeField] private float _chargeTime = 4f;
     [SerializeField] private float _accelerationRate = 1.5f;
     [SerializeField] private float _damageIncrease = 20f;
@@ -22,32 +23,32 @@ public class UltChargeBeam : MonoBehaviour
     private float _chargeTimer = 0f;
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
-    private GameObject _player;
     
+    private float _lifetime;
+    
+    private Action _onRelease;
+    
+    private Transform _player;
     private IAudioFacade _audioFacade;
+    
+    private CancellationTokenSource _cts;
 
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    public void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade)
     {
+        _damage = damage;
+        _onRelease = onRelease;
+        _player = player;
         _audioFacade = audioFacade;
     }
 
-    void Awake()
+    public void Initialize()
     {
-        _player = GameObject.FindWithTag("Player");
-        if (_player == null)
-        {
-            Debug.LogError("Player object not found in the scene.");
-        }
-    }
+        //playerのy座標から8マス右側に生成
+        transform.position = new Vector2(_player.transform.position.x + 2, _player.transform.position.y);
+        
+        gameObject.SetActive(true);
 
-    void Start()
-    {
-        if (_player != null)
-        {
-            //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 2, _player.transform.position.y);
-        }
+
         _currentSpeed = _speed * 0.3f; // 最初は遅い
         _currentDamage = _damage;
         
@@ -57,19 +58,29 @@ public class UltChargeBeam : MonoBehaviour
         // チャージエフェクト（色変化など）
         StartChargingEffect();
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
+        _audioFacade.PlayAsync(SEType.魔法1, destroyCancellationToken).Forget();
+
+        Bind();
     }
 
-    void Update()
+    private void Bind()
     {
-        HandleCharging();
-        Move();
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
         
-        if (_lifetime <= 0)
-        {
-            DestroySkill();
-        }
-        _lifetime -= Time.deltaTime;
+        Observable.EveryUpdate()
+            .Subscribe(_ =>
+            {
+                HandleCharging();
+                Move();
+        
+                if (_lifetime <= 0)
+                {
+                    DestroySkill();
+                }
+                _lifetime -= Time.deltaTime;
+            })
+            .RegisterTo(_cts.Token);
     }
 
     private void HandleCharging()
@@ -123,9 +134,11 @@ public class UltChargeBeam : MonoBehaviour
         transform.Translate(Vector2.right * _currentSpeed * Time.deltaTime);
     }
 
-    public void DestroySkill()
+    private void DestroySkill()
     {
-        Destroy(gameObject);
+        _onRelease?.Invoke();
+        _cts.Cancel();
+        gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
