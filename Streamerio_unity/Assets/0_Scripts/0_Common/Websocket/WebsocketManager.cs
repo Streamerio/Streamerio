@@ -429,6 +429,12 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
       ViewerName = viewerName;
     }
   }
+  private class ViewerCountNotification
+  {
+    public string type;
+    public string room_id;
+    public int viewer_count;
+  }
 }
 
 public enum FrontKey
@@ -467,11 +473,4 @@ public interface IWebSocketManager
   UniTask GameStartAsync();
   UniTask GameEndAsync();
   void HealthCheck();
-}
-
-public class ViewerCountNotification
-{
-    public string type;
-    public string room_id;
-    public int viewer_count;
 }

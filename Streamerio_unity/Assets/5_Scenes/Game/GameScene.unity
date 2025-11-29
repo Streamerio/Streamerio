@@ -525,6 +525,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Ground
       objectReference: {fileID: 0}
+    - target: {fileID: 3410024229561282454, guid: 5dd0b506028d04a2b8418fefce302c80, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4473003693697665092, guid: 5dd0b506028d04a2b8418fefce302c80, type: 3}
       propertyPath: m_Name
       value: StartStage
@@ -1057,6 +1061,10 @@ PrefabInstance:
       propertyPath: _playerPresenter
       value: 
       objectReference: {fileID: 6583393167888128271}
+    - target: {fileID: 4993176241062417870, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
+      propertyPath: _healAmountsScriptableObject
+      value: 
+      objectReference: {fileID: 11400000, guid: 135c0db63dc0c5a4f8cd0277ad839a00, type: 2}
     - target: {fileID: 6087330584052164519, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
       propertyPath: _player
       value: 
@@ -1262,9 +1270,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 873724054}
     - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _skillParent
+      value: 
+      objectReference: {fileID: 2017660798}
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
       propertyPath: _playerTransform
       value: 
       objectReference: {fileID: 6583393167888128268}
+    - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
+      propertyPath: _skillRepository
+      value: 
+      objectReference: {fileID: 11400000, guid: e71598d020a6e445199cc3a906169f08, type: 2}
     - target: {fileID: 860101363021594747, guid: 2ae8ee0b5181840da98cc65b13991642, type: 3}
       propertyPath: _zoomAnimationParam
       value: 
