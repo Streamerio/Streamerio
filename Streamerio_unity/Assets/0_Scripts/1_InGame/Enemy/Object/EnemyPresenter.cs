@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using Common;
+using Common.Audio;
+using Cysharp.Threading.Tasks;
 using InGame.Enemy.Helper;
 using R3;
 using UnityEngine;
@@ -46,6 +48,8 @@ namespace InGame.Enemy.Object
         
         private Action _onRelease;
         
+        private IAudioFacade _audioFacade;
+        
         private CancellationTokenSource _cts;
 
         public float Power => _status.AttackPower;
@@ -66,10 +70,11 @@ namespace InGame.Enemy.Object
 #endif
         
         [Inject]
-        public void Construct(IEnemyMovement movement, IEnemyHP hp)
+        public void Construct(IEnemyMovement movement, IEnemyHP hp, IAudioFacade audioFacade)
         {
             _movement = movement;
             _hp = hp;
+            _audioFacade = audioFacade;
         }
 
         public void OnCreate(MasterEnemyStatus status, Transform playerTransform)
@@ -90,6 +95,7 @@ namespace InGame.Enemy.Object
             
             _gameObject.SetActive(true);
             _movement.MoveStart();
+            _audioFacade.PlayAsync(SEType.Monster012).Forget();
         }
 
         private void Bind()
