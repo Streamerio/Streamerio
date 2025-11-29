@@ -12,14 +12,14 @@ namespace InGame.QRCode.UI
         [SerializeField, Tooltip("URLテキスト")]
         private TMP_Text _urlText;
         
-        private ICommonButton _clipButton;
-        public ICommonButton ClipButton => _clipButton;
+        // private ICommonButton _clipButton;
+        // public ICommonButton ClipButton => _clipButton;
         
-        [Inject]
-        public void Construct([Key(ButtonType.Default)]ICommonButton clipButton)
-        {
-            _clipButton = clipButton;
-        }
+        // [Inject]
+        // public void Construct([Key(ButtonType.Default)]ICommonButton clipButton)
+        // {
+        //     _clipButton = clipButton;
+        // }
         
         public void SetUrlText(string url)
         {
@@ -29,7 +29,7 @@ namespace InGame.QRCode.UI
     
     public interface IQRCodeDialogView : IDialogView
     {
-        ICommonButton ClipButton { get; }
+        // ICommonButton ClipButton { get; }
         
         void SetUrlText(string url);
     }
