@@ -88,6 +88,7 @@ func (h *WebSocketHandler) HandleUnityConnection(c echo.Context) error {
 				id = h.registerNew(ws, c)
 			}
 			defer h.unregister(id, ws, c)
+			defer h.roomService.MarkEnded(id, time.Now())
 
 			// 接続直後に必ずログを出す
 			c.Logger().Infof("Client connected: %s id=%s", c.Request().RemoteAddr, id)
