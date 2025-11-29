@@ -1,15 +1,23 @@
 using UnityEngine;
 using Common.Audio;
 using Cysharp.Threading.Tasks;
+using InGame.Setting;
 
 public class KeyInput : MonoBehaviour, IController
 {
     [SerializeField] private PlayerPresenter _player;
     [SerializeField] private BulletShooter _bulletShooter;
+    [SerializeField]
+    private InGameSettingSO _inGameSettingSO;
 
 
     void Update()
     {
+        if (!_inGameSettingSO.IsGame)
+        {
+            return;
+        }
+        
         float moveX = Input.GetAxis("Horizontal");
         // float moveY = Input.GetAxis("Vertical");
         Move(new Vector2(moveX, 0));

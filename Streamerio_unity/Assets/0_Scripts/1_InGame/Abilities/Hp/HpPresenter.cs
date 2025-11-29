@@ -1,6 +1,7 @@
 using Common.Audio;
 using Common.State;
 using Cysharp.Threading.Tasks;
+using InGame.Setting;
 using InGame.UI.Heart;
 using UnityEngine;
 using R3;
@@ -22,13 +23,16 @@ public class HpPresenter : MonoBehaviour, IAbility, IInitializable, IStartable
     private IStateManager _stateManager;
     private IAudioFacade _audioFacade;
     
+    private IInGameSetting _inGameSetting;
+    
     [Inject]
-    public void Construct([Key(StateType.ToGameOver)] IState gameOverState, IStateManager stateManager, IAudioFacade audioFacade, IHeartGroupView hpView)
+    public void Construct([Key(StateType.ToGameOver)] IState gameOverState, IStateManager stateManager, IAudioFacade audioFacade, IHeartGroupView hpView, IInGameSetting inGameSetting)
     {
         _gameOverState = gameOverState;
         _stateManager = stateManager;
         _audioFacade = audioFacade;
         _hpView = hpView;
+        _inGameSetting = inGameSetting;
     }
 
     public void Initialize()
@@ -59,11 +63,21 @@ public class HpPresenter : MonoBehaviour, IAbility, IInitializable, IStartable
 
     public void Increase(float amount)
     {
+        if (!_inGameSetting.IsGame)
+        {
+            return;
+        }
+        
         _hpModel.Increase(amount);
     }
 
     public void Decrease(float amount)
     {
+        if (!_inGameSetting.IsGame)
+        {
+            return;
+        }
+        
         _audioFacade.PlayAsync(SEType.PlayerDamage, destroyCancellationToken).Forget();
         _hpModel.Decrease(amount);
     }
