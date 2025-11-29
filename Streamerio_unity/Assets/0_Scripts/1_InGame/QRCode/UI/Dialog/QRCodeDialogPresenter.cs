@@ -36,12 +36,12 @@ namespace InGame.QRCode.UI
                 })
                 .RegisterTo(GetCt());
             
-            View.ClipButton.OnClickAsObservable
-                .Subscribe(_ =>
-                {
-                    GUIUtility.systemCopyBuffer = _qrCodeService.URL;
-                })
-                .RegisterTo(GetCt());
+            // View.ClipButton.OnClickAsObservable
+            //     .Subscribe(_ =>
+            //     {
+            //         ClipBoardUtil.CopyWebGL(_qrCodeService.URL);
+            //     })
+            //     .RegisterTo(GetCt());
         }
 
         protected override void AttachContext(QRCodeDialogContext context)
