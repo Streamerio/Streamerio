@@ -22,8 +22,8 @@ namespace InGame.QRCode.UI
         {
             base.Configure(builder);
 
-            builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
-                .Keyed(ButtonType.Default);
+            // builder.Register<ICommonButton, CommonButtonPresenter>(Lifetime.Singleton)
+            //     .Keyed(ButtonType.Default);
         }
         
         protected override QRCodeDialogContext CreateContext(IObjectResolver resolver)
