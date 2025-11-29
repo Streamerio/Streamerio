@@ -18,7 +18,7 @@ namespace Common.Audio
     public class Volume
     {
         /// <summary>音量のデフォルト値 (0〜100)</summary>
-        public const float DEFAULT_VALUE = 50;
+        public const float DEFAULT_VALUE = 25;
 
         /// <summary>UIで扱う最小/最大音量 (0〜100)</summary>
         public const float MIN_VALUE = 0;
