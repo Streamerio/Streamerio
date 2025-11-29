@@ -129,7 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _transform: {fileID: 4473947801299940977}
   _rb: {fileID: 1222040185213489629}
-  _jumpForce: 40
+  _jumpForce: 20
   _jumpInterval: 5
   _gravityScale: 4
 --- !u!70 &3106905771826119889

@@ -1,6 +1,14 @@
+using System;
+using Common.Audio;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using InGame.Enemy.Object;
+
+public interface IUltSkill
+{
+    void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade);
+    void Initialize();
+}
 
 public class UltSkill : MonoBehaviour
 {

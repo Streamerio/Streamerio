@@ -1,4 +1,5 @@
 using Common;
+using InGame.Skill.Spawner;
 using InGame.Skill.UI.Panel;
 using UnityEngine;
 using R3;
@@ -14,13 +15,17 @@ public class SkillRandomActivator : MonoBehaviour
     [SerializeField] private HealAmountsScriptableObject _healAmountsScriptableObject;
 
     private IWebSocketManager _webSocketManager;
+    private IMasterData _masterData;
     private ISkillPanel _skillPanel;
+    private ISkillSpawner _skillSpawner;
 
     [Inject]
-    public void Construct(IWebSocketManager webSocketManager, ISkillPanel skillPanel)
+    public void Construct(IWebSocketManager webSocketManager, IMasterData masterData, ISkillPanel skillPanel, ISkillSpawner skillSpawner)
     {
         _webSocketManager = webSocketManager;
+        _masterData = masterData;
         _skillPanel = skillPanel;
+        _skillSpawner = skillSpawner;
     }
 
     void Start()
@@ -30,33 +35,39 @@ public class SkillRandomActivator : MonoBehaviour
 
     private void Bind()
     {
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill3].Subscribe(value => ActivateStrongSkill(value));
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill2].Subscribe(value => ActivateMiddleSkill(value));
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill1].Subscribe(value => ActivateWeakSkill(value));
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill3].Subscribe(value => ActivateStrongSkill(value)).RegisterTo(destroyCancellationToken);
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill2].Subscribe(value => ActivateMiddleSkill(value)).RegisterTo(destroyCancellationToken);
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill1].Subscribe(value => ActivateWeakSkill(value)).RegisterTo(destroyCancellationToken);
     }
     public void ActivateStrongSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _strongSkillScriptableObject.Skills.Length);
-        Instantiate(_strongSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Thunder, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Strong];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Strong Skill Spawned");
 
         _playerPresenter.Heal(_healAmountsScriptableObject.StrongHealAmount);
     }
     public void ActivateMiddleSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _middleSkillScriptableObject.Skills.Length);
-        Instantiate(_middleSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Bullet, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Normal];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Middle Skill Spawned");
 
         _playerPresenter.Heal(_healAmountsScriptableObject.MiddleHealAmount);
     }
     public void ActivateWeakSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
-        int randomIndex = Random.Range(0, _weakSkillScriptableObject.Skills.Length);
-        Instantiate(_weakSkillScriptableObject.Skills[randomIndex], _parentObject.transform);
-        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(MasterUltType.Beam, viewerDetails.ViewerName));
+        var skills = _masterData.UltRarityDictionary[MasterUltRarityType.Weak];
+        int randomIndex = Random.Range(0, skills.Count);
+        _skillSpawner.Spawn(skills[randomIndex]);
+        
+        _skillPanel.OnActiveSkillSubject.OnNext(new SkillCellData(skills[randomIndex], viewerDetails.ViewerName));
         Debug.Log("Weak Skill Spawned");
 
         _playerPresenter.Heal(_healAmountsScriptableObject.WeakHealAmount);
