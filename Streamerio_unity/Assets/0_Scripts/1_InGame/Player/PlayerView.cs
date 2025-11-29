@@ -98,11 +98,11 @@ public class PlayerView : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy"))
         {
             Debug.Log("敵");
-            var attackManager = collision.gameObject.GetComponent<EnemyAttackManager>();
+            var attackManager = collision.gameObject.GetComponent<IAttackable>();
             if (attackManager != null)
             {
                 // EnemyAttackManager に CurrentDamage プロパティ（または public int）がある想定
-                TakeDamage(attackManager.CurrentDamage);
+                TakeDamage(attackManager.Power);
             }
             else
             {
