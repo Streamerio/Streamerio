@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 772017510138912508}
   - component: {fileID: 2312235774241086707}
   - component: {fileID: 3767311315840937753}
+  - component: {fileID: 694738629139940420}
+  - component: {fileID: -4869362180162950133}
   m_Layer: 7
   m_Name: ghost
   m_TagString: Enemy
@@ -213,3 +215,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 10
+--- !u!114 &694738629139940420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9058503593094887591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 308bde841139945c98da7960527244cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _transform: {fileID: 5087740827375689516}
+  _player: {fileID: 0}
+  _movementSpeed: 1
+--- !u!114 &-4869362180162950133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9058503593094887591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71720ccbd36d04cedb183cf76d2e6534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: InGame.Enemy.CommonEnemyLifetimeScope
+  autoRun: 1
+  autoInjectGameObjects: []
+  config: {fileID: 11400000, guid: 6aea2deac869457448f129750f61af7e, type: 2}
