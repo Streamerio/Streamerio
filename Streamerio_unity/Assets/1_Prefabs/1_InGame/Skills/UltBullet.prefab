@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 20
   _damage: 10
-  _initLifetime: 4
+  _lifetime: 1
   _bulletCount: 3
   _spreadAngle: 30
   _bulletPrefab: {fileID: 3920197735413553195, guid: 88bd3bb520ba4425d93b4774df9f0f3b, type: 3}

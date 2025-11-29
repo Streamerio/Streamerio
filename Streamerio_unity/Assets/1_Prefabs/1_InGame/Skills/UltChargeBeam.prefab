@@ -127,7 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 8
   _damage: 10
-  _lifetime: 8
+  _lifetime: 2.5
   _chargeTime: 1.5
   _accelerationRate: 1.5
   _damageIncrease: 20
