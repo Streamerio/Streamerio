@@ -1,61 +1,69 @@
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using Common.Audio;
-using InGame.Enemy.Object;
-using VContainer;
+using R3;
 
-public class UltBeam : MonoBehaviour
+public class UltBeam : MonoBehaviour, IUltSkill
 {
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _damage = 80f;
-    [SerializeField] private float _lifetime = 6f;
+    [SerializeField] private float _initLifetime = 6f;
     [SerializeField] private float _beamWidth = 2f;
     [SerializeField] private float _continuousDamageInterval = 0.5f; // 持続ダメージ間隔(秒)
     [SerializeField] private float _continuousDamage = 20f; // 持続ダメージ量
     
     private Dictionary<GameObject, int> _enemyDamageCounters = new Dictionary<GameObject, int>();
     private int _damageIntervalFrames;
-    private GameObject _player;
+    private Transform _player;
+    private float _lifetime;
     
     private IAudioFacade _audioFacade;
+
+    private Action _onRelease;
     
-    [Inject]
-    public void Construct(IAudioFacade audioFacade)
+    private CancellationTokenSource _cts;
+    
+    public void OnCreate(float damage, Action onRelease, Transform player, IAudioFacade audioFacade)
     {
+        _damage = damage;
+        _onRelease = onRelease;
+        _player = player;
         _audioFacade = audioFacade;
     }
 
-    void Awake()
+    public void Initialize()
     {
-        _player = GameObject.FindWithTag("Player");
-        if (_player == null)
-        {
-            Debug.LogError("Player object not found in the scene.");
-        }
-    }
-
-    void Start()
-    {
-        if (_player != null)
-        {
-            //playerのy座標から8マス右側に生成
-            transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 1f);
-        }
+        //playerのy座標から8マス右側に生成
+        transform.position = new Vector2(_player.transform.position.x + 6f, _player.transform.position.y + 1f);
+        
+        gameObject.SetActive(true);
         // フレームベースでインターバルを計算
         _damageIntervalFrames = Mathf.RoundToInt(_continuousDamageInterval / Time.fixedDeltaTime);
         
-        AudioManager.Instance.AudioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+        _audioFacade.PlayAsync(SEType.魔法1, this.GetCancellationTokenOnDestroy()).Forget();
+
+        Bind();
     }
 
-    void Update()
+    private void Bind()
     {
-        Move();
-        if (_lifetime <= 0)
-        {
-            DestroySkill();
-        }
-        _lifetime -= Time.deltaTime;
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        _lifetime = _initLifetime;
+        
+        Observable.EveryUpdate()
+            .Subscribe(_ =>
+            {
+                Move();
+                if (_lifetime <= 0)
+                {
+                    DestroySkill();
+                }
+                _lifetime -= Time.deltaTime;
+            })
+            .RegisterTo(_cts.Token);
     }
 
     private void Move()
@@ -66,7 +74,10 @@ public class UltBeam : MonoBehaviour
 
     public void DestroySkill()
     {
-        Destroy(gameObject);
+        Debug.Log("UltBeam destroyed");
+        _onRelease?.Invoke();
+        _cts.Cancel();
+        gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
