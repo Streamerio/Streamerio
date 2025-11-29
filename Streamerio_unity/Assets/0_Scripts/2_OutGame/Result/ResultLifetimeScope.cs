@@ -14,8 +14,7 @@ namespace OutGame.Result
             
             builder.Register<IState, ResultState>(Lifetime.Singleton)
                 .Keyed(StateType.Result);
-            builder.Register<IState, ChangeSceneState>(Lifetime.Singleton)
-                .WithParameter(_ => SceneType.Title)
+            builder.Register<IState, ToTitleState>(Lifetime.Singleton)
                 .Keyed(StateType.ToTitle);
             
             SceneBoosterBinder.Bind(builder, StateType.Result);

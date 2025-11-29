@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 002d197fbc0f4185bdde0f1f688e8438, type: 3}
   m_Name: ShowLoadingAnimationSO
   m_EditorClassIdentifier: 
-  DurationSec: 1
+  DurationSec: 1.5
   Ease: 2
   CenterPropertyName: _CenterUV
   RadiusPropertyName: _Radius
