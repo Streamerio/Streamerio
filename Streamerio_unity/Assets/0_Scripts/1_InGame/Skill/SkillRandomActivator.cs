@@ -35,9 +35,9 @@ public class SkillRandomActivator : MonoBehaviour
 
     private void Bind()
     {
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill3].Subscribe(value => ActivateStrongSkill(value));
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill2].Subscribe(value => ActivateMiddleSkill(value));
-        _webSocketManager.UltEventViewerNameDict[FrontKey.skill1].Subscribe(value => ActivateWeakSkill(value));
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill3].Subscribe(value => ActivateStrongSkill(value)).RegisterTo(destroyCancellationToken);
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill2].Subscribe(value => ActivateMiddleSkill(value)).RegisterTo(destroyCancellationToken);
+        _webSocketManager.UltEventViewerNameDict[FrontKey.skill1].Subscribe(value => ActivateWeakSkill(value)).RegisterTo(destroyCancellationToken);
     }
     public void ActivateStrongSkill(WebSocketManager.ViewerDetails viewerDetails)
     {
