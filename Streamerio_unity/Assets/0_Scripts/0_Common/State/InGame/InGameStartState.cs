@@ -60,6 +60,7 @@ namespace Common.State
         
         public async UniTask EnterAsync(CancellationToken ct)
         {
+            _inGameSetting.IsGame = false;
             _audioFacade.PlayAsync(_inGameSetting.BGM, ct).Forget();
             
             if (!_playDataSaveFacade.LoadPlayed())

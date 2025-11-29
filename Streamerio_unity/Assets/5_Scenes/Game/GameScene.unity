@@ -25949,6 +25949,10 @@ PrefabInstance:
       propertyPath: _bulletShooter
       value: 
       objectReference: {fileID: 6583393167888128276}
+    - target: {fileID: 6087330584052164519, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
+      propertyPath: _inGameSettingSO
+      value: 
+      objectReference: {fileID: 11400000, guid: 7c9b38d31abef479198b766d49b6494c, type: 2}
     - target: {fileID: 6430754496849571565, guid: 7c8bf23e55b0a4e7eab7eb982ec3f273, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
