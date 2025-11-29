@@ -74,6 +74,54 @@ func (rc *redisCounter) Get(roomID, eventType string) (int64, error) {
 	return v, nil
 }
 
+// GetMulti: 複数イベントカウント一括取得
+func (rc *redisCounter) GetMulti(roomID string, eventTypes []string) (map[string]int64, error) {
+	if len(eventTypes) == 0 {
+		return map[string]int64{}, nil
+	}
+	keys := make([]string, len(eventTypes))
+	for i, et := range eventTypes {
+		keys[i] = rc.keyCount(roomID, et)
+	}
+	logger := rc.logger.With(
+		slog.String("op", "get_multi"),
+		slog.String("room_id", roomID),
+		slog.Int("count", len(keys)),
+	)
+	start := time.Now()
+	vals, err := rc.rdb.MGet(context.Background(), keys...).Result()
+	if err != nil {
+		logger.Error("redis.mget failed", slog.Any("error", err))
+		return nil, err
+	}
+	logger.Debug("redis.mget", slog.Duration("elapsed", time.Since(start)))
+
+	result := make(map[string]int64, len(eventTypes))
+	for i, val := range vals {
+		et := eventTypes[i]
+		if val == nil {
+			result[et] = 0
+			continue
+		}
+		// Redis returns string or int64 depending on client version/config, usually string for MGet?
+		// go-redis MGet returns []interface{}.
+		switch v := val.(type) {
+		case int64:
+			result[et] = v
+		case string:
+			var iv int64
+			fmt.Sscanf(v, "%d", &iv)
+			result[et] = iv
+		default:
+			// Try fmt.Sprint then parse?
+			var iv int64
+			fmt.Sscanf(fmt.Sprint(v), "%d", &iv)
+			result[et] = iv
+		}
+	}
+	return result, nil
+}
+
 // Reset: カウントキー削除
 func (rc *redisCounter) Reset(roomID, eventType string) error {
 	key := rc.keyCount(roomID, eventType)

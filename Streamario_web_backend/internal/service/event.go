@@ -51,9 +51,13 @@ func (s *EventService) ProcessEvent(roomID string, PushEventMap map[model.EventT
 	responses := []model.EventResult{}
 
 	// 1. Record events
-	if err := s.eventRepo.CreateEvent(roomID, PushEventMap, viewerID); err != nil {
-		return nil, fmt.Errorf("record events failed: %w", err)
-	}
+	// 1. Record events
+	// Async execution to improve response time
+	go func() {
+		if err := s.eventRepo.CreateEvent(roomID, PushEventMap, viewerID); err != nil {
+			s.logger.Error("record events failed", slog.String("room_id", roomID), slog.Any("error", err))
+		}
+	}()
 
 	// 2. Update viewer activity (backend-agnostic)
 	// 2. Update viewer activity (backend-agnostic)
@@ -212,12 +216,22 @@ func (s *EventService) getActiveViewerCount(roomID string) int {
 // GetRoomStats: 全イベント種別について現在カウントと閾値をまとめて返却
 func (s *EventService) GetRoomStats(roomID string) ([]model.RoomEventStat, error) {
 	viewers := s.getActiveViewerCount(roomID)
+	
+	// Prepare event types for batch retrieval
+	eventTypes := make([]string, 0, len(s.configs))
+	for et := range s.configs {
+		eventTypes = append(eventTypes, string(et))
+	}
+
+	// Batch get counts from Redis
+	counts, err := s.counter.GetMulti(roomID, eventTypes)
+	if err != nil {
+		return nil, fmt.Errorf("get counters failed: %w", err)
+	}
+
 	stats := make([]model.RoomEventStat, 0, len(s.configs))
 	for et, cfg := range s.configs {
-		cur, err := s.counter.Get(roomID, string(et))
-		if err != nil {
-			return nil, fmt.Errorf("get counter failed: %w", err)
-		}
+		cur := counts[string(et)]
 		th := s.calculateDynamicThreshold(cfg, viewers)
 
 		// 残り回数と進捗率の計算

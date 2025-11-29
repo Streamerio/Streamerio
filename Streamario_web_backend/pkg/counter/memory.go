@@ -43,6 +43,22 @@ func (m *memoryCounter) Get(roomID, eventType string) (int64, error) {
 	return 0, nil
 }
 
+// GetMulti: 複数イベントカウント一括取得
+func (m *memoryCounter) GetMulti(roomID string, eventTypes []string) (map[string]int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	result := make(map[string]int64, len(eventTypes))
+	evMap, ok := m.counts[roomID]
+	for _, et := range eventTypes {
+		if ok {
+			result[et] = evMap[et]
+		} else {
+			result[et] = 0
+		}
+	}
+	return result, nil
+}
+
 // Reset: 指定イベント種別カウントを0クリア
 func (m *memoryCounter) Reset(roomID, eventType string) error {
 	m.mu.Lock()
