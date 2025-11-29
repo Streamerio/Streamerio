@@ -1,3 +1,54 @@
+## 2025-01-XX ゲーム開始前のイベント転送制御実装
+
+### 目的
+- Unityから`MessageTypeGameStart`が送られてくるまでは、フロントエンドからのボタンイベントをUnity側に転送しないようにする。
+- デプロイ先でスケーリングされる可能性があるため、DBで状態を管理し、どのインスタンスからでも状態を確認できるようにする。
+
+### 実装概要
+- `room_status` ENUMに`in_game`を追加し、ゲーム開始状態をDBで管理。
+- `MessageTypeGameStart`受信時に`RoomService.MarkInGame`を呼び出してルームの状態を`in_game`に更新。
+- `RelayActionToUnity`でルームを取得し、`Status`が`in_game`でない場合は`400 Bad Request`を返してイベント転送を拒否。
+
+### 変更ファイル
+- `db/migrations/005_game_start.sql`: `room_status` ENUMに`in_game`を追加
+- `internal/repository/queries.go`: `queryMarkInGameRoom`クエリを追加
+- `internal/repository/room.go`: `MarkInGame`メソッドを追加（インターフェースと実装）
+- `internal/service/room.go`: `MarkInGame`メソッドを追加
+- `internal/handler/websocket.go`: 
+  - `MessageTypeGameStart`ハンドラで`MarkInGame`を呼び出し
+  - `RelayActionToUnity`でゲーム開始状態をチェック
+
+### 意図・設計上の判断
+- **DBアクセスなしで判断**: 当初は`started_at`カラムを追加する案もあったが、ユーザーの提案通り`Status`フィールドで判断することで、既存の`Room`構造体をそのまま活用できる。
+- **スケーリング対応**: 状態をDBで管理することで、複数のインスタンス間で状態を共有できる。各インスタンスが`RelayActionToUnity`を呼び出す際に、DBから最新の状態を取得して判断する。
+- **高凝集**: ゲーム開始状態の管理は`RoomService`に集約し、ハンドラ層はサービス層のメソッドを呼び出すだけに。
+- **低結合**: 既存の`Room`モデルと`RoomRepository`のインターフェースを拡張する形で実装し、他の部分への影響を最小化。
+- **エラーハンドリング**: ルームが見つからない場合やゲームが開始されていない場合は適切なHTTPステータスコードを返す。
+
+### 今後の課題
+- パフォーマンス: `RelayActionToUnity`で毎回DBアクセスが発生するため、キャッシュを検討する余地があるが、現状はスケーリング対応を優先。
+
+## 2025-01-XX API層でのゲーム開始状態チェック追加
+
+### 目的
+- `api.go`の`SendEvent`で、`room.Status`が`"in_game"`でない場合はイベントを処理しないようにする。
+- `"active"`（ゲーム開始前）と`"ended"`（ゲーム終了後）の両方で適切に処理する。
+
+### 実装概要
+- `SendEvent`で、`room.Status == "ended"`の場合は既存のサマリー返却処理を維持。
+- その後に`room.Status != "in_game"`のチェックを追加し、`"in_game"`でない場合は`"game not started"`エラーを返す。
+
+### 変更ファイル
+- `internal/handler/api.go`: `SendEvent`にゲーム開始状態チェックを追加
+
+### 意図・設計上の判断
+- **状態遷移の整合性**: 
+  - `"active"`（ゲーム開始前）: イベントを拒否
+  - `"in_game"`（ゲーム中）: イベントを処理
+  - `"ended"`（ゲーム終了後）: サマリーを返却（既存処理）
+- **既存処理の維持**: `"ended"`の場合のサマリー返却処理は既存の動作を維持。
+- **エラーメッセージ**: `"in_game"`でない場合は明確に`"game not started"`を返すことで、クライアント側で適切に処理できる。
+
 ## 2025-11-14 Viewer向け操作ガイドモーダル実装
 
 ### 目的
