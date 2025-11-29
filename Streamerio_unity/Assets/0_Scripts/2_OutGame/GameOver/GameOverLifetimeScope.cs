@@ -15,8 +15,7 @@ namespace OutGame.GameOver
             builder.Register<IState, RestartState>(Lifetime.Singleton)
                 .WithParameter(_ => SceneType.GameScene)
                 .Keyed(StateType.Restart);
-            builder.Register<IState, ChangeSceneState>(Lifetime.Singleton)
-                .WithParameter(_ => SceneType.Title)
+            builder.Register<IState, ToTitleState>(Lifetime.Singleton)
                 .Keyed(StateType.ToTitle);
             
             SceneBoosterBinder.Bind(builder, StateType.GameOver);
