@@ -196,8 +196,16 @@ func (s *EventService) getViewerMultiplier(v int) float64 {
 		return 1.5
 	case v <= 50:
 		return 2.0
-	default:
+	case v <= 100:
 		return 3.0
+	case v <= 150:
+		return 4.0
+	case v <= 200:
+		return 5.0
+	case v <= 300:
+		return 6.0
+	default:
+		return 7.0
 	}
 }
 
