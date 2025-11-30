@@ -299,13 +299,38 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void DisconnectWebSocket()
   {
-    if (!_isConnectedProp.Value)
+    if (_websocket == null)
     {
-      Debug.LogError("WebSocket is not connected!");
+      Debug.Log("WebSocket is null!");
       return;
     }
-    _websocket.CancelConnection();
-    _isConnectedProp.Value = false;
+
+    if (_websocket.State == WebSocketState.Closed)
+    {
+      Debug.Log("WebSocket is already closed!");
+      _isConnectedProp.Value = false;
+      return;
+    }
+
+    try
+    {
+      #if UNITY_WEBGL && !UNITY_EDITOR
+      // WebGLではClose()を直接呼び出し、適切なパラメータを指定
+      // 引数なしで呼び出すと正常終了コード(1000)で閉じられる
+      _websocket.Close();
+      #else
+      // その他のプラットフォームではCancelConnection()を使用
+      _websocket.CancelConnection();
+      #endif
+    }
+    catch (Exception ex)
+    {
+      Debug.LogError($"Error closing WebSocket: {ex.Message}");
+    }
+    finally
+    {
+      _isConnectedProp.Value = false;
+    }
   }
   
   ///<summary>
