@@ -308,7 +308,6 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     if (_websocket.State == WebSocketState.Closed)
     {
       Debug.Log("WebSocket is already closed!");
-      _isConnectedProp.Value = false;
       return;
     }
 
@@ -326,10 +325,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     catch (Exception ex)
     {
       Debug.LogError($"Error closing WebSocket: {ex.Message}");
-    }
-    finally
-    {
-      _isConnectedProp.Value = false;
+      _isConnectedProp.Value = false; // 例外時のみ明示的に設定
     }
   }
   
