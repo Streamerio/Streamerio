@@ -297,7 +297,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///<summary>
   /// WebSocketを切断する
   ///</summary>
-  public void DisconnectWebSocket()
+  public async UniTask DisconnectWebSocketAsync()
   {
     if (_websocket == null)
     {
@@ -313,20 +313,16 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
 
     try
     {
-      #if UNITY_WEBGL && !UNITY_EDITOR
-      // WebGLではClose()を直接呼び出し、適切なパラメータを指定
-      // 引数なしで呼び出すと正常終了コード(1000)で閉じられる
-      _websocket.Close();
-      #else
-      // その他のプラットフォームではCancelConnection()を使用
-      _websocket.CancelConnection();
-      #endif
+      await _websocket.Close();
     }
     catch (Exception ex)
     {
       Debug.LogError($"Error closing WebSocket: {ex.Message}");
-      _isConnectedProp.Value = false; // 例外時のみ明示的に設定
     }
+
+    // 接続状態を更新
+    _isConnectedProp.Value = false;
+    return;
   }
   
   ///<summary>
@@ -392,7 +388,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   {
     try
     {
-      DisconnectWebSocket();
+      DisconnectWebSocketAsync().Forget();
     }
     catch (Exception ex)
     {
@@ -489,7 +485,7 @@ public interface IWebSocketManager
   IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> UltEventViewerNameDict { get; }
   WebSocketManager.GameEndSummaryNotification GameEndSummary { get; }
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
-  void DisconnectWebSocket();
+  UniTask DisconnectWebSocketAsync();
   string GetFrontUrl();
   UniTask GameStartAsync();
   UniTask GameEndAsync();
