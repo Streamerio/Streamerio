@@ -385,14 +385,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void Dispose()
   {
-    try
-    {
-      DisconnectWebSocketAsync().Forget();
-    }
-    catch (Exception ex)
-    {
-      Debug.Log($"Error during WebSocket disconnection: {ex.Message}");
-    }
+    DisconnectWebSocketAsync().Forget();
   }
   
   ///<summary>
