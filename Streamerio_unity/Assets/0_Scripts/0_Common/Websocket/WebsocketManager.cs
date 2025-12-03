@@ -322,7 +322,6 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
 
     // 接続状態を更新
     _isConnectedProp.Value = false;
-    return;
   }
   
   ///<summary>
