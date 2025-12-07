@@ -297,14 +297,31 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///<summary>
   /// WebSocketを切断する
   ///</summary>
-  public void DisconnectWebSocket()
+  public async UniTask DisconnectWebSocketAsync()
   {
-    if (!_isConnectedProp.Value)
+    if (_websocket == null)
     {
-      Debug.LogError("WebSocket is not connected!");
+      Debug.Log("WebSocket is null!");
       return;
     }
-    _websocket.CancelConnection();
+
+    if (_websocket.State == WebSocketState.Closed)
+    {
+      Debug.Log("WebSocket is already closed!");
+      return;
+    }
+
+    try
+    {
+      await _websocket.Close();
+    }
+    catch (Exception ex)
+    {
+      Debug.LogError($"Error closing WebSocket: {ex.Message}");
+      throw;
+    }
+
+    // 接続状態を更新
     _isConnectedProp.Value = false;
   }
   
@@ -369,14 +386,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
   ///</summary>
   public void Dispose()
   {
-    try
-    {
-      DisconnectWebSocket();
-    }
-    catch (Exception ex)
-    {
-      Debug.Log($"Error during WebSocket disconnection: {ex.Message}");
-    }
+    DisconnectWebSocketAsync().Forget();
   }
   
   ///<summary>
@@ -468,7 +478,7 @@ public interface IWebSocketManager
   IReadOnlyDictionary<FrontKey, Subject<WebSocketManager.ViewerDetails>> UltEventViewerNameDict { get; }
   WebSocketManager.GameEndSummaryNotification GameEndSummary { get; }
   UniTask ConnectWebSocketAsync(string websocketId = null, CancellationToken cancellationToken = default);
-  void DisconnectWebSocket();
+  UniTask DisconnectWebSocketAsync();
   string GetFrontUrl();
   UniTask GameStartAsync();
   UniTask GameEndAsync();

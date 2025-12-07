@@ -21,7 +21,7 @@ namespace Common.State
         
         public override async UniTask ExitAsync(CancellationToken ct)
         {
-            _webSocketManager.DisconnectWebSocket();
+            await _webSocketManager.DisconnectWebSocketAsync();
             await UniTask.WaitForEndOfFrame(cancellationToken: ct);
         }
     }
