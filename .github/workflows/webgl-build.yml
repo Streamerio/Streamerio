@@ -10,6 +10,8 @@ on:
   pull_request: 
     branches:
         - main
+    paths:
+        - Streamerio_unity/**
   workflow_dispatch: {}
 
 # 連続して実行されたときに一つ前の実行中のジョブが停止されるようにする
@@ -30,8 +32,8 @@ jobs:
       - name: Restore Env Script
         env:
           ENV_DATA: ${{ secrets.UNITY_ENV }}
-          TARGET_DIR: "Assets/Env"
-          TARGET_FILE: "Assets/Env/Parameter.cs"
+          TARGET_DIR: "Streamerio_unity/Assets/Env"
+          TARGET_FILE: "Streamerio_unity/Assets/Env/Parameter.cs"
         run: |
           # 1. 親ディレクトリを含めてフォルダを作成 (存在していてもエラーにならない)
           mkdir -p "$TARGET_DIR"
@@ -46,8 +48,8 @@ jobs:
       - name: Cache Library
         uses: actions/cache@v3
         with:
-          path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**','ProjectSettings/**') }}
+          path: Streamerio_unity/Library
+          key: Library-${{ hashFiles('Streamerio_unity/Assets/**', 'Streamerio_unity/Packages/**','Streamerio_unity/ProjectSettings/**') }}
           restore-keys: Library-
       # 1. Unityエディタのセットアップ (Buildalon)
       - name: Setup Unity
@@ -68,16 +70,16 @@ jobs:
       # 3. Buildalon用パッケージの追加 (必須)
       # GameCIと違い、ビルド機能をプロジェクトに追加するために必要です
       - name: Add Buildalon Package
+        working-directory: Streamerio_unity
         run: |
           npm install -g openupm-cli
           openupm add com.virtualmaker.buildalon
 
       # 4. WebGLビルド実行 (Buildalon)
       - name: Run the WebGL build
-        uses: buildalon/unity-action@v1
-        with:
-          build-target: WebGL
-          # argsはデフォルトで設定されますが、必要に応じて追加可能です
+        working-directory: Streamerio_unity
+        run: |
+          buildalon-action build-target WebGL
 
       # 5. Build成果物をアップロードする
       # Buildalonのデフォルト出力先は 'Builds' フォルダになります
@@ -85,4 +87,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: Builds/WebGL # パスが変更になる点に注意
+          path: Streamerio_unity/Builds/WebGL # パスが変更になる点に注意
