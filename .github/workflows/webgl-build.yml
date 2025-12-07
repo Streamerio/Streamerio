@@ -54,7 +54,7 @@ jobs:
       
       # Unityプロジェクトのビルド
       # 設定しない場合、buildフォルダに出力される
-      - name: Run the Windows build
+      - name: Run the WebGL build
         uses: game-ci/unity-builder@v4
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_USERNAME }}
