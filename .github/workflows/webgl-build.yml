@@ -75,11 +75,11 @@ jobs:
           npm install -g openupm-cli
           openupm add com.virtualmaker.buildalon
 
-      # 4. WebGLビルド実行 (Buildalon)
       - name: Run the WebGL build
-        working-directory: Streamerio_unity
-        run: |
-          buildalon-action build-target WebGL
+        uses: buildalon/unity-action@v1
+        with:
+          build-target: WebGL
+          project-path: Streamerio_unity # プロジェクトフォルダ名を指定
 
       # 5. Build成果物をアップロードする
       # Buildalonのデフォルト出力先は 'Builds' フォルダになります
