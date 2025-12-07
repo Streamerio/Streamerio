@@ -51,53 +51,22 @@ jobs:
           path: Streamerio_unity/Library
           key: Library-${{ hashFiles('Streamerio_unity/Assets/**', 'Streamerio_unity/Packages/**','Streamerio_unity/ProjectSettings/**') }}
           restore-keys: Library-
-      # 1. Unityエディタのセットアップ (Buildalon)
-      - name: Setup Unity
-        uses: buildalon/unity-setup@v1
+      
+      # Unityプロジェクトのビルド
+      # 設定しない場合、buildフォルダに出力される
+      - name: Run the Windows build
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_USERNAME }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          build-targets: WebGL
-          # version: '6000.0.57f1'
-
-      # 2. ライセンス認証 (Buildalon: Email/Pass方式)
-      # ※ 事前にGitHub Secretsに UNITY_USERNAME と UNITY_PASSWORD を設定してください
-      - name: Activate Unity License
-        uses: buildalon/activate-unity-license@v1
-        with:
-          license: 'Personal'
-          username: ${{ secrets.UNITY_USERNAME }}
-          password: ${{ secrets.UNITY_PASSWORD }}
-
-      # 3. Buildalon用パッケージの追加 (必須)
-      # GameCIと違い、ビルド機能をプロジェクトに追加するために必要です
-      - name: Add Buildalon Package
-        working-directory: Streamerio_unity
-        run: |
-          npm install -g openupm-cli
-          openupm add com.virtualmaker.buildalon
-
-      - name: Run the WebGL build
-        uses: buildalon/unity-action@v1
-        id: unity_build
-        continue-on-error: true # Unity終了時のクラッシュ(Segfault)を無視して続行させる
-        with:
-          build-target: WebGL
-          project-path: Streamerio_unity # プロジェクトフォルダ名を指定
-
-      - name: Check Build Artifacts
-        run: |
-          # ビルド成果物があるか確認
-          if [ -d "Streamerio_unity/Builds/WebGL" ] && [ "$(ls -A Streamerio_unity/Builds/WebGL)" ]; then
-            echo "Build artifacts found. Proceeding."
-            exit 0
-          else
-            echo "Build artifacts NOT found. Unity build likely failed."
-            exit 1
-          fi
+          targetPlatform: WebGL
+          unityVersion: 6000.0.57f1  #ここに使うUnityのバージョンを入れる
 
       # 5. Build成果物をアップロードする
-      # Buildalonのデフォルト出力先は 'Builds' フォルダになります
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: Streamerio_unity/Builds/WebGL # パスが変更になる点に注意
+          path: Streamerio_unity/build
