@@ -58,6 +58,7 @@ jobs:
           targetPlatform: WebGL
           unityVersion: 2021.3.15f1
           buildName: WebGLBuild
+          versioning: None
       # Build成果物をアップロードする
       - name: Upload artifact
         uses: actions/upload-artifact@v4
