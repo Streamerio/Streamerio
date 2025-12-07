@@ -1,0 +1,66 @@
+name: WebGL Build
+# コードがmainにpushされた時とpullreqが飛んできた時に自動で実行し手動でも実行できるようにする
+  
+on:
+  push:
+    branches: 
+        - main
+    paths:
+        - Streamerio_unity/**
+  pull_request: 
+    branches:
+        - main
+  workflow_dispatch: {}
+
+# 連続して実行されたときに一つ前の実行中のジョブが停止されるようにする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
+jobs:
+  webgl-Build:
+    name: Run the unity build steps
+    runs-on: ubuntu-latest
+    steps:
+      # Actionsがリポジトリにアクセスできるようにする
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # 環境変数を再配置する
+      - name: Restore Env Script
+        env:
+          ENV_DATA: ${{ secrets.UNITY_ENV }}
+          TARGET_DIR: "Assets/Env"
+          TARGET_FILE: "Assets/Env/Parameter.cs"
+        run: |
+          # 1. 親ディレクトリを含めてフォルダを作成 (存在していてもエラーにならない)
+          mkdir -p "$TARGET_DIR"
+
+          # 2. ファイルを配置
+          echo "$ENV_DATA" > "$TARGET_FILE"
+
+          # (確認用) ファイルが配置されたかログに出す（中身は見えないので安全）
+          ls -R "$TARGET_DIR"
+      
+      # LibraryをCacheしてBuildを高速化する
+      - name: Cache Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**','ProjectSettings/**') }}
+          restore-keys: Library-
+      # WebGLBuildする
+      - name: Run the WebGL build
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: WebGL
+          unityVersion: 2021.3.15f1
+          buildName: WebGLBuild
+      # Build成果物をアップロードする
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: build
+          path: build
