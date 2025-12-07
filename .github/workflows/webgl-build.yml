@@ -49,19 +49,40 @@ jobs:
           path: Library
           key: Library-${{ hashFiles('Assets/**', 'Packages/**','ProjectSettings/**') }}
           restore-keys: Library-
-      # WebGLBuildする
-      - name: Run the WebGL build
-        uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      # 1. Unityエディタのセットアップ (Buildalon)
+      - name: Setup Unity
+        uses: buildalon/unity-setup@v1
         with:
-          targetPlatform: WebGL
-          unityVersion: 2021.3.15f1
-          buildName: WebGLBuild
-          versioning: None
-      # Build成果物をアップロードする
+          build-targets: WebGL
+          # version: '6000.0.57f1'
+
+      # 2. ライセンス認証 (Buildalon: Email/Pass方式)
+      # ※ 事前にGitHub Secretsに UNITY_USERNAME と UNITY_PASSWORD を設定してください
+      - name: Activate Unity License
+        uses: buildalon/activate-unity-license@v1
+        with:
+          license: 'Personal'
+          username: ${{ secrets.UNITY_USERNAME }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+
+      # 3. Buildalon用パッケージの追加 (必須)
+      # GameCIと違い、ビルド機能をプロジェクトに追加するために必要です
+      - name: Add Buildalon Package
+        run: |
+          npm install -g openupm-cli
+          openupm add com.virtualmaker.buildalon
+
+      # 4. WebGLビルド実行 (Buildalon)
+      - name: Run the WebGL build
+        uses: buildalon/unity-action@v1
+        with:
+          build-target: WebGL
+          # argsはデフォルトで設定されますが、必要に応じて追加可能です
+
+      # 5. Build成果物をアップロードする
+      # Buildalonのデフォルト出力先は 'Builds' フォルダになります
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: build
+          path: Builds/WebGL # パスが変更になる点に注意
