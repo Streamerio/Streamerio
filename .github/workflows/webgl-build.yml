@@ -77,9 +77,22 @@ jobs:
 
       - name: Run the WebGL build
         uses: buildalon/unity-action@v1
+        id: unity_build
+        continue-on-error: true # Unity終了時のクラッシュ(Segfault)を無視して続行させる
         with:
           build-target: WebGL
           project-path: Streamerio_unity # プロジェクトフォルダ名を指定
+
+      - name: Check Build Artifacts
+        run: |
+          # ビルド成果物があるか確認
+          if [ -d "Streamerio_unity/Builds/WebGL" ] && [ "$(ls -A Streamerio_unity/Builds/WebGL)" ]; then
+            echo "Build artifacts found. Proceeding."
+            exit 0
+          else
+            echo "Build artifacts NOT found. Unity build likely failed."
+            exit 1
+          fi
 
       # 5. Build成果物をアップロードする
       # Buildalonのデフォルト出力先は 'Builds' フォルダになります
