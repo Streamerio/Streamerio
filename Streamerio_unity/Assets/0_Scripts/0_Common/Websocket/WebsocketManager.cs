@@ -318,6 +318,7 @@ public class WebSocketManager : IWebSocketManager, IDisposable, ITickable
     catch (Exception ex)
     {
       Debug.LogError($"Error closing WebSocket: {ex.Message}");
+      throw;
     }
 
     // 接続状態を更新
