@@ -1,0 +1,88 @@
+name: WebGL Build
+# コードがmainにpushされた時とpullreqが飛んできた時に自動で実行し手動でも実行できるようにする
+  
+on:
+  push:
+    branches: 
+        - main
+    paths:
+        - Streamerio_unity/**
+  pull_request: 
+    branches:
+        - main
+  workflow_dispatch: {}
+
+# 連続して実行されたときに一つ前の実行中のジョブが停止されるようにする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
+jobs:
+  webgl-Build:
+    name: Run the unity build steps
+    runs-on: ubuntu-latest
+    steps:
+      # Actionsがリポジトリにアクセスできるようにする
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # 環境変数を再配置する
+      - name: Restore Env Script
+        env:
+          ENV_DATA: ${{ secrets.UNITY_ENV }}
+          TARGET_DIR: "Assets/Env"
+          TARGET_FILE: "Assets/Env/Parameter.cs"
+        run: |
+          # 1. 親ディレクトリを含めてフォルダを作成 (存在していてもエラーにならない)
+          mkdir -p "$TARGET_DIR"
+
+          # 2. ファイルを配置
+          echo "$ENV_DATA" > "$TARGET_FILE"
+
+          # (確認用) ファイルが配置されたかログに出す（中身は見えないので安全）
+          ls -R "$TARGET_DIR"
+      
+      # LibraryをCacheしてBuildを高速化する
+      - name: Cache Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**','ProjectSettings/**') }}
+          restore-keys: Library-
+      # 1. Unityエディタのセットアップ (Buildalon)
+      - name: Setup Unity
+        uses: buildalon/unity-setup@v1
+        with:
+          build-targets: WebGL
+          # version: '6000.0.57f1'
+
+      # 2. ライセンス認証 (Buildalon: Email/Pass方式)
+      # ※ 事前にGitHub Secretsに UNITY_USERNAME と UNITY_PASSWORD を設定してください
+      - name: Activate Unity License
+        uses: buildalon/activate-unity-license@v1
+        with:
+          license: 'Personal'
+          username: ${{ secrets.UNITY_USERNAME }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+
+      # 3. Buildalon用パッケージの追加 (必須)
+      # GameCIと違い、ビルド機能をプロジェクトに追加するために必要です
+      - name: Add Buildalon Package
+        run: |
+          npm install -g openupm-cli
+          openupm add com.virtualmaker.buildalon
+
+      # 4. WebGLビルド実行 (Buildalon)
+      - name: Run the WebGL build
+        uses: buildalon/unity-action@v1
+        with:
+          build-target: WebGL
+          # argsはデフォルトで設定されますが、必要に応じて追加可能です
+
+      # 5. Build成果物をアップロードする
+      # Buildalonのデフォルト出力先は 'Builds' フォルダになります
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: Builds/WebGL # パスが変更になる点に注意
