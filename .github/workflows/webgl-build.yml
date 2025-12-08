@@ -75,6 +75,7 @@ jobs:
           projectPath: Streamerio_unity
           targetPlatform: WebGL
           unityVersion: 6000.0.57f1  #ここに使うUnityのバージョンを入れる
+          buildsPath: Streamerio_unity/build
 
       # 5. Build成果物をアップロードする
       - name: Upload artifact
